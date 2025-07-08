@@ -41,6 +41,9 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
+                'web',
+                \App\Http\Middleware\EnsureUserHasFilamentAccess::class,
+
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -53,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \Filament\Http\Middleware\Authenticate::class,
             ]);
     }
 }
