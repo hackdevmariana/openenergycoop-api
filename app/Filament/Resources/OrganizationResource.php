@@ -16,7 +16,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BooleanColumn;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-
+use Filament\Tables\Columns\IconColumn;
 
 class OrganizationResource extends Resource
 {
@@ -105,7 +105,7 @@ class OrganizationResource extends Resource
                 TextColumn::make('name')->sortable()->searchable(),
                 TextColumn::make('slug'),
                 TextColumn::make('domain'),
-                BooleanColumn::make('active'),
+                IconColumn::make('active')->boolean()->label('Activa'),
             ])
             ->filters([
                 //
