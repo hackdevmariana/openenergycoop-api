@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Str; // <-- Import necesario
 
 class RolesAndAdminSeeder extends Seeder
 {
@@ -35,7 +36,7 @@ class RolesAndAdminSeeder extends Seeder
             ['email' => 'admin@demo.com'],
             [
                 'name' => 'Administrador',
-                'password' => bcrypt('password'), // cámbiala en producción
+                'password' => bcrypt('password'), // Cambiar en producción
             ]
         );
 
@@ -44,8 +45,20 @@ class RolesAndAdminSeeder extends Seeder
             $adminUser->assignRole('admin');
         }
 
+        // Crear usuario test si no existe
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+                'remember_token' => Str::random(10),
+            ]
+        );
+
         $this->command->info('Roles base creados: ' . implode(', ', $roles));
         $this->command->info('Permiso access filament creado y asignado al rol admin');
         $this->command->info('Usuario admin creado: admin@demo.com / password');
+        $this->command->info('Usuario test creado: test@example.com / password');
     }
 }

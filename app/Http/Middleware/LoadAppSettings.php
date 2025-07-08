@@ -6,13 +6,15 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\AppSetting;
+use Illuminate\Support\Facades\Cache;
 
 class LoadAppSettings
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Solo si hay un AppSetting (puedes adaptar esto si es multitenant)
-        $settings = AppSetting::with('organization')->first();
+        $settings = Cache::remember('app.settings', 60, function () {
+            return AppSetting::with('organization')->first();
+        });
 
         if ($settings) {
             config()->set('app.name', $settings->name ?? config('app.name'));
