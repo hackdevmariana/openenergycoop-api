@@ -1,61 +1,117 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# OpenEnergyCoop
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**OpenEnergyCoop** es un proyecto de software libre desarrollado en Laravel para apoyar a cooperativas energéticas. Proporciona una API robusta, un dashboard moderno, una web pública y una app móvil para gestionar comunidades de autoconsumo energético.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Presentación general
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+OpenEnergyCoop está pensado para:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+-   Cooperativas energéticas que necesitan herramientas digitales modernas, libres y adaptables.
+-   Personas desarrolladoras interesadas en colaborar y ampliar funcionalidades.
+-   Ciudadanos interesados en cooperativas energéticas y comunidades de autoconsumo compartido.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tecnologías principales
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+-   **Backend:** Laravel con Filament, Sanctum, Spatie Permissions, Laravel Localization, MeiliSearch, Laravel Excel, Spatie Media Library, Fortify (2FA), y más.
+-   **Frontend web:** Nuxt con TailwindCSS, Axios, Vue I18n, Matomo para analítica, Chart.js/ApexCharts.
+-   **Dashboard:** Nuxt + Material Design + Laravel Echo para notificaciones en tiempo real.
+-   **App móvil:** React Native + Expo + EAS con autenticación Sanctum/JWT, notificaciones push y más.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Estructura del proyecto
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Backend Laravel (openenergycoop-api)
 
-### Premium Partners
+-   Modular y organizado en carpetas bajo `app/Models`:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    -   `Core/`: Usuarios, Organizaciones, Roles
+    -   `Web/`: Páginas, Menús, SEO
+    -   `Energy/`: Instalaciones, Consumos, Producción
+    -   `Economy/`: Wallets y transacciones
+    -   `Community/`: Eventos, Mensajes, Notificaciones
+    -   `Gamification/`: Retos y logros
+    -   `Personalization/`: Dashboards y widgets
 
-## Contributing
+-   APIs versionadas bajo `routes/api.php` (`/api/v1/*`).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+### Frontend web (Nuxt)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+-   Rutas dinámicas por cooperativa (`/[cooperativa]/...`).
+-   Componentes organizados para reutilización y escalabilidad.
+-   Internacionalización con Vue I18n.
+-   Integración con la API backend y Matomo para analítica.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### App móvil (React Native + Expo)
 
-## License
+-   Estructura basada en Expo Router.
+-   Autenticación integrada con backend.
+-   Notificaciones push.
+-   Conexión a APIs para consumo y producción energética, comunidad, wallet, etc.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Roadmap de desarrollo
+
+### Fase 1 – Usuarios, roles y cooperativas
+
+-   Modelos: User, UserProfile, Organization, Roles, ConsentLog, AuditLog, UserDevice, Image
+-   Autenticación con Google/Apple y sistema granular de permisos.
+
+### Fase 2 – Contenido y sitio web básico
+
+-   Modelos: AppSettings, Page, PageComponent, Hero, TextContent, Banner, Menu, FAQ, SocialLink, Contact, SEO, Collaborators.
+
+### Fase 3 – Noticias, artículos y documentos
+
+-   Modelos: Article, Comment, Tags, Document, Category.
+
+### Fase 4 – Instalaciones, consumo y producción
+
+-   Modelos: EnergyInstallation, ConsumptionPoint, Municipality, Province, Region, ProductionProject, EnergyMeter, EnergyReading, WeatherSnapshots.
+
+### Fase 5 – Wallet y transacciones
+
+-   Modelos: Wallet, WalletTransaction, WalletConversion, WalletTransfer, ProductionParticipations.
+
+### Fase 6 – Eventos y comunidad
+
+-   Modelos: Event, EventAttendance, Message, FormSubmission, NewsletterSubscription, Notification, NotificationSetting.
+
+### Fase 7 – Impacto ambiental y gamificación
+
+-   Modelos: Plant, PlantGroup, CooperativePlantConfig, ImpactMetrics, CommunityMetrics, EnergyChallenge, UserChallengeProgress, Achievement, UserAchievement.
+
+### Fase 8 – Dashboard personal y widgets
+
+-   Modelos: DashboardWidget, UserWidgetPreference, DashboardView, UserSettings, Surveys, SurveyResponses.
+
+### Fase 9 – Integraciones externas
+
+-   Festivalprogram API (eventos), SpaNewsAPI (noticias), SpaWeather/OpenWeatherMap (clima), REE API (precios energía), Coinbase/CoinGecko (cambios), Odoo, Mautic, Twilio, Nexmo, IPinfo, Matomo.
+
+### Fase 10 – Foro (opcional)
+
+-   Modelos: Forum, Thread, Post, Reaction.
+
+---
+
+## Licencia
+
+OpenEnergyCoop está licenciado bajo **GPLv3** para garantizar que las cooperativas puedan usar, modificar y compartir el software de manera libre y ética.
+
+---
+
+## Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor, revisa las [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles sobre el proceso.
+
+---
