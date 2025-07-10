@@ -1,0 +1,139 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Mi Proyecto",
+        "description": "Documentación generada automáticamente con Swagger",
+        "contact": {
+            "name": "Soporte",
+            "email": "soporte@miapp.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/app-settings": {
+            "get": {
+                "tags": [
+                    "AppSettings"
+                ],
+                "summary": "Obtener configuración global de la app",
+                "operationId": "4062135162a253871401131183118841",
+                "responses": {
+                    "200": {
+                        "description": "Configuración de la aplicación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AppSetting"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/app-settings/{id}": {
+            "get": {
+                "tags": [
+                    "AppSettings"
+                ],
+                "summary": "Mostrar configuración por ID",
+                "operationId": "19528d43e7f0a780c9f29c484abdb0dd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuración encontrada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AppSetting"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AppSetting": {
+                "title": "AppSetting",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "slogan": {
+                        "type": "string"
+                    },
+                    "primary_color": {
+                        "type": "string"
+                    },
+                    "secondary_color": {
+                        "type": "string"
+                    },
+                    "locale": {
+                        "type": "string"
+                    },
+                    "custom_js": {
+                        "type": "string"
+                    },
+                    "logo_url": {
+                        "type": "string",
+                        "format": "url"
+                    },
+                    "favicon_url": {
+                        "type": "string",
+                        "format": "url"
+                    },
+                    "organization": {
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "AppSettings",
+            "description": "AppSettings"
+        }
+    ]
+}
