@@ -5,10 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AppSettingController;
 use App\Http\Controllers\Api\V1\CustomerProfileController;
 use App\Http\Controllers\Api\V1\CustomerProfileContactInfoController;
+use App\Http\Controllers\Api\V1\LegalDocumentController;
+
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
     Route::apiResource('customer-profiles', CustomerProfileController::class);
     Route::apiResource('customer-profile-contact-infos', CustomerProfileContactInfoController::class);
+        Route::apiResource('legal-documents', LegalDocumentController::class);
+    Route::post('legal-documents/{id}/verify', [LegalDocumentController::class, 'verify']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
