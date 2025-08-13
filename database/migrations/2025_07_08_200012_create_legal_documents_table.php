@@ -10,19 +10,18 @@ return new class extends Migration
     {
         Schema::create('legal_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_profile_id')->constrained()->onDelete('cascade');
-            $table->foreignId('organization_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('customer_profile_id'); // Sin foreign key
+            $table->unsignedBigInteger('organization_id'); // Sin foreign key
             $table->enum('type', ['dni', 'iban_receipt', 'contract', 'invoice', 'other']);
             $table->datetime('uploaded_at');
             $table->datetime('verified_at')->nullable();
-            $table->foreignId('verifier_user_id')->nullable()->constrained()->onDelete('set null');
+            $table->unsignedBigInteger('verifier_user_id')->nullable(); // Sin foreign key
             $table->timestamps();
 
             // Índices
-            $table->index(['customer_profile_id', 'organization_id']);
-            $table->index('type');
-            $table->index('verified_at');
-            $table->index('verifier_user_id');
+            $table->index(['customer_profile_id', 'organization_id'], 'ld_profile_org_idx');
+            $table->index('type', 'ld_type_idx');
+            $table->index('verified_at', 'ld_verified_idx');
         });
     }
 

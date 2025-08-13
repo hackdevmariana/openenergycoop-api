@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('customer_profile_contact_infos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_profile_id')->constrained()->onDelete('cascade');
-            $table->foreignId('organization_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('customer_profile_id'); // Sin foreign key
+            $table->unsignedBigInteger('organization_id'); // Sin foreign key
             $table->string('billing_email')->nullable();
             $table->string('technical_email')->nullable();
             $table->text('address');
@@ -24,11 +24,11 @@ return new class extends Migration
             $table->datetime('valid_to')->nullable();
             $table->timestamps();
 
-            // Índices
-            $table->index(['customer_profile_id', 'organization_id']);
-            $table->index('province');
-            $table->index('valid_from');
-            $table->index('valid_to');
+            // Índices con nombres más cortos
+            $table->index(['customer_profile_id', 'organization_id'], 'cpci_profile_org_idx');
+            $table->index('province', 'cpci_province_idx');
+            $table->index('valid_from', 'cpci_valid_from_idx');
+            $table->index('valid_to', 'cpci_valid_to_idx');
         });
     }
 

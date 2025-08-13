@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('customer_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('organization_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id'); // Sin foreign key
+            $table->unsignedBigInteger('organization_id'); // Sin foreign key
             $table->enum('profile_type', ['individual', 'tenant', 'company', 'ownership_change']);
             $table->enum('legal_id_type', ['dni', 'nie', 'passport', 'cif']);
             $table->string('legal_id_number');
@@ -19,10 +19,10 @@ return new class extends Migration
             $table->enum('contract_type', ['own', 'tenant', 'company', 'ownership_change']);
             $table->timestamps();
 
-            // Índices
-            $table->index(['user_id', 'organization_id']);
-            $table->index('profile_type');
-            $table->index('legal_id_type');
+            // Índices con nombres más cortos
+            $table->index(['user_id', 'organization_id'], 'cp_user_org_idx');
+            $table->index('profile_type', 'cp_profile_type_idx');
+            $table->index('legal_id_type', 'cp_legal_type_idx');
         });
     }
 
