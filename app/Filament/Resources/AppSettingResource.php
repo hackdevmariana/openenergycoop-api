@@ -33,18 +33,20 @@ class AppSettingResource extends Resource
                 Forms\Components\TextInput::make('locale')->maxLength(5),
                 Forms\Components\Textarea::make('custom_js'),
                 // Para manejar mediaLibrary (logo y favicon) puedes usar:
-                Forms\Components\FileUpload::make('logo')
-                    ->image()
-                    ->directory('appsettings/logo')
+                Forms\Components\SpatieMediaLibraryFileUpload::make('logo')
+                    ->collection('logo')
                     ->label('Logo')
-                    ->disk('public')
-                    ->imagePreviewHeight('100'),
-                Forms\Components\FileUpload::make('favicon')
                     ->image()
-                    ->directory('appsettings/favicon')
+                    ->preserveFilenames()
+                    ->openable()
+                    ->downloadable(),
+                Forms\Components\SpatieMediaLibraryFileUpload::make('favicon')
+                    ->collection('favicon')
                     ->label('Favicon')
-                    ->disk('public')
-                    ->imagePreviewHeight('50'),
+                    ->image()
+                    ->preserveFilenames()
+                    ->openable()
+                    ->downloadable(),
             ]);
     }
 
