@@ -52,6 +52,16 @@ class OrganizationRole extends Model
     }
 
     /**
+     * Relación virtual para contar permisos (usado por Filament)
+     */
+    public function permissions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        // Esta es una relación virtual que devuelve una colección vacía
+        // pero permite que Filament pueda usar count() en la tabla
+        return $this->hasMany(\App\Models\Permission::class, 'id', 'id');
+    }
+
+    /**
      * Verificar si el rol tiene un permiso específico
      */
     public function hasPermission(string $permission): bool
