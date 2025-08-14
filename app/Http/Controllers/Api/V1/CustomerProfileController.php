@@ -7,6 +7,7 @@ use App\Models\CustomerProfile;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use App\Policies\CustomerProfilePolicy;
 
 /**
  * @OA\Tag(
@@ -68,10 +69,8 @@ class CustomerProfileController extends Controller
             $query->where('profile_type', $request->profile_type);
         }
 
-        // Filtrar por organización del usuario autenticado si no es admin
-        if (!auth()->user()->hasRole('admin')) {
-            $query->where('organization_id', auth()->user()->organization_id);
-        }
+        // Aplicar filtros de autorización automáticamente
+        $query = app(CustomerProfilePolicy::class)->scopeForUser($query, auth()->user());
 
         // Paginar resultados
         $customerProfiles = $query->paginate(15);

@@ -2,15 +2,19 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
 class UserFactory extends Factory
 {
+    protected $model = User::class;
+
     /**
      * The current password being used by the factory.
      */
@@ -23,11 +27,13 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        static $counter = 1;
+        
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => 'User ' . $counter++,
+            'email' => 'user' . $counter . '@example.com',
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
     }
@@ -40,5 +46,70 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Asignar rol de super admin
+     */
+    public function superAdmin(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::where('name', 'super-admin')->first();
+            if ($role) {
+                $user->assignRole($role);
+            }
+        });
+    }
+
+    /**
+     * Asignar rol de admin
+     */
+    public function admin(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::where('name', 'admin')->first();
+            if ($role) {
+                $user->assignRole($role);
+            }
+        });
+    }
+
+    /**
+     * Asignar rol de manager
+     */
+    public function manager(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::where('name', 'manager')->first();
+            if ($role) {
+                $user->assignRole($role);
+            }
+        });
+    }
+
+    /**
+     * Asignar rol de agent
+     */
+    public function agent(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::where('name', 'agent')->first();
+            if ($role) {
+                $user->assignRole($role);
+            }
+        });
+    }
+
+    /**
+     * Asignar rol de customer
+     */
+    public function customer(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::where('name', 'customer')->first();
+            if ($role) {
+                $user->assignRole($role);
+            }
+        });
     }
 }
