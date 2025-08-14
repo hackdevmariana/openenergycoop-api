@@ -111,6 +111,11 @@ class SubscriptionRequestController extends Controller
             $query->where('cooperative_id', $request->get('cooperative_id'));
         }
 
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where('notes', 'like', "%{$search}%");
+        }
+
         $subscriptionRequests = $query->paginate($request->get('per_page', 15));
 
         return SubscriptionRequestResource::collection($subscriptionRequests);
@@ -359,14 +364,36 @@ class SubscriptionRequestController extends Controller
      *     )
      * )
      */
-    public function approve(SubscriptionRequest $subscriptionRequest): JsonResponse
+    public function approve(int $id): JsonResponse
     {
+        // Buscar el modelo por ID
+        $subscriptionRequest = SubscriptionRequest::findOrFail($id);
+        
         $this->authorize('update', $subscriptionRequest);
 
-        $subscriptionRequest->approve();
+        // Actualizar directamente en la base de datos
+        $result = $subscriptionRequest->update([
+            'status' => SubscriptionRequest::STATUS_APPROVED,
+            'processed_at' => now(),
+        ]);
+
+        if (!$result) {
+            return response()->json([
+                'message' => 'Error al actualizar la solicitud'
+            ], 500);
+        }
+
+        // Buscar el modelo actualizado desde la base de datos
+        $updatedSubscriptionRequest = SubscriptionRequest::find($subscriptionRequest->id);
+        
+        if (!$updatedSubscriptionRequest) {
+            return response()->json([
+                'message' => 'Error al recuperar la solicitud actualizada'
+            ], 500);
+        }
 
         return response()->json([
-            'data' => new SubscriptionRequestResource($subscriptionRequest),
+            'data' => new SubscriptionRequestResource($updatedSubscriptionRequest),
             'message' => 'Solicitud de suscripción aprobada exitosamente'
         ]);
     }
@@ -408,14 +435,36 @@ class SubscriptionRequestController extends Controller
      *     )
      * )
      */
-    public function reject(SubscriptionRequest $subscriptionRequest): JsonResponse
+    public function reject(int $id): JsonResponse
     {
+        // Buscar el modelo por ID
+        $subscriptionRequest = SubscriptionRequest::findOrFail($id);
+        
         $this->authorize('update', $subscriptionRequest);
 
-        $subscriptionRequest->reject();
+        // Actualizar directamente en la base de datos
+        $result = $subscriptionRequest->update([
+            'status' => SubscriptionRequest::STATUS_REJECTED,
+            'processed_at' => now(),
+        ]);
+
+        if (!$result) {
+            return response()->json([
+                'message' => 'Error al actualizar la solicitud'
+            ], 500);
+        }
+
+        // Buscar el modelo actualizado desde la base de datos
+        $updatedSubscriptionRequest = SubscriptionRequest::find($subscriptionRequest->id);
+        
+        if (!$updatedSubscriptionRequest) {
+            return response()->json([
+                'message' => 'Error al recuperar la solicitud actualizada'
+            ], 500);
+        }
 
         return response()->json([
-            'data' => new SubscriptionRequestResource($subscriptionRequest),
+            'data' => new SubscriptionRequestResource($updatedSubscriptionRequest),
             'message' => 'Solicitud de suscripción rechazada exitosamente'
         ]);
     }
@@ -440,7 +489,7 @@ class SubscriptionRequestController extends Controller
      *         description="Solicitud de suscripción puesta en revisión exitosamente",
      *         @OA\JsonContent(
      *             @OA\Property(property="data", ref="#/components/schemas/SubscriptionRequest"),
-     *             @OA\Property(property="message", type="string", example="Solicitud de suscripción puesta en revisión exitosamente")
+     *             @OA\Property(property="message", example="Solicitud de suscripción puesta en revisión exitosamente")
      *         )
      *     ),
      *     @OA\Response(
@@ -457,14 +506,35 @@ class SubscriptionRequestController extends Controller
      *     )
      * )
      */
-    public function review(SubscriptionRequest $subscriptionRequest): JsonResponse
+    public function review(int $id): JsonResponse
     {
+        // Buscar el modelo por ID
+        $subscriptionRequest = SubscriptionRequest::findOrFail($id);
+        
         $this->authorize('update', $subscriptionRequest);
 
-        $subscriptionRequest->markForReview();
+        // Actualizar directamente en la base de datos
+        $result = $subscriptionRequest->update([
+            'status' => SubscriptionRequest::STATUS_IN_REVIEW,
+        ]);
+
+        if (!$result) {
+            return response()->json([
+                'message' => 'Error al actualizar la solicitud'
+            ], 500);
+        }
+
+        // Buscar el modelo actualizado desde la base de datos
+        $updatedSubscriptionRequest = SubscriptionRequest::find($subscriptionRequest->id);
+        
+        if (!$updatedSubscriptionRequest) {
+            return response()->json([
+                'message' => 'Error al recuperar la solicitud actualizada'
+            ], 500);
+        }
 
         return response()->json([
-            'data' => new SubscriptionRequestResource($subscriptionRequest),
+            'data' => new SubscriptionRequestResource($updatedSubscriptionRequest),
             'message' => 'Solicitud de suscripción puesta en revisión exitosamente'
         ]);
     }
