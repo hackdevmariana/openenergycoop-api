@@ -117,7 +117,9 @@ class OrganizationRoleResource extends Resource
 
                 Tables\Columns\TextColumn::make('permissions_count')
                     ->label('Permisos')
-                    ->counts('permissions')
+                    ->getStateUsing(function (OrganizationRole $record): int {
+                        return is_array($record->permissions) ? count($record->permissions) : 0;
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('users_count')
