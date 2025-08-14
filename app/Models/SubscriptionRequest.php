@@ -5,10 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class SubscriptionRequest extends Model
 {
     use HasFactory;
+
+    // Estados de la solicitud
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+    const STATUS_IN_REVIEW = 'in_review';
+
+    // Tipos de solicitud
+    const TYPE_NEW_SUBSCRIPTION = 'new_subscription';
+    const TYPE_OWNERSHIP_CHANGE = 'ownership_change';
+    const TYPE_TENANT_REQUEST = 'tenant_request';
 
     protected $fillable = [
         'user_id',
@@ -23,22 +35,10 @@ class SubscriptionRequest extends Model
     protected $casts = [
         'submitted_at' => 'datetime',
         'processed_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
-    // Enums para status y type
-    const STATUS_PENDING = 'pending';
-    const STATUS_APPROVED = 'approved';
-    const STATUS_REJECTED = 'rejected';
-    const STATUS_IN_REVIEW = 'in_review';
-
-    const TYPE_NEW_SUBSCRIPTION = 'new_subscription';
-    const TYPE_OWNERSHIP_CHANGE = 'ownership_change';
-    const TYPE_TENANT_REQUEST = 'tenant_request';
-
     /**
-     * Obtener el usuario que hizo la solicitud
+     * Relación con el usuario que hizo la solicitud
      */
     public function user(): BelongsTo
     {
@@ -46,7 +46,7 @@ class SubscriptionRequest extends Model
     }
 
     /**
-     * Obtener la cooperativa/organización
+     * Relación con la cooperativa/organización
      */
     public function cooperative(): BelongsTo
     {
@@ -54,19 +54,43 @@ class SubscriptionRequest extends Model
     }
 
     /**
-     * Marcar como enviada
+     * Scope para filtrar por estado
      */
-    public function markAsSubmitted(): void
+    public function scopeByStatus(Builder $query, string $status): Builder
     {
-        $this->update(['submitted_at' => now()]);
+        return $query->where('status', $status);
     }
 
     /**
-     * Marcar como procesada
+     * Scope para filtrar por tipo
      */
-    public function markAsProcessed(): void
+    public function scopeByType(Builder $query, string $type): Builder
     {
-        $this->update(['processed_at' => now()]);
+        return $query->where('type', $type);
+    }
+
+    /**
+     * Scope para filtrar por usuario
+     */
+    public function scopeByUser(Builder $query, int $userId): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    /**
+     * Scope para filtrar por cooperativa
+     */
+    public function scopeByCooperative(Builder $query, int $cooperativeId): Builder
+    {
+        return $query->where('cooperative_id', $cooperativeId);
+    }
+
+    /**
+     * Scope para búsqueda en notas
+     */
+    public function scopeSearch(Builder $query, string $search): Builder
+    {
+        return $query->where('notes', 'like', "%{$search}%");
     }
 
     /**
@@ -92,34 +116,79 @@ class SubscriptionRequest extends Model
     }
 
     /**
-     * Poner en revisión
+     * Poner en revisión la solicitud
      */
     public function markForReview(): void
     {
-        $this->update(['status' => self::STATUS_IN_REVIEW]);
+        $this->update([
+            'status' => self::STATUS_IN_REVIEW,
+        ]);
     }
 
     /**
-     * Obtener solicitudes pendientes
+     * Verificar si la solicitud está pendiente
      */
-    public static function getPending(): \Illuminate\Database\Eloquent\Collection
+    public function isPending(): bool
     {
-        return static::where('status', self::STATUS_PENDING)->get();
+        return $this->status === self::STATUS_PENDING;
     }
 
     /**
-     * Obtener solicitudes por estado
+     * Verificar si la solicitud está aprobada
      */
-    public static function getByStatus(string $status): \Illuminate\Database\Eloquent\Collection
+    public function isApproved(): bool
     {
-        return static::where('status', $status)->get();
+        return $this->status === self::STATUS_APPROVED;
     }
 
     /**
-     * Obtener solicitudes por tipo
+     * Verificar si la solicitud está rechazada
      */
-    public static function getByType(string $type): \Illuminate\Database\Eloquent\Collection
+    public function isRejected(): bool
     {
-        return static::where('type', $type)->get();
+        return $this->status === self::STATUS_REJECTED;
+    }
+
+    /**
+     * Verificar si la solicitud está en revisión
+     */
+    public function isInReview(): bool
+    {
+        return $this->status === self::STATUS_IN_REVIEW;
+    }
+
+    /**
+     * Verificar si la solicitud puede ser procesada
+     */
+    public function canBeProcessed(): bool
+    {
+        return $this->isPending() || $this->isInReview();
+    }
+
+    /**
+     * Obtener el estado en español
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->status) {
+            self::STATUS_PENDING => 'Pendiente',
+            self::STATUS_APPROVED => 'Aprobada',
+            self::STATUS_REJECTED => 'Rechazada',
+            self::STATUS_IN_REVIEW => 'En Revisión',
+            default => 'Desconocido',
+        };
+    }
+
+    /**
+     * Obtener el tipo en español
+     */
+    public function getTypeLabelAttribute(): string
+    {
+        return match($this->type) {
+            self::TYPE_NEW_SUBSCRIPTION => 'Nueva Suscripción',
+            self::TYPE_OWNERSHIP_CHANGE => 'Cambio de Titularidad',
+            self::TYPE_TENANT_REQUEST => 'Solicitud de Arrendatario',
+            default => 'Desconocido',
+        };
     }
 }

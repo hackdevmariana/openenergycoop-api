@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CompanyControllerTest extends TestCase
@@ -33,7 +34,7 @@ class CompanyControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_list_companies()
     {
         Sanctum::actingAs($this->user);
@@ -63,7 +64,7 @@ class CompanyControllerTest extends TestCase
         expect($response->json('data'))->toHaveCount(3);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_filter_companies_by_search()
     {
         Sanctum::actingAs($this->user);
@@ -81,7 +82,7 @@ class CompanyControllerTest extends TestCase
         expect($data[0]['name'])->toBe('Energía Solar S.L.');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_company()
     {
         Sanctum::actingAs($this->user);
@@ -112,7 +113,7 @@ class CompanyControllerTest extends TestCase
         $this->assertDatabaseHas('companies', $companyData);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields_when_creating_company()
     {
         Sanctum::actingAs($this->user);
@@ -123,7 +124,7 @@ class CompanyControllerTest extends TestCase
         $response->assertJsonValidationErrors(['name', 'cif', 'contact_person', 'company_address']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_unique_cif_when_creating_company()
     {
         Sanctum::actingAs($this->user);
@@ -144,7 +145,7 @@ class CompanyControllerTest extends TestCase
         $response->assertJsonValidationErrors(['cif']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_show_company()
     {
         Sanctum::actingAs($this->user);
@@ -170,7 +171,7 @@ class CompanyControllerTest extends TestCase
         expect($response->json('data.name'))->toBe($company->name);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_404_for_nonexistent_company()
     {
         Sanctum::actingAs($this->user);
@@ -180,7 +181,7 @@ class CompanyControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_company()
     {
         Sanctum::actingAs($this->user);
@@ -215,7 +216,7 @@ class CompanyControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_unique_cif_when_updating_company()
     {
         Sanctum::actingAs($this->user);
@@ -234,7 +235,7 @@ class CompanyControllerTest extends TestCase
         $response->assertJsonValidationErrors(['cif']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_company()
     {
         Sanctum::actingAs($this->user);
@@ -249,7 +250,7 @@ class CompanyControllerTest extends TestCase
         $this->assertDatabaseMissing('companies', ['id' => $company->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_authentication()
     {
         $response = $this->getJson('/api/v1/companies');
@@ -268,7 +269,7 @@ class CompanyControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    /** @test */
+    #[Test]
     public function it_respects_pagination()
     {
         Sanctum::actingAs($this->user);
