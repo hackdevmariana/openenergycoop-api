@@ -60,6 +60,55 @@ class RolesAndPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
+        // Crear permisos para Company
+        $companyPermissions = [
+            'company.view',
+            'company.create',
+            'company.update',
+            'company.delete',
+        ];
+
+        foreach ($companyPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        // Crear permisos para SubscriptionRequest
+        $subscriptionRequestPermissions = [
+            'subscription-request.view',
+            'subscription-request.create',
+            'subscription-request.update',
+            'subscription-request.delete',
+            'subscription-request.process',
+        ];
+
+        foreach ($subscriptionRequestPermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        // Crear permisos para OrganizationRole
+        $organizationRolePermissions = [
+            'organization-role.view',
+            'organization-role.create',
+            'organization-role.update',
+            'organization-role.delete',
+        ];
+
+        foreach ($organizationRolePermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        // Crear permisos para UserOrganizationRole
+        $userOrganizationRolePermissions = [
+            'user-organization-role.view',
+            'user-organization-role.create',
+            'user-organization-role.update',
+            'user-organization-role.delete',
+        ];
+
+        foreach ($userOrganizationRolePermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
         // Crear roles
         $roles = [
             'super-admin' => Permission::all()->pluck('name')->toArray(),
@@ -76,6 +125,23 @@ class RolesAndPermissionsSeeder extends Seeder
                 'user.create',
                 'user.update-org',
                 'user.delete-org',
+                'company.view',
+                'company.create',
+                'company.update',
+                'company.delete',
+                'subscription-request.view',
+                'subscription-request.create',
+                'subscription-request.update',
+                'subscription-request.delete',
+                'subscription-request.process',
+                'organization-role.view',
+                'organization-role.create',
+                'organization-role.update',
+                'organization-role.delete',
+                'user-organization-role.view',
+                'user-organization-role.create',
+                'user-organization-role.update',
+                'user-organization-role.delete',
             ],
             'manager' => [
                 'customer-profile.view-org',
@@ -87,6 +153,12 @@ class RolesAndPermissionsSeeder extends Seeder
                 'user.view-org',
                 'user.view-own',
                 'user.update-own',
+                'company.view',
+                'subscription-request.view',
+                'subscription-request.create',
+                'subscription-request.update',
+                'organization-role.view',
+                'user-organization-role.view',
             ],
             'agent' => [
                 'customer-profile.view-org',
@@ -96,12 +168,22 @@ class RolesAndPermissionsSeeder extends Seeder
                 'organization.view',
                 'user.view-own',
                 'user.update-own',
+                'company.view',
+                'subscription-request.view',
+                'subscription-request.create',
+                'organization-role.view',
+                'user-organization-role.view',
             ],
             'customer' => [
                 'customer-profile.view-own',
                 'customer-profile.update-own',
                 'user.view-own',
                 'user.update-own',
+                'company.view',
+                'subscription-request.view',
+                'subscription-request.create',
+                'organization-role.view',
+                'user-organization-role.view',
             ],
         ];
 
