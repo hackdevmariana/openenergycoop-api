@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            RolesAndPermissionsSeeder::class, // Agregar este seeder primero
             RolesAndAdminSeeder::class,
             AppSettingSeeder::class,
         ]);
