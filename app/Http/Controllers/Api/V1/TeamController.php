@@ -95,12 +95,7 @@ class TeamController extends Controller
         if ($request->boolean('has_space')) {
             $query->where(function ($q) {
                 $q->whereNull('max_members')
-                  ->orWhereColumn('max_members', '>', function ($subQuery) {
-                      $subQuery->selectRaw('COUNT(*)')
-                               ->from('team_memberships')
-                               ->whereColumn('team_id', 'teams.id')
-                               ->whereNull('left_at');
-                  });
+                  ->orWhereRaw('max_members > (SELECT COUNT(*) FROM team_memberships WHERE team_id = teams.id AND left_at IS NULL)');
             });
         }
 
@@ -164,6 +159,9 @@ class TeamController extends Controller
         $this->authorize('create', Team::class);
 
         $team = Team::create($request->validated());
+
+        // Crear membresía automática del creador como admin
+        $team->addMember(auth()->user(), 'admin');
 
         return response()->json([
             'data' => new TeamResource($team->load(['organization', 'createdBy']))
