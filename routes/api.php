@@ -35,6 +35,15 @@ use App\Http\Controllers\Api\V1\SeoMetaDataController;
 use App\Http\Controllers\Api\V1\PageComponentController;
 use App\Http\Controllers\Api\V1\FaqController;
 use App\Http\Controllers\Api\V1\FaqTopicController;
+use App\Http\Controllers\Api\V1\ContactController;
+use App\Http\Controllers\Api\V1\SocialLinkController;
+use App\Http\Controllers\Api\V1\CollaboratorController;
+use App\Http\Controllers\Api\V1\MessageController;
+use App\Http\Controllers\Api\V1\NewsletterSubscriptionController;
+use App\Http\Controllers\Api\V1\FormSubmissionController;
+use App\Http\Controllers\Api\V1\OrganizationFeatureController;
+use App\Http\Controllers\Api\V1\TeamMembershipController;
+use App\Http\Controllers\Api\V1\TeamChallengeProgressController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -199,6 +208,46 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // Rutas para FAQ Topics
     Route::get('faq-topics/{faqTopic}/faqs', [FaqTopicController::class, 'faqs']);
     Route::apiResource('faq-topics', FaqTopicController::class);
+    
+    // Rutas para Contacts
+    Route::get('contacts/by-type/{type}', [ContactController::class, 'byType']);
+    Route::apiResource('contacts', ContactController::class);
+    
+    // Rutas para Social Links
+    Route::get('social-links/by-platform/{platform}', [SocialLinkController::class, 'byPlatform']);
+    Route::get('social-links/popular', [SocialLinkController::class, 'popular']);
+    Route::apiResource('social-links', SocialLinkController::class);
+    
+    // Rutas para Collaborators
+    Route::get('collaborators/featured', [CollaboratorController::class, 'featured']);
+    Route::get('collaborators/by-department/{department}', [CollaboratorController::class, 'byDepartment']);
+    Route::apiResource('collaborators', CollaboratorController::class);
+    
+    // Rutas para Messages
+    Route::get('messages/unread', [MessageController::class, 'unread']);
+    Route::post('messages/{message}/mark-as-read', [MessageController::class, 'markAsRead']);
+    Route::apiResource('messages', MessageController::class)->except(['update']);
+    
+    // Rutas para Newsletter Subscriptions
+    Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
+    Route::post('newsletter/resubscribe', [NewsletterSubscriptionController::class, 'resubscribe']);
+    Route::get('newsletter/stats', [NewsletterSubscriptionController::class, 'stats']);
+    Route::apiResource('newsletter-subscriptions', NewsletterSubscriptionController::class);
+    
+    // Rutas para Form Submissions
+    Route::apiResource('form-submissions', FormSubmissionController::class);
+    
+    // Rutas para Organization Features
+    Route::apiResource('organization-features', OrganizationFeatureController::class);
+    
+    // Rutas para Team Memberships
+    Route::post('team-memberships/leave', [TeamMembershipController::class, 'leave']);
+    Route::apiResource('team-memberships', TeamMembershipController::class);
+    
+    // Rutas para Team Challenge Progress
+    Route::get('team-challenge-progress/leaderboard/{challengeId}', [TeamChallengeProgressController::class, 'leaderboard']);
+    Route::post('team-challenge-progress/{teamChallengeProgress}/update-progress', [TeamChallengeProgressController::class, 'updateProgress']);
+    Route::apiResource('team-challenge-progress', TeamChallengeProgressController::class);
 });
 
 // Rutas públicas
@@ -286,6 +335,31 @@ Route::prefix('v1')->group(function () {
     Route::get('faq-topics', [FaqTopicController::class, 'index']);
     Route::get('faq-topics/{faqTopic}', [FaqTopicController::class, 'show']);
     Route::get('faq-topics/{faqTopic}/faqs', [FaqTopicController::class, 'faqs']);
+    
+    // Rutas públicas para Contacts (solo lectura)
+    Route::get('contacts', [ContactController::class, 'index']);
+    Route::get('contacts/by-type/{type}', [ContactController::class, 'byType']);
+    Route::get('contacts/{contact}', [ContactController::class, 'show']);
+    
+    // Rutas públicas para Social Links (solo lectura)
+    Route::get('social-links', [SocialLinkController::class, 'index']);
+    Route::get('social-links/by-platform/{platform}', [SocialLinkController::class, 'byPlatform']);
+    Route::get('social-links/popular', [SocialLinkController::class, 'popular']);
+    Route::get('social-links/{socialLink}', [SocialLinkController::class, 'show']);
+    
+    // Rutas públicas para Collaborators (solo lectura)
+    Route::get('collaborators', [CollaboratorController::class, 'index']);
+    Route::get('collaborators/featured', [CollaboratorController::class, 'featured']);
+    Route::get('collaborators/by-department/{department}', [CollaboratorController::class, 'byDepartment']);
+    Route::get('collaborators/{collaborator}', [CollaboratorController::class, 'show']);
+    
+    // Rutas públicas para Newsletter (suscripción pública)
+    Route::post('newsletter-subscriptions', [NewsletterSubscriptionController::class, 'store']);
+    Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
+    Route::post('newsletter/resubscribe', [NewsletterSubscriptionController::class, 'resubscribe']);
+    
+    // Rutas públicas para Form Submissions (envío público)
+    Route::post('form-submissions', [FormSubmissionController::class, 'store']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
