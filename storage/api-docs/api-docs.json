@@ -20,6 +20,406 @@
         }
     ],
     "paths": {
+        "/api/v1/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Listar todas las categorías",
+                "operationId": "e225c2b7eb5daf7fb16e00f4f07ff030",
+                "responses": {
+                    "200": {
+                        "description": "Lista de categorías"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Crear nueva categoría",
+                "operationId": "dd76b8d73b7ea8b4951f03d7c0904c92",
+                "responses": {
+                    "201": {
+                        "description": "Categoría creada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/categories/{id}": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Obtener categoría específica",
+                "operationId": "9c4934d1b68a6d4440ec72cfc8ae7074",
+                "responses": {
+                    "200": {
+                        "description": "Categoría obtenida"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Actualizar categoría",
+                "operationId": "988e8695bc991d7f8e40131db5ba7a76",
+                "responses": {
+                    "200": {
+                        "description": "Categoría actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Eliminar categoría",
+                "operationId": "37196d259228d2274dd9dbef8b00e547",
+                "responses": {
+                    "200": {
+                        "description": "Categoría eliminada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/categories/tree": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Obtener árbol de categorías",
+                "operationId": "1b5f302411c47daf1c45008b95eee88d",
+                "responses": {
+                    "200": {
+                        "description": "Árbol de categorías"
+                    }
+                }
+            }
+        },
+        "/api/v1/consent-logs": {
+            "get": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Listar consentimientos del usuario",
+                "description": "Obtiene el historial de consentimientos del usuario autenticado",
+                "operationId": "cb15b4ce67b48077953b9723d8a4c656",
+                "parameters": [
+                    {
+                        "name": "consent_type",
+                        "in": "query",
+                        "description": "Filtrar por tipo de consentimiento",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "privacy_policy",
+                                "terms_of_service",
+                                "marketing",
+                                "cookies",
+                                "data_processing",
+                                "newsletter",
+                                "analytics"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "active_only",
+                        "in": "query",
+                        "description": "Solo consentimientos activos",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de consentimientos obtenida exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Registrar nuevo consentimiento",
+                "description": "Registra un nuevo consentimiento del usuario",
+                "operationId": "1dd9f6d301aaded2645fa82de60b5d54",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "consent_type",
+                                    "consent_given"
+                                ],
+                                "properties": {
+                                    "consent_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "privacy_policy",
+                                            "terms_of_service",
+                                            "marketing",
+                                            "cookies",
+                                            "data_processing",
+                                            "newsletter",
+                                            "analytics"
+                                        ],
+                                        "example": "privacy_policy"
+                                    },
+                                    "consent_given": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "1.0"
+                                    },
+                                    "purpose": {
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "Procesamiento de datos personales"
+                                    },
+                                    "legal_basis": {
+                                        "type": "string",
+                                        "maxLength": 200,
+                                        "example": "Artículo 6.1.a GDPR"
+                                    },
+                                    "data_categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "personal_data",
+                                            "contact_info"
+                                        ]
+                                    },
+                                    "retention_period": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "5 años"
+                                    },
+                                    "third_parties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "Google Analytics",
+                                            "Mailchimp"
+                                        ]
+                                    },
+                                    "withdrawal_method": {
+                                        "type": "string",
+                                        "maxLength": 200,
+                                        "example": "Contactar a privacy@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Consentimiento registrado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/consent-logs/{id}": {
+            "get": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Obtener consentimiento específico",
+                "description": "Obtiene los detalles de un consentimiento específico",
+                "operationId": "250ab535ffcae53795d2c5bc7d34227f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del consentimiento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Consentimiento obtenido exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/consent-logs/{id}/revoke": {
+            "post": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Revocar consentimiento",
+                "description": "Revoca un consentimiento previamente otorgado",
+                "operationId": "3cea413a419a0c5ec55b694079130e61",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del consentimiento",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "El usuario retiró el consentimiento"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Consentimiento revocado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/consent-logs/current-status": {
+            "get": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Obtener estado actual de consentimientos",
+                "description": "Obtiene el estado actual de todos los tipos de consentimiento del usuario",
+                "operationId": "944c188bb98a11fb4ddeefd5f4ad96e6",
+                "responses": {
+                    "200": {
+                        "description": "Estado actual de consentimientos obtenido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/consent-logs/history/{type}": {
+            "get": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Obtener historial de un tipo de consentimiento",
+                "description": "Obtiene todo el historial de cambios de un tipo específico de consentimiento",
+                "operationId": "f4bcd60845af49ea2ee77beb2001400d",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Tipo de consentimiento",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "privacy_policy",
+                                "terms_of_service",
+                                "marketing",
+                                "cookies",
+                                "data_processing",
+                                "newsletter",
+                                "analytics"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Historial de consentimiento obtenido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/consent-logs/gdpr-report": {
+            "get": {
+                "tags": [
+                    "Consent Logs"
+                ],
+                "summary": "Generar reporte GDPR",
+                "description": "Genera un reporte completo de todos los consentimientos para cumplimiento GDPR",
+                "operationId": "e5f26e6dccdcfc1db79ab41f073baedc",
+                "responses": {
+                    "200": {
+                        "description": "Reporte GDPR generado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/form-submissions": {
             "get": {
                 "tags": [
@@ -354,6 +754,128 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/v1/images": {
+            "get": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Listar todas las imágenes",
+                "description": "Obtiene una lista paginada de todas las imágenes públicas",
+                "operationId": "de7f60c5e831b9d6b083e3646cdddbde",
+                "responses": {
+                    "200": {
+                        "description": "Lista de imágenes obtenida exitosamente"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Crear nueva imagen",
+                "operationId": "19f812ba5ad13d80771fe48244f7dce5",
+                "responses": {
+                    "201": {
+                        "description": "Imagen creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/images/{id}": {
+            "get": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Obtener imagen específica",
+                "operationId": "32286eda1e8480a0e1d6999b6e98acce",
+                "responses": {
+                    "200": {
+                        "description": "Imagen obtenida exitosamente"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Actualizar imagen",
+                "operationId": "97c6e6267680a056f4aad06d3f932687",
+                "responses": {
+                    "200": {
+                        "description": "Imagen actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Eliminar imagen",
+                "operationId": "0105335382dd2f59589cba052a745414",
+                "responses": {
+                    "200": {
+                        "description": "Imagen eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/images/{id}/download": {
+            "post": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Descargar imagen",
+                "operationId": "ad3172fe2249f3e556107d6c1574f696",
+                "responses": {
+                    "200": {
+                        "description": "Archivo de imagen"
+                    }
+                }
+            }
+        },
+        "/api/v1/images/featured": {
+            "get": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Obtener imágenes destacadas",
+                "operationId": "c28e6a58fe7ebbd8aaf7c30084de19d8",
+                "responses": {
+                    "200": {
+                        "description": "Imágenes destacadas obtenidas exitosamente"
+                    }
+                }
+            }
+        },
+        "/api/v1/images/stats": {
+            "get": {
+                "tags": [
+                    "Images"
+                ],
+                "summary": "Obtener estadísticas de imágenes",
+                "operationId": "aa7765f60c81a4b3403370293f5233d3",
+                "responses": {
+                    "200": {
+                        "description": "Estadísticas obtenidas exitosamente"
+                    }
+                }
             }
         },
         "/api/v1/organization-features": {
@@ -1488,10 +2010,901 @@
                     }
                 ]
             }
+        },
+        "/api/v1/user-devices": {
+            "get": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Listar dispositivos del usuario autenticado",
+                "description": "Obtiene todos los dispositivos registrados del usuario actual",
+                "operationId": "f1d3987fa81eff8fca261def6ea07040",
+                "parameters": [
+                    {
+                        "name": "active_only",
+                        "in": "query",
+                        "description": "Solo dispositivos activos",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de dispositivos obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UserDeviceResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Registrar nuevo dispositivo",
+                "description": "Registra un nuevo dispositivo para el usuario autenticado",
+                "operationId": "20e126f615befd8dbbd56ef6f1f9f856",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "device_name",
+                                    "device_type",
+                                    "platform"
+                                ],
+                                "properties": {
+                                    "device_name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "iPhone 15 Pro"
+                                    },
+                                    "device_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "mobile",
+                                            "tablet",
+                                            "desktop",
+                                            "tv",
+                                            "watch",
+                                            "other"
+                                        ],
+                                        "example": "mobile"
+                                    },
+                                    "platform": {
+                                        "type": "string",
+                                        "enum": [
+                                            "ios",
+                                            "android",
+                                            "windows",
+                                            "macos",
+                                            "linux",
+                                            "web",
+                                            "other"
+                                        ],
+                                        "example": "ios"
+                                    },
+                                    "browser": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Safari"
+                                    },
+                                    "browser_version": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "17.2"
+                                    },
+                                    "os_version": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "iOS 17.2.1"
+                                    },
+                                    "push_token": {
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "abc123..."
+                                    },
+                                    "is_current": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Dispositivo registrado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserDeviceResource"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dispositivo registrado exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-devices/{id}": {
+            "get": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Obtener dispositivo específico",
+                "description": "Obtiene los detalles de un dispositivo específico del usuario",
+                "operationId": "5f77314a6135e0e90eab2904596ebcb1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del dispositivo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dispositivo obtenido exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserDeviceResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Actualizar dispositivo",
+                "description": "Actualiza los datos de un dispositivo existente",
+                "operationId": "21545d9e603c58a33985245833ea633f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del dispositivo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "device_name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "iPhone 15 Pro Max"
+                                    },
+                                    "push_token": {
+                                        "type": "string",
+                                        "maxLength": 500,
+                                        "example": "xyz789..."
+                                    },
+                                    "is_current": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Dispositivo actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Revocar dispositivo",
+                "description": "Revoca un dispositivo (soft delete)",
+                "operationId": "38d96a5836906a668b1e3b32dd92b751",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del dispositivo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dispositivo revocado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-devices/{id}/set-current": {
+            "post": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Establecer dispositivo como actual",
+                "description": "Marca un dispositivo como el dispositivo actual del usuario",
+                "operationId": "4f76b397fe2a19b3aaf9cdc73e4a65af",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del dispositivo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dispositivo establecido como actual"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-devices/{id}/update-activity": {
+            "post": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Actualizar actividad del dispositivo",
+                "description": "Actualiza la última actividad del dispositivo",
+                "operationId": "b8230336f27f8102acf6f5857b16af86",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del dispositivo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Actividad actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-devices/current": {
+            "get": {
+                "tags": [
+                    "User Devices"
+                ],
+                "summary": "Obtener dispositivo actual",
+                "description": "Obtiene el dispositivo marcado como actual del usuario",
+                "operationId": "12a8b9625517ef30aa7ae95136e682df",
+                "responses": {
+                    "200": {
+                        "description": "Dispositivo actual obtenido"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-settings": {
+            "get": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Obtener configuraciones del usuario",
+                "description": "Obtiene todas las configuraciones del usuario autenticado",
+                "operationId": "7026e3938cded3d3bba9a2c0ae3479a8",
+                "responses": {
+                    "200": {
+                        "description": "Configuraciones obtenidas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserSettingsResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Actualizar configuraciones del usuario",
+                "description": "Actualiza las configuraciones del usuario autenticado",
+                "operationId": "400dd9f036d2f30447c182aa7254775a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "language": {
+                                        "type": "string",
+                                        "enum": [
+                                            "es",
+                                            "en",
+                                            "ca",
+                                            "eu",
+                                            "gl"
+                                        ],
+                                        "example": "es"
+                                    },
+                                    "timezone": {
+                                        "type": "string",
+                                        "example": "Europe/Madrid"
+                                    },
+                                    "theme": {
+                                        "type": "string",
+                                        "enum": [
+                                            "light",
+                                            "dark",
+                                            "auto"
+                                        ],
+                                        "example": "light"
+                                    },
+                                    "notifications_enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "email_notifications": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "push_notifications": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "sms_notifications": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "marketing_emails": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "newsletter_subscription": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "privacy_level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "friends",
+                                            "private"
+                                        ],
+                                        "example": "public"
+                                    },
+                                    "profile_visibility": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "registered",
+                                            "private"
+                                        ],
+                                        "example": "public"
+                                    },
+                                    "show_achievements": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "show_statistics": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "show_activity": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "date_format": {
+                                        "type": "string",
+                                        "example": "d/m/Y"
+                                    },
+                                    "time_format": {
+                                        "type": "string",
+                                        "enum": [
+                                            "12",
+                                            "24"
+                                        ],
+                                        "example": "24"
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "EUR"
+                                    },
+                                    "measurement_unit": {
+                                        "type": "string",
+                                        "enum": [
+                                            "metric",
+                                            "imperial"
+                                        ],
+                                        "example": "metric"
+                                    },
+                                    "energy_unit": {
+                                        "type": "string",
+                                        "enum": [
+                                            "kWh",
+                                            "MWh",
+                                            "GWh"
+                                        ],
+                                        "example": "kWh"
+                                    },
+                                    "custom_settings": {
+                                        "type": "object",
+                                        "example": {
+                                            "dashboard_layout": "grid",
+                                            "chart_type": "line"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Configuraciones actualizadas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserSettingsResource"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Configuraciones actualizadas exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-settings/notifications": {
+            "get": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Obtener configuración de notificaciones",
+                "description": "Obtiene solo las configuraciones de notificaciones del usuario",
+                "operationId": "570df9452259bce86665266079bd1552",
+                "responses": {
+                    "200": {
+                        "description": "Configuración de notificaciones obtenida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Actualizar configuración de notificaciones",
+                "description": "Actualiza solo las configuraciones de notificaciones",
+                "operationId": "448d93d8382ba008af0270ec494c6ecb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "notifications_enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "email_notifications": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "push_notifications": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "sms_notifications": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "marketing_emails": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "newsletter_subscription": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Configuración de notificaciones actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-settings/privacy": {
+            "get": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Obtener configuración de privacidad",
+                "description": "Obtiene solo las configuraciones de privacidad del usuario",
+                "operationId": "443fa641c889f89d2238386fcd659cdc",
+                "responses": {
+                    "200": {
+                        "description": "Configuración de privacidad obtenida"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Actualizar configuración de privacidad",
+                "description": "Actualiza solo las configuraciones de privacidad",
+                "operationId": "670b8628ebd4bdef13f3f6ad5593520b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "privacy_level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "friends",
+                                            "private"
+                                        ],
+                                        "example": "public"
+                                    },
+                                    "profile_visibility": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "registered",
+                                            "private"
+                                        ],
+                                        "example": "public"
+                                    },
+                                    "show_achievements": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "show_statistics": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "show_activity": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Configuración de privacidad actualizada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/user-settings/reset": {
+            "post": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Restablecer configuraciones por defecto",
+                "description": "Restablece todas las configuraciones a sus valores por defecto",
+                "operationId": "b2746a4cd48ae229a729084b5a920020",
+                "responses": {
+                    "200": {
+                        "description": "Configuraciones restablecidas exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "CategoryResource": {
+                "title": "Category Resource",
+                "description": "Recurso de categoría del sistema CMS",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Tecnología"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "tecnologia"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Artículos sobre tecnología"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "article"
+                    },
+                    "color": {
+                        "type": "string",
+                        "example": "#3B82F6"
+                    },
+                    "icon": {
+                        "type": "string",
+                        "example": "heroicon-o-computer-desktop"
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "content_count": {
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "parent": {
+                        "$ref": "#/components/schemas/CategoryResource"
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryResource"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ConsentLogResource": {
+                "title": "Consent Log Resource",
+                "description": "Recurso de registro de consentimiento",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "consent_type": {
+                        "type": "string",
+                        "example": "privacy_policy"
+                    },
+                    "consent_given": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "version": {
+                        "type": "string",
+                        "example": "1.0"
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "example": "Procesamiento de datos personales"
+                    },
+                    "legal_basis": {
+                        "type": "string",
+                        "example": "Artículo 6.1.a GDPR"
+                    },
+                    "data_categories": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "personal_data",
+                            "contact_info"
+                        ]
+                    },
+                    "retention_period": {
+                        "type": "string",
+                        "example": "5 años"
+                    },
+                    "third_parties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "Google Analytics"
+                        ]
+                    },
+                    "withdrawal_method": {
+                        "type": "string",
+                        "example": "Contactar a privacy@example.com"
+                    },
+                    "ip_address": {
+                        "type": "string",
+                        "example": "192.168.1.100"
+                    },
+                    "user_agent": {
+                        "type": "string",
+                        "example": "Mozilla/5.0..."
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "revoked_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "revocation_reason": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
             "FormSubmissionResource": {
                 "title": "Form Submission Resource",
                 "description": "Resource de envío de formulario",
@@ -1553,6 +2966,135 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "ImageResource": {
+                "title": "Image Resource",
+                "description": "Recurso de imagen del sistema CMS",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Paisaje montañoso"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "paisaje-montanoso"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Hermoso paisaje de montañas al atardecer"
+                    },
+                    "alt_text": {
+                        "type": "string",
+                        "example": "Montañas con cielo naranja al atardecer"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://example.com/storage/images/paisaje.jpg"
+                    },
+                    "thumbnail_url": {
+                        "type": "string",
+                        "example": "https://example.com/storage/images/paisaje-thumb.jpg"
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "example": "image/jpeg"
+                    },
+                    "file_size": {
+                        "type": "integer",
+                        "example": 524288
+                    },
+                    "formatted_file_size": {
+                        "type": "string",
+                        "example": "512.00 KB"
+                    },
+                    "dimensions": {
+                        "type": "string",
+                        "example": "1920 × 1080 px"
+                    },
+                    "width": {
+                        "type": "integer",
+                        "example": 1920
+                    },
+                    "height": {
+                        "type": "integer",
+                        "example": 1080
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "naturaleza",
+                            "montañas",
+                            "atardecer"
+                        ]
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "is_public": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "view_count": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "download_count": {
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryResource"
+                    },
+                    "uploaded_by": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Juan Pérez"
+                            },
+                            "email": {
+                                "type": "string",
+                                "example": "juan@example.com"
+                            }
+                        },
+                        "type": "object"
                     }
                 },
                 "type": "object"
@@ -1704,6 +3246,186 @@
                     }
                 },
                 "type": "object"
+            },
+            "UserDeviceResource": {
+                "title": "User Device Resource",
+                "description": "Recurso de dispositivo de usuario",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "device_name": {
+                        "type": "string",
+                        "example": "iPhone 15 Pro"
+                    },
+                    "device_type": {
+                        "type": "string",
+                        "example": "mobile"
+                    },
+                    "platform": {
+                        "type": "string",
+                        "example": "ios"
+                    },
+                    "browser": {
+                        "type": "string",
+                        "example": "Safari"
+                    },
+                    "browser_version": {
+                        "type": "string",
+                        "example": "17.2"
+                    },
+                    "os_version": {
+                        "type": "string",
+                        "example": "iOS 17.2.1"
+                    },
+                    "is_current": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_push_token": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "device_info": {
+                        "type": "string",
+                        "example": "iPhone 15 Pro (iOS 17.2.1)"
+                    },
+                    "is_recently_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "ip_address": {
+                        "type": "string",
+                        "example": "192.168.1.100"
+                    },
+                    "user_agent": {
+                        "type": "string",
+                        "example": "Mozilla/5.0..."
+                    },
+                    "last_seen_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "revoked_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "UserSettingsResource": {
+                "title": "User Settings Resource",
+                "description": "Recurso de configuraciones de usuario",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "timezone": {
+                        "type": "string",
+                        "example": "Europe/Madrid"
+                    },
+                    "theme": {
+                        "type": "string",
+                        "example": "light"
+                    },
+                    "notifications_enabled": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "email_notifications": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "push_notifications": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "sms_notifications": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "marketing_emails": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "newsletter_subscription": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "privacy_level": {
+                        "type": "string",
+                        "example": "public"
+                    },
+                    "profile_visibility": {
+                        "type": "string",
+                        "example": "public"
+                    },
+                    "show_achievements": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "show_statistics": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "show_activity": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "date_format": {
+                        "type": "string",
+                        "example": "d/m/Y"
+                    },
+                    "time_format": {
+                        "type": "string",
+                        "example": "24"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "EUR"
+                    },
+                    "measurement_unit": {
+                        "type": "string",
+                        "example": "metric"
+                    },
+                    "energy_unit": {
+                        "type": "string",
+                        "example": "kWh"
+                    },
+                    "custom_settings": {
+                        "type": "object",
+                        "example": {
+                            "dashboard_layout": "grid"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -1717,8 +3439,20 @@
     },
     "tags": [
         {
+            "name": "Categories",
+            "description": "Gestión de categorías del sistema CMS"
+        },
+        {
+            "name": "Consent Logs",
+            "description": "Gestión de registros de consentimiento (GDPR)"
+        },
+        {
             "name": "Form Submissions",
             "description": "Gestión de envíos de formularios"
+        },
+        {
+            "name": "Images",
+            "description": "Gestión de imágenes del sistema CMS"
         },
         {
             "name": "Organization Features",
@@ -1731,6 +3465,14 @@
         {
             "name": "Team Memberships",
             "description": "Gestión de membresías de equipos"
+        },
+        {
+            "name": "User Devices",
+            "description": "Gestión de dispositivos de usuario"
+        },
+        {
+            "name": "User Settings",
+            "description": "Gestión de configuraciones de usuario"
         }
     ]
 }
