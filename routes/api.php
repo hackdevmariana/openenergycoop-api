@@ -11,7 +11,9 @@ use App\Http\Controllers\Api\V1\SubscriptionRequestController;
 use App\Http\Controllers\Api\V1\OrganizationRoleController;
 use App\Http\Controllers\Api\V1\UserOrganizationRoleController;
 use App\Http\Controllers\Api\V1\AchievementController;
+use App\Http\Controllers\Api\V1\ChallengeController;
 use App\Http\Controllers\Api\V1\InvitationTokenController;
+use App\Http\Controllers\Api\V1\TeamController;
 use App\Http\Controllers\Api\V1\UserProfileController;
 use App\Http\Controllers\Api\V1\UserAchievementController;
 
@@ -57,6 +59,21 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('user-achievements/leaderboard', [UserAchievementController::class, 'leaderboard']);
     Route::post('user-achievements/{userAchievement}/grant-reward', [UserAchievementController::class, 'grantReward']);
     Route::apiResource('user-achievements', UserAchievementController::class)->only(['index', 'show']);
+    
+    // Rutas para Teams
+    Route::get('teams/recommendations', [TeamController::class, 'recommendations']);
+    Route::get('teams/my-teams', [TeamController::class, 'myTeams']);
+    Route::post('teams/{team}/join', [TeamController::class, 'join']);
+    Route::post('teams/{team}/leave', [TeamController::class, 'leave']);
+    Route::get('teams/{team}/members', [TeamController::class, 'members']);
+    Route::apiResource('teams', TeamController::class);
+    
+    // Rutas para Challenges
+    Route::get('challenges/current', [ChallengeController::class, 'current']);
+    Route::get('challenges/statistics', [ChallengeController::class, 'statistics']);
+    Route::get('challenges/{challenge}/leaderboard', [ChallengeController::class, 'leaderboard']);
+    Route::get('challenges/recommendations/{team}', [ChallengeController::class, 'recommendations']);
+    Route::apiResource('challenges', ChallengeController::class)->only(['index', 'show']);
 });
 
 // Rutas públicas para validación de tokens de invitación
