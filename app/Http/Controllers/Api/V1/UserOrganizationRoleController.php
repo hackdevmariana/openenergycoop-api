@@ -239,7 +239,7 @@ class UserOrganizationRoleController extends Controller
      *         description="No autenticado"
      *     ),
      *     @OA\Response(
-     *         response=403",
+     *         response=403,
      *         description="No autorizado"
      *     ),
      *     @OA\Response(
@@ -291,7 +291,7 @@ class UserOrganizationRoleController extends Controller
      *         description="No autenticado"
      *     ),
      *     @OA\Response(
-     *         response=403",
+     *         response=403,
      *         description="No autorizado"
      *     ),
      *     @OA\Response(
