@@ -61,20 +61,22 @@ class CustomerProfileContactInfoController extends Controller
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
-     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/CustomerProfileContactInfo")),
-     *             @OA\Property(property="links", ref="#/components/schemas/PaginationLinks"),
-     *             @OA\Property(property="meta", ref="#/components/schemas/PaginationMeta")
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated",
-     *         @OA\JsonContent(ref="#/components/schemas/UnauthenticatedError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden",
-     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Forbidden")
+     *         )
      *     )
      * )
      */
@@ -161,28 +163,37 @@ class CustomerProfileContactInfoController extends Controller
      *         description="Contact info created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Customer profile contact info created successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/CustomerProfileContactInfo")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Bad request",
-     *         @OA\JsonContent(ref="#/components/schemas/ValidationError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated",
-     *         @OA\JsonContent(ref="#/components/schemas/UnauthenticatedError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden",
-     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Forbidden")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
      *         description="Customer profile not found",
-     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Not found")
+     *         )
      *     )
      * )
      */
@@ -272,23 +283,29 @@ class CustomerProfileContactInfoController extends Controller
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
-     *             @OA\Property(property="data", ref="#/components/schemas/CustomerProfileContactInfo")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated",
-     *         @OA\JsonContent(ref="#/components/schemas/UnauthenticatedError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden",
-     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Forbidden")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
      *         description="Contact info not found",
-     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Not found")
+     *         )
      *     )
      * )
      */
@@ -354,28 +371,37 @@ class CustomerProfileContactInfoController extends Controller
      *         description="Contact info updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Customer profile contact info updated successfully"),
-     *             @OA\Property(property="data", ref="#/components/schemas/CustomerProfileContactInfo")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
      *         description="Bad request",
-     *         @OA\JsonContent(ref="#/components/schemas/ValidationError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated",
-     *         @OA\JsonContent(ref="#/components/schemas/UnauthenticatedError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden",
-     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Forbidden")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
      *         description="Contact info not found",
-     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Not found")
+     *         )
      *     )
      * )
      */
@@ -460,17 +486,23 @@ class CustomerProfileContactInfoController extends Controller
      *     @OA\Response(
      *         response=401,
      *         description="Unauthenticated",
-     *         @OA\JsonContent(ref="#/components/schemas/UnauthenticatedError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=403,
      *         description="Forbidden",
-     *         @OA\JsonContent(ref="#/components/schemas/ForbiddenError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Forbidden")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=404,
      *         description="Contact info not found",
-     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Not found")
+     *         )
      *     )
      * )
      */

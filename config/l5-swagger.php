@@ -44,7 +44,15 @@ return [
                  * Absolute paths to directory containing the swagger annotations are stored.
                  */
                 'annotations' => [
-                    base_path('app'),
+                    base_path('app/Http/Controllers/Api/V1/FormSubmissionController.php'),
+                    base_path('app/Http/Controllers/Api/V1/OrganizationFeatureController.php'),
+                    base_path('app/Http/Controllers/Api/V1/TeamChallengeProgressController.php'),
+                    base_path('app/Http/Controllers/Api/V1/TeamMembershipController.php'),
+                    base_path('app/Http/Resources/Api/V1/FormSubmissionResource.php'),
+                    base_path('app/Http/Resources/Api/V1/OrganizationFeatureResource.php'),
+                    base_path('app/Http/Resources/Api/V1/TeamChallengeProgressResource.php'),
+                    base_path('app/Http/Resources/Api/V1/TeamMembershipResource.php'),
+                    base_path('app/OpenApi'),
                 ],
             ],
         ],
