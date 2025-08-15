@@ -17,7 +17,17 @@ class AppSettingResource extends Resource
 {
     protected static ?string $model = AppSetting::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    
+    protected static ?string $navigationGroup = 'Configuración del Sistema';
+    
+    protected static ?string $navigationLabel = 'Configuraciones';
+    
+    protected static ?string $modelLabel = 'Configuración';
+    
+    protected static ?string $pluralModelLabel = 'Configuraciones';
+    
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
