@@ -328,7 +328,7 @@ class TeamController extends Controller
                     type: 'object',
                     properties: [
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', ref: '#/components/schemas/TeamMembership')
+                        new OA\Property(property: 'data', ref: '#/components/schemas/TeamMembershipResource')
                     ]
                 )
             ),
@@ -430,7 +430,7 @@ class TeamController extends Controller
                 content: new OA\JsonContent(
                     type: 'object',
                     properties: [
-                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/TeamMembership'))
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/TeamMembershipResource'))
                     ]
                 )
             ),
