@@ -21,6 +21,8 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\UserDeviceController;
 use App\Http\Controllers\Api\V1\UserSettingsController;
 use App\Http\Controllers\Api\V1\ConsentLogController;
+use App\Http\Controllers\Api\V1\ArticleController;
+use App\Http\Controllers\Api\V1\PageController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -112,6 +114,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('consent-logs/gdpr-report', [ConsentLogController::class, 'gdprReport']);
     Route::post('consent-logs/{consentLog}/revoke', [ConsentLogController::class, 'revoke']);
     Route::apiResource('consent-logs', ConsentLogController::class)->except(['update', 'destroy']);
+    
+    // Rutas para Articles (CMS)
+    Route::get('articles/featured', [ArticleController::class, 'featured']);
+    Route::get('articles/recent', [ArticleController::class, 'recent']);
+    Route::get('articles/popular', [ArticleController::class, 'popular']);
+    Route::apiResource('articles', ArticleController::class);
+    
+    // Rutas para Pages (CMS)
+    Route::get('pages/hierarchy', [PageController::class, 'hierarchy']);
+    Route::get('pages/search', [PageController::class, 'search']);
+    Route::get('pages/by-route/{route}', [PageController::class, 'byRoute'])->where('route', '.*');
+    Route::apiResource('pages', PageController::class);
 });
 
 // Rutas públicas
@@ -131,6 +145,20 @@ Route::prefix('v1')->group(function () {
     Route::get('categories/tree', [CategoryController::class, 'tree']);
     Route::get('categories/{category}', [CategoryController::class, 'show']);
     Route::get('categories/{category}/content', [CategoryController::class, 'content']);
+    
+    // Rutas públicas para Articles (solo lectura)
+    Route::get('articles', [ArticleController::class, 'index']);
+    Route::get('articles/featured', [ArticleController::class, 'featured']);
+    Route::get('articles/recent', [ArticleController::class, 'recent']);
+    Route::get('articles/popular', [ArticleController::class, 'popular']);
+    Route::get('articles/{article}', [ArticleController::class, 'show']);
+    
+    // Rutas públicas para Pages (solo lectura)
+    Route::get('pages', [PageController::class, 'index']);
+    Route::get('pages/hierarchy', [PageController::class, 'hierarchy']);
+    Route::get('pages/search', [PageController::class, 'search']);
+    Route::get('pages/by-route/{route}', [PageController::class, 'byRoute'])->where('route', '.*');
+    Route::get('pages/{page}', [PageController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
