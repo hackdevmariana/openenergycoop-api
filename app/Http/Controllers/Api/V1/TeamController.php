@@ -136,7 +136,16 @@ class TeamController extends Controller
         tags: ['Teams'],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: '#/components/schemas/StoreTeamRequest')
+            content: new OA\JsonContent(
+                required: ['name'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', maxLength: 255, example: 'Equipo Solar Madrid'),
+                    new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Equipo dedicado a la energía solar'),
+                    new OA\Property(property: 'organization_id', type: 'integer', nullable: true, example: 1),
+                    new OA\Property(property: 'max_members', type: 'integer', nullable: true, minimum: 1, example: 10),
+                    new OA\Property(property: 'is_public', type: 'boolean', example: true)
+                ]
+            )
         ),
         responses: [
             new OA\Response(
@@ -227,7 +236,14 @@ class TeamController extends Controller
         ],
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: '#/components/schemas/UpdateTeamRequest')
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', maxLength: 255, example: 'Equipo Solar Madrid Actualizado'),
+                    new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Descripción actualizada del equipo'),
+                    new OA\Property(property: 'max_members', type: 'integer', nullable: true, minimum: 1, example: 15),
+                    new OA\Property(property: 'is_public', type: 'boolean', example: false)
+                ]
+            )
         ),
         responses: [
             new OA\Response(
