@@ -84,6 +84,18 @@ class Category extends Model implements Cacheable, Multilingual
             ->where('is_draft', false);
     }
 
+    public function images(): HasMany
+    {
+        return $this->hasMany(Image::class);
+    }
+
+    public function activeImages(): HasMany
+    {
+        return $this->images()
+            ->where('status', 'active')
+            ->where('is_public', true);
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);

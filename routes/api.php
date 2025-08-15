@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\V1\InvitationTokenController;
 use App\Http\Controllers\Api\V1\TeamController;
 use App\Http\Controllers\Api\V1\UserProfileController;
 use App\Http\Controllers\Api\V1\UserAchievementController;
+use App\Http\Controllers\Api\V1\ImageController;
+use App\Http\Controllers\Api\V1\CategoryController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -74,11 +76,36 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('challenges/{challenge}/leaderboard', [ChallengeController::class, 'leaderboard']);
     Route::get('challenges/recommendations/{team}', [ChallengeController::class, 'recommendations']);
     Route::apiResource('challenges', ChallengeController::class)->only(['index', 'show']);
+    
+    // Rutas para Images (CMS)
+    Route::get('images/featured', [ImageController::class, 'featured']);
+    Route::get('images/stats', [ImageController::class, 'stats']);
+    Route::post('images/{image}/download', [ImageController::class, 'download']);
+    Route::apiResource('images', ImageController::class);
+    
+    // Rutas para Categories (CMS)
+    Route::get('categories/tree', [CategoryController::class, 'tree']);
+    Route::get('categories/{category}/content', [CategoryController::class, 'content']);
+    Route::apiResource('categories', CategoryController::class);
 });
 
-// Rutas públicas para validación de tokens de invitación
+// Rutas públicas
 Route::prefix('v1')->group(function () {
+    // Validación de tokens de invitación
     Route::get('invitation-tokens/validate/{token}', [InvitationTokenController::class, 'validateToken']);
+    
+    // Rutas públicas para Images (solo lectura)
+    Route::get('images', [ImageController::class, 'index']);
+    Route::get('images/featured', [ImageController::class, 'featured']);
+    Route::get('images/stats', [ImageController::class, 'stats']);
+    Route::get('images/{image}', [ImageController::class, 'show']);
+    Route::post('images/{image}/download', [ImageController::class, 'download']);
+    
+    // Rutas públicas para Categories (solo lectura)
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::get('categories/tree', [CategoryController::class, 'tree']);
+    Route::get('categories/{category}', [CategoryController::class, 'show']);
+    Route::get('categories/{category}/content', [CategoryController::class, 'content']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
