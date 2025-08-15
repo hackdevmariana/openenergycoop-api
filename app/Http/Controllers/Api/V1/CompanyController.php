@@ -53,9 +53,7 @@ class CompanyController extends Controller
      *         response=200,
      *         description="Lista de empresas",
      *         @OA\JsonContent(
-     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Company")),
-     *             @OA\Property(property="links", ref="#/components/schemas/Links"),
-     *             @OA\Property(property="meta", ref="#/components/schemas/Meta")
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Company"))
      *         )
      *     ),
      *     @OA\Response(
