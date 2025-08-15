@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\HasOrganization;
 use App\Enums\CommonEnums;
+use App\Enums\AppEnums;
 
 class CustomerProfile extends Model
 {
@@ -26,6 +27,21 @@ class CustomerProfile extends Model
         'legal_id_type' => 'string',
         'contract_type' => 'string',
     ];
+
+    /**
+     * Tipos de perfil disponibles
+     */
+    public const PROFILE_TYPES = AppEnums::CUSTOMER_PROFILE_TYPES;
+
+    /**
+     * Tipos de identificación legal disponibles
+     */
+    public const LEGAL_ID_TYPES = AppEnums::LEGAL_ID_TYPES;
+
+    /**
+     * Tipos de contrato disponibles
+     */
+    public const CONTRACT_TYPES = AppEnums::CONTRACT_TYPES;
 
     // Relaciones
     public function user()
