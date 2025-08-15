@@ -8,9 +8,55 @@ use App\Models\TeamChallengeProgress;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use OpenApi\Attributes as OA;
 
+#[OA\Tag(
+    name: 'Team Challenge Progress',
+    description: 'Gestión del progreso de equipos en desafíos'
+)]
 class TeamChallengeProgressController extends Controller
 {
+    #[OA\Get(
+        path: '/api/v1/team-challenge-progress',
+        tags: ['Team Challenge Progress'],
+        summary: 'Listar progreso de equipos en desafíos',
+        description: 'Obtiene el progreso de todos los equipos en los desafíos',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'team_id',
+                in: 'query',
+                description: 'Filtrar por equipo',
+                required: false,
+                schema: new OA\Schema(type: 'integer')
+            ),
+            new OA\Parameter(
+                name: 'challenge_id',
+                in: 'query',
+                description: 'Filtrar por desafío',
+                required: false,
+                schema: new OA\Schema(type: 'integer')
+            ),
+            new OA\Parameter(
+                name: 'status',
+                in: 'query',
+                description: 'Filtrar por estado',
+                required: false,
+                schema: new OA\Schema(type: 'string', enum: ['in_progress', 'completed', 'failed'])
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Lista de progreso obtenida exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/TeamChallengeProgressResource'))
+                    ]
+                )
+            )
+        ]
+    )]
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = TeamChallengeProgress::query()
@@ -33,6 +79,38 @@ class TeamChallengeProgressController extends Controller
         return TeamChallengeProgressResource::collection($progress);
     }
 
+    #[OA\Post(
+        path: '/api/v1/team-challenge-progress',
+        tags: ['Team Challenge Progress'],
+        summary: 'Registrar progreso de equipo en desafío',
+        description: 'Registra o actualiza el progreso de un equipo en un desafío específico',
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['team_id', 'challenge_id'],
+                properties: [
+                    new OA\Property(property: 'team_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'challenge_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'current_value', type: 'number', format: 'float', nullable: true, example: 75.5),
+                    new OA\Property(property: 'notes', type: 'string', nullable: true, example: 'Progreso actualizado manualmente')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Progreso registrado exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/TeamChallengeProgressResource'),
+                        new OA\Property(property: 'message', type: 'string', example: 'Progreso registrado exitosamente')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Errores de validación')
+        ]
+    )]
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -51,6 +129,33 @@ class TeamChallengeProgressController extends Controller
         ], 201);
     }
 
+    #[OA\Get(
+        path: '/api/v1/team-challenge-progress/{team_challenge_progress}',
+        tags: ['Team Challenge Progress'],
+        summary: 'Ver progreso específico de equipo en desafío',
+        description: 'Obtiene el progreso detallado de un equipo en un desafío específico',
+        parameters: [
+            new OA\Parameter(
+                name: 'team_challenge_progress',
+                in: 'path',
+                description: 'ID del progreso del equipo',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Progreso obtenido exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/TeamChallengeProgressResource')
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Progreso no encontrado')
+        ]
+    )]
     public function show(TeamChallengeProgress $teamChallengeProgress): JsonResponse
     {
         $teamChallengeProgress->load(['team', 'challenge']);
@@ -60,6 +165,45 @@ class TeamChallengeProgressController extends Controller
         ]);
     }
 
+    #[OA\Put(
+        path: '/api/v1/team-challenge-progress/{team_challenge_progress}',
+        tags: ['Team Challenge Progress'],
+        summary: 'Actualizar progreso de equipo en desafío',
+        description: 'Actualiza el progreso de un equipo en un desafío específico',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'team_challenge_progress',
+                in: 'path',
+                description: 'ID del progreso del equipo',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'current_value', type: 'number', format: 'float', nullable: true, example: 85.0),
+                    new OA\Property(property: 'notes', type: 'string', nullable: true, example: 'Progreso actualizado por el líder del equipo'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['active', 'completed', 'failed', 'paused'], example: 'active')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Progreso actualizado exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/TeamChallengeProgressResource'),
+                        new OA\Property(property: 'message', type: 'string', example: 'Progreso actualizado exitosamente')
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Progreso no encontrado'),
+            new OA\Response(response: 422, description: 'Errores de validación')
+        ]
+    )]
     public function update(Request $request, TeamChallengeProgress $teamChallengeProgress): JsonResponse
     {
         $validated = $request->validate([
@@ -76,6 +220,34 @@ class TeamChallengeProgressController extends Controller
         ]);
     }
 
+    #[OA\Delete(
+        path: '/api/v1/team-challenge-progress/{team_challenge_progress}',
+        tags: ['Team Challenge Progress'],
+        summary: 'Eliminar progreso de equipo en desafío',
+        description: 'Elimina el registro de progreso de un equipo en un desafío',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'team_challenge_progress',
+                in: 'path',
+                description: 'ID del progreso del equipo',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Progreso eliminado exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Progreso eliminado exitosamente')
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Progreso no encontrado')
+        ]
+    )]
     public function destroy(TeamChallengeProgress $teamChallengeProgress): JsonResponse
     {
         $teamChallengeProgress->delete();
@@ -85,6 +257,41 @@ class TeamChallengeProgressController extends Controller
         ]);
     }
 
+    #[OA\Get(
+        path: '/api/v1/team-challenge-progress/leaderboard/{challengeId}',
+        tags: ['Team Challenge Progress'],
+        summary: 'Obtener tabla de posiciones del desafío',
+        description: 'Obtiene la tabla de posiciones de equipos para un desafío específico',
+        parameters: [
+            new OA\Parameter(
+                name: 'challengeId',
+                in: 'path',
+                description: 'ID del desafío',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            ),
+            new OA\Parameter(
+                name: 'limit',
+                in: 'query',
+                description: 'Número máximo de equipos a mostrar (máx. 50)',
+                required: false,
+                schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 50, default: 10)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Tabla de posiciones obtenida exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/TeamChallengeProgressResource')),
+                        new OA\Property(property: 'challenge_id', type: 'integer', example: 1),
+                        new OA\Property(property: 'total', type: 'integer', example: 5)
+                    ]
+                )
+            )
+        ]
+    )]
     public function leaderboard(Request $request, int $challengeId): JsonResponse
     {
         $query = TeamChallengeProgress::query()
@@ -103,6 +310,48 @@ class TeamChallengeProgressController extends Controller
         ]);
     }
 
+    #[OA\Post(
+        path: '/api/v1/team-challenge-progress/{teamChallengeProgress}/update-progress',
+        tags: ['Team Challenge Progress'],
+        summary: 'Actualizar progreso con incremento',
+        description: 'Actualiza el progreso de un equipo incrementando el valor actual',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'teamChallengeProgress',
+                in: 'path',
+                description: 'ID del progreso del equipo',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['increment'],
+                properties: [
+                    new OA\Property(property: 'increment', type: 'number', format: 'float', minimum: 0, example: 10.5),
+                    new OA\Property(property: 'notes', type: 'string', nullable: true, example: 'Progreso actualizado por actividad completada')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Progreso actualizado exitosamente',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', ref: '#/components/schemas/TeamChallengeProgressResource'),
+                        new OA\Property(property: 'message', type: 'string', example: 'Progreso actualizado exitosamente'),
+                        new OA\Property(property: 'previous_value', type: 'number', format: 'float', example: 75.0),
+                        new OA\Property(property: 'increment', type: 'number', format: 'float', example: 10.5)
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Progreso no encontrado'),
+            new OA\Response(response: 422, description: 'Errores de validación')
+        ]
+    )]
     public function updateProgress(Request $request, TeamChallengeProgress $teamChallengeProgress): JsonResponse
     {
         $request->validate([
