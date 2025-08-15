@@ -130,7 +130,6 @@ class TeamResource extends Resource
                     ->label('Organización')
                     ->searchable()
                     ->sortable()
-                    ->nullable()
                     ->placeholder('Global'),
                     
                 Tables\Columns\TextColumn::make('createdBy.name')
@@ -177,12 +176,7 @@ class TeamResource extends Resource
                     ->query(fn (Builder $query): Builder => 
                         $query->where(function ($q) {
                             $q->whereNull('max_members')
-                              ->orWhereColumn('max_members', '>', function ($subQuery) {
-                                  $subQuery->selectRaw('COUNT(*)')
-                                           ->from('team_memberships')
-                                           ->whereColumn('team_id', 'teams.id')
-                                           ->whereNull('left_at');
-                              });
+                              ->orWhereRaw('max_members > (SELECT COUNT(*) FROM team_memberships WHERE team_id = teams.id AND left_at IS NULL)');
                         })
                     ),
                     
@@ -190,12 +184,7 @@ class TeamResource extends Resource
                     ->label('Equipos llenos')
                     ->query(fn (Builder $query): Builder => 
                         $query->whereNotNull('max_members')
-                              ->whereColumn('max_members', '<=', function ($subQuery) {
-                                  $subQuery->selectRaw('COUNT(*)')
-                                           ->from('team_memberships')
-                                           ->whereColumn('team_id', 'teams.id')
-                                           ->whereNull('left_at');
-                              })
+                              ->whereRaw('max_members <= (SELECT COUNT(*) FROM team_memberships WHERE team_id = teams.id AND left_at IS NULL)')
                     ),
             ])
             ->actions([
