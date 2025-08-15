@@ -34,29 +34,29 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('user-organization-roles', UserOrganizationRoleController::class);
     
     // Rutas para Achievements
-    Route::apiResource('achievements', AchievementController::class)->only(['index', 'show']);
     Route::get('achievements/types', [AchievementController::class, 'types']);
     Route::get('achievements/leaderboard', [AchievementController::class, 'leaderboard']);
+    Route::apiResource('achievements', AchievementController::class)->only(['index', 'show']);
     
     // Rutas para Invitation Tokens
     Route::apiResource('invitation-tokens', InvitationTokenController::class)->except(['update', 'destroy']);
     Route::post('invitation-tokens/{invitationToken}/revoke', [InvitationTokenController::class, 'revoke']);
     
     // Rutas para User Profiles
-    Route::apiResource('user-profiles', UserProfileController::class)->only(['index', 'show']);
     Route::get('user-profiles/me', [UserProfileController::class, 'me']);
     Route::put('user-profiles/me', [UserProfileController::class, 'updateMe']);
     Route::get('user-profiles/rankings/organization/{organizationId}', [UserProfileController::class, 'organizationRanking']);
     Route::get('user-profiles/rankings/municipality/{municipalityId}', [UserProfileController::class, 'municipalityRanking']);
     Route::get('user-profiles/statistics', [UserProfileController::class, 'statistics']);
+    Route::apiResource('user-profiles', UserProfileController::class)->only(['index', 'show']);
     
     // Rutas para User Achievements
-    Route::apiResource('user-achievements', UserAchievementController::class)->only(['index', 'show']);
     Route::get('user-achievements/me', [UserAchievementController::class, 'me']);
     Route::get('user-achievements/me/recent', [UserAchievementController::class, 'recentMe']);
     Route::get('user-achievements/me/statistics', [UserAchievementController::class, 'statisticsMe']);
-    Route::post('user-achievements/{userAchievement}/grant-reward', [UserAchievementController::class, 'grantReward']);
     Route::get('user-achievements/leaderboard', [UserAchievementController::class, 'leaderboard']);
+    Route::post('user-achievements/{userAchievement}/grant-reward', [UserAchievementController::class, 'grantReward']);
+    Route::apiResource('user-achievements', UserAchievementController::class)->only(['index', 'show']);
 });
 
 // Rutas públicas para validación de tokens de invitación
