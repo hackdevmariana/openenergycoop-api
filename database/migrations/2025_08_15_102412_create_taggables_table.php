@@ -19,9 +19,8 @@ return new class extends Migration
             $table->foreignId('tagged_by_user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             
-            // Índices para performance
+            // Índices para performance (morphs ya crea taggable_type, taggable_id)
             $table->index(['tag_id', 'taggable_type']);
-            $table->index(['taggable_type', 'taggable_id']);
             $table->index(['tagged_at']);
             
             // Constraint único: una etiqueta por objeto
