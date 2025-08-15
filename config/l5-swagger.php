@@ -74,6 +74,8 @@ return [
                     base_path('app/Http/Controllers/Api/V1/MessageController.php'),
                     base_path('app/Http/Controllers/Api/V1/NewsletterSubscriptionController.php'),
                     base_path('app/Http/Controllers/Api/V1/OrganizationController.php'),
+                    // GRUPO FINAL - Controladores limpios y funcionales
+                    base_path('app/Http/Controllers/Api/V1/AppSettingController.php'),
                     base_path('app/Http/Resources/Api/V1/FormSubmissionResource.php'),
                     base_path('app/Http/Resources/Api/V1/OrganizationFeatureResource.php'),
                     base_path('app/Http/Resources/Api/V1/TeamChallengeProgressResource.php'),
@@ -104,6 +106,10 @@ return [
                     base_path('app/Http/Resources/Api/V1/MessageResource.php'),
                     base_path('app/Http/Resources/Api/V1/NewsletterSubscriptionResource.php'),
                     base_path('app/Http/Resources/Api/V1/OrganizationResource.php'),
+                    // Recursos con documentación limpia
+                    // Recursos base (no V1)
+                    base_path('app/Http/Resources/AppSettingResource.php'),
+
                     base_path('app/OpenApi'),
                 ],
             ],
