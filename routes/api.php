@@ -27,6 +27,14 @@ use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\MenuController;
 use App\Http\Controllers\Api\V1\OrganizationController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\HeroController;
+use App\Http\Controllers\Api\V1\BannerController;
+use App\Http\Controllers\Api\V1\TextContentController;
+use App\Http\Controllers\Api\V1\DocumentController;
+use App\Http\Controllers\Api\V1\SeoMetaDataController;
+use App\Http\Controllers\Api\V1\PageComponentController;
+use App\Http\Controllers\Api\V1\FaqController;
+use App\Http\Controllers\Api\V1\FaqTopicController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -152,6 +160,45 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('users/me', [UserController::class, 'me']);
     Route::put('users/me', [UserController::class, 'updateMe']);
     Route::apiResource('users', UserController::class);
+    
+    // Rutas para Heroes (CMS)
+    Route::get('heroes/slideshow', [HeroController::class, 'slideshow']);
+    Route::get('heroes/active', [HeroController::class, 'active']);
+    Route::post('heroes/{hero}/duplicate', [HeroController::class, 'duplicate']);
+    Route::apiResource('heroes', HeroController::class);
+    
+    // Rutas para Banners (CMS)
+    Route::get('banners/active', [BannerController::class, 'active']);
+    Route::get('banners/by-position/{position}', [BannerController::class, 'byPosition']);
+    Route::apiResource('banners', BannerController::class);
+    
+    // Rutas para Text Contents (CMS)
+    Route::apiResource('text-contents', TextContentController::class);
+    
+    // Rutas para Documents
+    Route::get('documents/featured', [DocumentController::class, 'featured']);
+    Route::get('documents/recent', [DocumentController::class, 'recent']);
+    Route::get('documents/popular', [DocumentController::class, 'popular']);
+    Route::post('documents/{document}/download', [DocumentController::class, 'download']);
+    Route::apiResource('documents', DocumentController::class);
+    
+    // Rutas para SEO Metadata
+    Route::get('seo-metadata/for-model/{type}/{id}', [SeoMetaDataController::class, 'forModel']);
+    Route::apiResource('seo-metadata', SeoMetaDataController::class);
+    
+    // Rutas para Page Components (CMS)
+    Route::get('page-components/for-page/{pageId}', [PageComponentController::class, 'forPage']);
+    Route::post('page-components/{pageComponent}/reorder', [PageComponentController::class, 'reorder']);
+    Route::apiResource('page-components', PageComponentController::class);
+    
+    // Rutas para FAQs
+    Route::get('faqs/featured', [FaqController::class, 'featured']);
+    Route::get('faqs/search', [FaqController::class, 'search']);
+    Route::apiResource('faqs', FaqController::class);
+    
+    // Rutas para FAQ Topics
+    Route::get('faq-topics/{faqTopic}/faqs', [FaqTopicController::class, 'faqs']);
+    Route::apiResource('faq-topics', FaqTopicController::class);
 });
 
 // Rutas públicas
@@ -201,6 +248,44 @@ Route::prefix('v1')->group(function () {
     // Rutas públicas para Organizations (solo lectura)
     Route::get('organizations', [OrganizationController::class, 'index']);
     Route::get('organizations/{organization}', [OrganizationController::class, 'show']);
+    
+    // Rutas públicas para Heroes (solo lectura)
+    Route::get('heroes', [HeroController::class, 'index']);
+    Route::get('heroes/slideshow', [HeroController::class, 'slideshow']);
+    Route::get('heroes/active', [HeroController::class, 'active']);
+    Route::get('heroes/{hero}', [HeroController::class, 'show']);
+    
+    // Rutas públicas para Banners (solo lectura)
+    Route::get('banners', [BannerController::class, 'index']);
+    Route::get('banners/active', [BannerController::class, 'active']);
+    Route::get('banners/by-position/{position}', [BannerController::class, 'byPosition']);
+    Route::get('banners/{banner}', [BannerController::class, 'show']);
+    
+    // Rutas públicas para Text Contents (solo lectura)
+    Route::get('text-contents', [TextContentController::class, 'index']);
+    Route::get('text-contents/{textContent}', [TextContentController::class, 'show']);
+    
+    // Rutas públicas para Documents (solo lectura)
+    Route::get('documents', [DocumentController::class, 'index']);
+    Route::get('documents/featured', [DocumentController::class, 'featured']);
+    Route::get('documents/recent', [DocumentController::class, 'recent']);
+    Route::get('documents/popular', [DocumentController::class, 'popular']);
+    Route::get('documents/{document}', [DocumentController::class, 'show']);
+    Route::post('documents/{document}/download', [DocumentController::class, 'download']);
+    
+    // Rutas públicas para Page Components (solo lectura)
+    Route::get('page-components/for-page/{pageId}', [PageComponentController::class, 'forPage']);
+    
+    // Rutas públicas para FAQs (solo lectura)
+    Route::get('faqs', [FaqController::class, 'index']);
+    Route::get('faqs/featured', [FaqController::class, 'featured']);
+    Route::get('faqs/search', [FaqController::class, 'search']);
+    Route::get('faqs/{faq}', [FaqController::class, 'show']);
+    
+    // Rutas públicas para FAQ Topics (solo lectura)
+    Route::get('faq-topics', [FaqTopicController::class, 'index']);
+    Route::get('faq-topics/{faqTopic}', [FaqTopicController::class, 'show']);
+    Route::get('faq-topics/{faqTopic}/faqs', [FaqTopicController::class, 'faqs']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
