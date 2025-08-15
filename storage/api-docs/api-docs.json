@@ -516,6 +516,437 @@
                 }
             }
         },
+        "/api/v1/challenges": {
+            "get": {
+                "tags": [
+                    "Challenges"
+                ],
+                "summary": "Listar desafíos",
+                "description": "Obtiene una lista paginada de desafíos con filtros opcionales",
+                "operationId": "a401965ff1ed99c39b41873b3a1270e8",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrar por tipo de desafío",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "individual",
+                                "team",
+                                "organization"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado temporal",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "current",
+                                "upcoming",
+                                "past"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "organization_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de organización",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "is_active",
+                        "in": "query",
+                        "description": "Filtrar por estado activo",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Número de elementos por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de desafíos obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Challenge"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            }
+        },
+        "/api/v1/challenges/{id}": {
+            "get": {
+                "tags": [
+                    "Challenges"
+                ],
+                "summary": "Mostrar desafío",
+                "description": "Obtiene los detalles de un desafío específico",
+                "operationId": "ead049d07ca23d7aded4184900366840",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del desafío",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del desafío obtenidos exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Challenge"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Desafío no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/challenges/{id}/leaderboard": {
+            "get": {
+                "tags": [
+                    "Challenges"
+                ],
+                "summary": "Ranking del desafío",
+                "description": "Obtiene el ranking de equipos para un desafío específico",
+                "operationId": "d9d6760c8831aa7b5561c3433fe7bacd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del desafío",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Número máximo de equipos en el ranking",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ranking obtenido exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "rank": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "team_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "team_name": {
+                                                        "type": "string",
+                                                        "example": "Green Warriors"
+                                                    },
+                                                    "progress_kwh": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 1250.5
+                                                    },
+                                                    "progress_percentage": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 62.53
+                                                    },
+                                                    "is_completed": {
+                                                        "type": "boolean",
+                                                        "example": false
+                                                    },
+                                                    "completed_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Desafío no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/challenges/current": {
+            "get": {
+                "tags": [
+                    "Challenges"
+                ],
+                "summary": "Desafíos actuales",
+                "description": "Obtiene los desafíos que están activos actualmente",
+                "operationId": "ce6ed9b31617aa581fd915f1070935cf",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrar por tipo de desafío",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "individual",
+                                "team",
+                                "organization"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Número máximo de desafíos",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Desafíos actuales obtenidos exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Challenge"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            }
+        },
+        "/api/v1/challenges/recommendations/{teamId}": {
+            "get": {
+                "tags": [
+                    "Challenges"
+                ],
+                "summary": "Desafíos recomendados para equipo",
+                "description": "Obtiene desafíos recomendados para un equipo específico",
+                "operationId": "1272fdb93727af3aefbbc8a41c087950",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Número máximo de recomendaciones",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Recomendaciones obtenidas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Challenge"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/challenges/statistics": {
+            "get": {
+                "tags": [
+                    "Challenges"
+                ],
+                "summary": "Estadísticas de desafíos",
+                "description": "Obtiene estadísticas generales de los desafíos",
+                "operationId": "227a6bcdffae6e68e82e5ebfa705f259",
+                "responses": {
+                    "200": {
+                        "description": "Estadísticas obtenidas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "total_challenges": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                },
+                                                "active_challenges": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                },
+                                                "current_challenges": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "completed_challenges": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "total_participants": {
+                                                    "type": "integer",
+                                                    "example": 150
+                                                },
+                                                "total_kwh_target": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 50000
+                                                },
+                                                "total_kwh_achieved": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 32500.75
+                                                },
+                                                "completion_rate": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 65
+                                                },
+                                                "by_type": {
+                                                    "properties": {
+                                                        "individual": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "team": {
+                                                            "type": "integer",
+                                                            "example": 12
+                                                        },
+                                                        "organization": {
+                                                            "type": "integer",
+                                                            "example": 3
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            }
+        },
         "/api/v1/comments": {
             "get": {
                 "tags": [
@@ -2514,6 +2945,560 @@
                 ]
             }
         },
+        "/api/v1/teams": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Listar equipos",
+                "description": "Obtiene una lista paginada de equipos con filtros opcionales",
+                "operationId": "f4c6fb002db8850c2c1a742012fb7fa5",
+                "parameters": [
+                    {
+                        "name": "organization_id",
+                        "in": "query",
+                        "description": "Filtrar por ID de organización",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "is_open",
+                        "in": "query",
+                        "description": "Filtrar por equipos abiertos (true) o cerrados (false)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "has_space",
+                        "in": "query",
+                        "description": "Filtrar equipos con espacio disponible",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar en nombre y descripción",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Número de elementos por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de equipos obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Team"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Crear equipo",
+                "description": "Crea un nuevo equipo",
+                "operationId": "c8670c5229acb08c5a0551b8bd118189",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Equipo Solar Madrid"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Equipo dedicado a la energía solar",
+                                        "nullable": true
+                                    },
+                                    "organization_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "max_members": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "is_public": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Equipo creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            }
+        },
+        "/api/v1/teams/{id}": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Mostrar equipo",
+                "description": "Obtiene los detalles de un equipo específico",
+                "operationId": "6ea35f97e59b3b4f042839afbb548dbb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del equipo obtenidos exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Actualizar equipo",
+                "description": "Actualiza los datos de un equipo existente",
+                "operationId": "db86bc9cd9a6a0c9bcdd8851e76536f3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Equipo Solar Madrid Actualizado"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Descripción actualizada del equipo",
+                                        "nullable": true
+                                    },
+                                    "max_members": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "example": 15,
+                                        "nullable": true
+                                    },
+                                    "is_public": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Equipo actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Team"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    },
+                    "422": {
+                        "description": "Errores de validación"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Eliminar equipo",
+                "description": "Elimina un equipo existente",
+                "operationId": "3f6a7fabcca6967050816f5781024699",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Equipo eliminado exitosamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/teams/{id}/join": {
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Unirse a equipo",
+                "description": "Permite al usuario autenticado unirse a un equipo abierto",
+                "operationId": "8bfb32806f3cde5f2251648c6be5a7f0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario unido al equipo exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/TeamMembershipResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No se puede unir al equipo"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/teams/{id}/leave": {
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Salir del equipo",
+                "description": "Permite al usuario autenticado salir de un equipo",
+                "operationId": "da1fcb408854fce36f52f4c32b3ee630",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario salió del equipo exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No eres miembro del equipo"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/teams/{id}/members": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Listar miembros del equipo",
+                "description": "Obtiene la lista de miembros activos de un equipo",
+                "operationId": "fb0b140330bd53d5a5e0aee8cdcc5358",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del equipo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "description": "Filtrar por rol",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "admin",
+                                "moderator",
+                                "member"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de miembros obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TeamMembershipResource"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Equipo no encontrado"
+                    }
+                }
+            }
+        },
+        "/api/v1/teams/recommendations": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Equipos recomendados",
+                "description": "Obtiene equipos recomendados para el usuario autenticado",
+                "operationId": "9f02aff024b9e0d2a98d338e49fb5950",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Número máximo de recomendaciones",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Recomendaciones obtenidas exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Team"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            }
+        },
+        "/api/v1/teams/my-teams": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Mis equipos",
+                "description": "Obtiene los equipos del usuario autenticado",
+                "operationId": "486719e6414b742b8d6cd0b709da0ae9",
+                "responses": {
+                    "200": {
+                        "description": "Equipos del usuario obtenidos exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Team"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                }
+            }
+        },
         "/api/v1/team-memberships": {
             "get": {
                 "tags": [
@@ -3679,6 +4664,58 @@
                 },
                 "type": "object"
             },
+            "BannerResource": {
+                "title": "Banner Resource",
+                "description": "Resource de banner promocional",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Promoción Especial"
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "Únete a nuestra cooperativa energética",
+                        "nullable": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "info",
+                            "warning",
+                            "success",
+                            "error"
+                        ],
+                        "example": "info"
+                    },
+                    "position": {
+                        "type": "string",
+                        "example": "top"
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "CategoryResource": {
                 "title": "Category Resource",
                 "description": "Recurso de categoría del sistema CMS",
@@ -3746,6 +4783,178 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/CategoryResource"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Challenge": {
+                "title": "Challenge",
+                "description": "Modelo de desafío energético",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Desafío Solar Mensual"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Genera la máxima energía solar durante este mes",
+                        "nullable": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "individual",
+                            "team",
+                            "organization"
+                        ],
+                        "example": "team"
+                    },
+                    "target_kwh": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 2000
+                    },
+                    "points_reward": {
+                        "type": "integer",
+                        "example": 500
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-01-31"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "criteria": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "icon": {
+                        "type": "string",
+                        "example": "solar-panel",
+                        "nullable": true
+                    },
+                    "is_currently_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_started": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "has_ended": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "days_remaining": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "duration_in_days": {
+                        "type": "integer",
+                        "example": 31
+                    },
+                    "participating_teams_count": {
+                        "type": "integer",
+                        "example": 8
+                    },
+                    "completed_teams_count": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "completion_rate": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 37.5
+                    },
+                    "average_progress": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1250.75
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
+                    },
+                    "organization": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Cooperativa Verde"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "leader_team": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Green Warriors"
+                            },
+                            "progress_kwh": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 1800.5
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "top_teams": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "rank": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "team_id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "team_name": {
+                                    "type": "string",
+                                    "example": "Green Warriors"
+                                },
+                                "progress_kwh": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 1800.5
+                                },
+                                "progress_percentage": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 90.03
+                                }
+                            },
+                            "type": "object"
                         }
                     }
                 },
@@ -3896,6 +5105,56 @@
                 },
                 "type": "object"
             },
+            "DocumentResource": {
+                "title": "Document Resource",
+                "description": "Resource de documento",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Manual de Usuario"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Guía completa para usuarios",
+                        "nullable": true
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "example": "/documents/manual-usuario.pdf"
+                    },
+                    "file_size": {
+                        "type": "integer",
+                        "example": 1024000
+                    },
+                    "mime_type": {
+                        "type": "string",
+                        "example": "application/pdf"
+                    },
+                    "is_public": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "download_count": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "FormSubmissionResource": {
                 "title": "Form Submission Resource",
                 "description": "Resource de envío de formulario",
@@ -3946,6 +5205,67 @@
                     "source_page": {
                         "type": "string",
                         "example": "/contacto",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "HeroResource": {
+                "title": "Hero Resource",
+                "description": "Resource de banner principal",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "text": {
+                        "type": "string",
+                        "example": "Bienvenido a OpenEnergyCoop",
+                        "nullable": true
+                    },
+                    "subtext": {
+                        "type": "string",
+                        "example": "Tu cooperativa energética sostenible",
+                        "nullable": true
+                    },
+                    "text_button": {
+                        "type": "string",
+                        "example": "Únete ahora",
+                        "nullable": true
+                    },
+                    "cta_link_external": {
+                        "type": "string",
+                        "example": "https://example.com",
+                        "nullable": true
+                    },
+                    "position": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "exhibition_beginning": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T00:00:00Z",
+                        "nullable": true
+                    },
+                    "exhibition_end": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-12-31T23:59:59Z",
                         "nullable": true
                     },
                     "created_at": {
@@ -4265,6 +5585,62 @@
                 },
                 "type": "object"
             },
+            "SeoMetaDataResource": {
+                "title": "SEO Metadata Resource",
+                "description": "Resource de metadatos SEO",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Página de Inicio - OpenEnergyCoop",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Únete a la cooperativa energética más sostenible",
+                        "nullable": true
+                    },
+                    "keywords": {
+                        "type": "string",
+                        "example": "energía, sostenible, cooperativa",
+                        "nullable": true
+                    },
+                    "canonical_url": {
+                        "type": "string",
+                        "example": "https://openenergycoop.com/",
+                        "nullable": true
+                    },
+                    "robots": {
+                        "type": "string",
+                        "example": "index,follow",
+                        "nullable": true
+                    },
+                    "og_title": {
+                        "type": "string",
+                        "example": "OpenEnergyCoop",
+                        "nullable": true
+                    },
+                    "og_description": {
+                        "type": "string",
+                        "example": "Tu cooperativa energética",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "TeamChallengeProgressResource": {
                 "title": "Team Challenge Progress Resource",
                 "description": "Resource de progreso de equipo en desafío",
@@ -4354,6 +5730,195 @@
                         "format": "date-time",
                         "example": null,
                         "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Team": {
+                "title": "Team",
+                "description": "Modelo de equipo",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Green Warriors"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "green-warriors"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Un equipo comprometido con la energía renovable",
+                        "nullable": true
+                    },
+                    "is_open": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "max_members": {
+                        "type": "integer",
+                        "example": 25,
+                        "nullable": true
+                    },
+                    "logo_path": {
+                        "type": "string",
+                        "example": "/storage/teams/logo.jpg",
+                        "nullable": true
+                    },
+                    "members_count": {
+                        "type": "integer",
+                        "example": 12
+                    },
+                    "available_slots": {
+                        "type": "integer",
+                        "example": 13,
+                        "nullable": true
+                    },
+                    "is_full": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "can_join": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "organization": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Cooperativa Verde"
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "created_by": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "name": {
+                                "type": "string",
+                                "example": "Juan Pérez"
+                            },
+                            "email": {
+                                "type": "string",
+                                "example": "juan@example.com"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "members": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "María García"
+                                },
+                                "role": {
+                                    "type": "string",
+                                    "example": "member"
+                                },
+                                "joined_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2024-01-15T10:30:00Z"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "current_challenges": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "example": 1
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "example": "Desafío Solar Mensual"
+                                },
+                                "progress_kwh": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 1250.5
+                                },
+                                "target_kwh": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 2000
+                                },
+                                "progress_percentage": {
+                                    "type": "number",
+                                    "format": "float",
+                                    "example": 62.53
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "TextContentResource": {
+                "title": "Text Content Resource",
+                "description": "Resource de contenido de texto",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Sobre Nosotros"
+                    },
+                    "content": {
+                        "type": "string",
+                        "example": "Contenido completo del texto..."
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "is_published": {
+                        "type": "boolean",
+                        "example": true
                     },
                     "created_at": {
                         "type": "string",
@@ -4614,6 +6179,10 @@
             "description": "Gestión de categorías del sistema CMS"
         },
         {
+            "name": "Challenges",
+            "description": "Endpoints para gestión de desafíos energéticos"
+        },
+        {
             "name": "Comments",
             "description": "Sistema de comentarios para artículos y páginas"
         },
@@ -4640,6 +6209,10 @@
         {
             "name": "Team Challenge Progress",
             "description": "Gestión del progreso de equipos en desafíos"
+        },
+        {
+            "name": "Teams",
+            "description": "Endpoints para gestión de equipos"
         },
         {
             "name": "Team Memberships",
