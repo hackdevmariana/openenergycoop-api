@@ -1792,6 +1792,322 @@
                 }
             }
         },
+        "/api/v1/organizations": {
+            "get": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Listar organizaciones",
+                "description": "Obtiene una lista paginada de organizaciones",
+                "operationId": "54ffd98fe34a49c738c616139213bf8a",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por nombre",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Cooperativa"
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "in": "query",
+                        "description": "Filtrar por estado activo",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Elementos por página (máximo 50)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 50,
+                            "minimum": 1,
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de organizaciones obtenida exitosamente"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Crear nueva organización",
+                "description": "Crea una nueva organización en el sistema",
+                "operationId": "ee29c17f41fb24d47174ed58c4868c9a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Cooperativa de Energía Verde"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Descripción de la organización"
+                                    },
+                                    "logo": {
+                                        "type": "string",
+                                        "example": "logos/organization-logo.png"
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "format": "url",
+                                        "example": "https://cooperativa.com"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "info@cooperativa.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+34 123 456 789"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Calle Principal 123"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Madrid"
+                                    },
+                                    "postal_code": {
+                                        "type": "string",
+                                        "example": "28001"
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "example": "España"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Organización creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/organizations/{id}": {
+            "get": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Obtener organización específica",
+                "description": "Obtiene los detalles de una organización específica",
+                "operationId": "cf108afa69aa8de272788f058d3a478b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la organización",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "include_stats",
+                        "in": "query",
+                        "description": "Incluir estadísticas de la organización",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Organización obtenida exitosamente"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Actualizar organización",
+                "description": "Actualiza una organización existente",
+                "operationId": "c8bc856f13ce7537d2993dbcc4fefa60",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la organización",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "logo": {
+                                        "type": "string"
+                                    },
+                                    "website": {
+                                        "type": "string",
+                                        "format": "url"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "phone": {
+                                        "type": "string"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Organización actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Eliminar organización",
+                "description": "Elimina una organización del sistema",
+                "operationId": "041553bd78143802dc8e865544bc4fd6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la organización",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Organización eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/organizations/{id}/stats": {
+            "get": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Obtener estadísticas de organización",
+                "description": "Obtiene estadísticas detalladas de una organización",
+                "operationId": "645de457a981accdd228d34e30cd88e9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la organización",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estadísticas obtenidas exitosamente"
+                    }
+                }
+            }
+        },
+        "/api/v1/organizations/{id}/features": {
+            "get": {
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "Obtener características de organización",
+                "description": "Obtiene las características habilitadas para una organización",
+                "operationId": "075bd43600146a4edbf4e9a4382e0f75",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la organización",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Características obtenidas exitosamente"
+                    }
+                }
+            }
+        },
         "/api/v1/organization-features": {
             "get": {
                 "tags": [
@@ -5689,6 +6005,123 @@
                 },
                 "type": "object"
             },
+            "MessageResource": {
+                "title": "Message Resource",
+                "description": "Resource de mensaje",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "juan@email.com"
+                    },
+                    "subject": {
+                        "type": "string",
+                        "example": "Consulta sobre membresía"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Hola, me gustaría saber más sobre cómo unirme..."
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+34 600 123 456",
+                        "nullable": true
+                    },
+                    "is_read": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "replied_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "NewsletterSubscriptionResource": {
+                "title": "Newsletter Subscription Resource",
+                "description": "Resource de suscripción a newsletter",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "usuario@email.com"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "María López",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "unsubscribed",
+                            "bounced"
+                        ],
+                        "example": "active"
+                    },
+                    "subscribed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "unsubscribed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "preferences": {
+                        "type": "object",
+                        "example": {
+                            "weekly": true,
+                            "monthly": false
+                        },
+                        "nullable": true
+                    },
+                    "source": {
+                        "type": "string",
+                        "example": "website",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "OrganizationFeatureResource": {
                 "title": "Organization Feature Resource",
                 "description": "Resource de característica organizacional",
@@ -5720,6 +6153,69 @@
                             "max_panels": 100
                         },
                         "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "OrganizationResource": {
+                "title": "Organization Resource",
+                "description": "Resource de organización",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "OpenEnergyCoop Madrid"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "openenergycoop-madrid"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Cooperativa energética de la Comunidad de Madrid",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "madrid@openenergycoop.com",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+34 900 123 456",
+                        "nullable": true
+                    },
+                    "website": {
+                        "type": "string",
+                        "example": "https://madrid.openenergycoop.com",
+                        "nullable": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Calle Mayor 123, 28001 Madrid",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "members_count": {
+                        "type": "integer",
+                        "example": 250
                     },
                     "created_at": {
                         "type": "string",
@@ -6521,6 +7017,10 @@
         {
             "name": "Images",
             "description": "Gestión de imágenes del sistema CMS"
+        },
+        {
+            "name": "Organizations",
+            "description": "Gestión de organizaciones del sistema"
         },
         {
             "name": "Organization Features",
