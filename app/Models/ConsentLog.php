@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use App\Enums\AppEnums;
+use Illuminate\Support\Collection;
 
 class ConsentLog extends Model
 {
@@ -33,16 +35,7 @@ class ConsentLog extends Model
     /**
      * Tipos de consentimiento disponibles
      */
-    public const CONSENT_TYPES = [
-        'terms_and_conditions' => 'Términos y Condiciones',
-        'privacy_policy' => 'Política de Privacidad',
-        'cookies_policy' => 'Política de Cookies',
-        'marketing_communications' => 'Comunicaciones de Marketing',
-        'data_processing' => 'Procesamiento de Datos',
-        'newsletter' => 'Newsletter',
-        'analytics' => 'Analytics y Seguimiento',
-        'third_party_sharing' => 'Compartir con Terceros',
-    ];
+    public const CONSENT_TYPES = AppEnums::CONSENT_TYPES;
 
     /**
      * Relación con el usuario
@@ -170,6 +163,15 @@ class ConsentLog extends Model
         ?string $documentUrl = null,
         ?array $context = null
     ): self {
+        // Revocar consentimientos anteriores del mismo tipo si existe una nueva versión
+        if ($version) {
+            self::where('user_id', $userId)
+                ->where('consent_type', $consentType)
+                ->whereNull('revoked_at')
+                ->where('version', '!=', $version)
+                ->update(['revoked_at' => now()]);
+        }
+
         return self::create([
             'user_id' => $userId,
             'consent_type' => $consentType,
@@ -180,5 +182,61 @@ class ConsentLog extends Model
             'consent_document_url' => $documentUrl,
             'consent_context' => $context,
         ]);
+    }
+
+    /**
+     * Get full consent history for a user
+     */
+    public static function getConsentHistory(int $userId, ?string $consentType = null): Collection
+    {
+        return self::forUser($userId)
+            ->when($consentType, fn($q) => $q->ofType($consentType))
+            ->orderBy('consented_at', 'desc')
+            ->get()
+            ->map(function ($consent) {
+                return [
+                    'id' => $consent->id,
+                    'consent_type' => $consent->consent_type,
+                    'consent_type_name' => $consent->consent_type_name,
+                    'version' => $consent->version,
+                    'consented_at' => $consent->consented_at,
+                    'revoked_at' => $consent->revoked_at,
+                    'is_active' => $consent->isActive(),
+                    'document_url' => $consent->consent_document_url,
+                    'ip_address' => $consent->ip_address,
+                    'user_agent' => $consent->user_agent,
+                    'context' => $consent->consent_context,
+                ];
+            });
+    }
+
+    /**
+     * Generate GDPR compliance report for a user
+     */
+    public static function generateGDPRReport(int $userId): array
+    {
+        $consents = self::forUser($userId)->get();
+        $activeConsents = $consents->where('revoked_at', null);
+        $revokedConsents = $consents->where('revoked_at', '!=', null);
+
+        return [
+            'user_id' => $userId,
+            'report_generated_at' => now(),
+            'summary' => [
+                'total_consents' => $consents->count(),
+                'active_consents' => $activeConsents->count(),
+                'revoked_consents' => $revokedConsents->count(),
+            ],
+            'active_consents' => $activeConsents->map(function ($consent) {
+                return [
+                    'type' => $consent->consent_type,
+                    'type_name' => $consent->consent_type_name,
+                    'version' => $consent->version,
+                    'granted_at' => $consent->consented_at,
+                    'document_url' => $consent->consent_document_url,
+                ];
+            })->values(),
+            'consent_history' => self::getConsentHistory($userId),
+        ];
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use App\Enums\AppEnums;
 
 class UserDevice extends Model
 {
@@ -34,25 +35,12 @@ class UserDevice extends Model
     /**
      * Tipos de dispositivo disponibles
      */
-    public const DEVICE_TYPES = [
-        'web' => 'Navegador Web',
-        'mobile' => 'Móvil',
-        'tablet' => 'Tablet',
-        'desktop' => 'Escritorio',
-    ];
+    public const DEVICE_TYPES = AppEnums::USER_DEVICE_TYPES;
 
     /**
      * Plataformas comunes
      */
-    public const PLATFORMS = [
-        'iOS' => 'iOS',
-        'Android' => 'Android',
-        'Windows' => 'Windows',
-        'macOS' => 'macOS',
-        'Linux' => 'Linux',
-        'Chrome OS' => 'Chrome OS',
-        'Web' => 'Navegador Web',
-    ];
+    public const PLATFORMS = AppEnums::USER_DEVICE_PLATFORMS;
 
     /**
      * Relación con el usuario
