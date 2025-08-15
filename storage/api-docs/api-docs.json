@@ -4960,6 +4960,68 @@
                 },
                 "type": "object"
             },
+            "CollaboratorResource": {
+                "title": "Collaborator Resource",
+                "description": "Resource de colaborador",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Ana García"
+                    },
+                    "position": {
+                        "type": "string",
+                        "example": "Directora de Sostenibilidad",
+                        "nullable": true
+                    },
+                    "department": {
+                        "type": "string",
+                        "example": "Desarrollo",
+                        "nullable": true
+                    },
+                    "bio": {
+                        "type": "string",
+                        "example": "Especialista en energías renovables con 10 años de experiencia",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ana@openenergycoop.com",
+                        "nullable": true
+                    },
+                    "linkedin_url": {
+                        "type": "string",
+                        "example": "https://linkedin.com/in/anagarcia",
+                        "nullable": true
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "CommentResource": {
                 "title": "Comment Resource",
                 "description": "Resource de comentario",
@@ -5105,6 +5167,57 @@
                 },
                 "type": "object"
             },
+            "ContactResource": {
+                "title": "Contact Resource",
+                "description": "Resource de información de contacto",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "phone",
+                            "email",
+                            "address",
+                            "office"
+                        ],
+                        "example": "phone"
+                    },
+                    "label": {
+                        "type": "string",
+                        "example": "Teléfono Principal"
+                    },
+                    "value": {
+                        "type": "string",
+                        "example": "+34 900 123 456"
+                    },
+                    "is_public": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_primary": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "DocumentResource": {
                 "title": "Document Resource",
                 "description": "Resource de documento",
@@ -5141,6 +5254,106 @@
                     "download_count": {
                         "type": "integer",
                         "example": 150
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "FaqResource": {
+                "title": "FAQ Resource",
+                "description": "Resource de pregunta frecuente",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "question": {
+                        "type": "string",
+                        "example": "¿Cómo me uno a la cooperativa?"
+                    },
+                    "answer": {
+                        "type": "string",
+                        "example": "Puedes unirte completando el formulario de registro..."
+                    },
+                    "topic_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "is_draft": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "is_featured": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "views_count": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "FaqTopicResource": {
+                "title": "FAQ Topic Resource",
+                "description": "Resource de tema de FAQ",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Membresía"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Preguntas sobre membresía",
+                        "nullable": true
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "faqs_count": {
+                        "type": "integer",
+                        "example": 5
                     },
                     "created_at": {
                         "type": "string",
@@ -5521,6 +5734,63 @@
                 },
                 "type": "object"
             },
+            "PageComponentResource": {
+                "title": "Page Component Resource",
+                "description": "Resource de componente de página",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "page_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "componentable_type": {
+                        "type": "string",
+                        "example": "App\\Models\\Hero"
+                    },
+                    "componentable_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "position": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "parent_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "language": {
+                        "type": "string",
+                        "example": "es"
+                    },
+                    "is_draft": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "settings": {
+                        "type": "object",
+                        "example": {
+                            "margin": "20px"
+                        },
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
             "PageResource": {
                 "title": "Page Resource",
                 "description": "Resource de página",
@@ -5627,6 +5897,60 @@
                         "type": "string",
                         "example": "Tu cooperativa energética",
                         "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "SocialLinkResource": {
+                "title": "Social Link Resource",
+                "description": "Resource de enlace social",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "platform": {
+                        "type": "string",
+                        "enum": [
+                            "facebook",
+                            "twitter",
+                            "instagram",
+                            "linkedin",
+                            "youtube"
+                        ],
+                        "example": "facebook"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://facebook.com/openenergycoop"
+                    },
+                    "handle": {
+                        "type": "string",
+                        "example": "@openenergycoop",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "followers_count": {
+                        "type": "integer",
+                        "example": 1250,
+                        "nullable": true
+                    },
+                    "sort_order": {
+                        "type": "integer",
+                        "example": 1
                     },
                     "created_at": {
                         "type": "string",
