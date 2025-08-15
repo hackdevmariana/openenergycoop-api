@@ -23,6 +23,10 @@ use App\Http\Controllers\Api\V1\UserSettingsController;
 use App\Http\Controllers\Api\V1\ConsentLogController;
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\PageController;
+use App\Http\Controllers\Api\V1\CommentController;
+use App\Http\Controllers\Api\V1\MenuController;
+use App\Http\Controllers\Api\V1\OrganizationController;
+use App\Http\Controllers\Api\V1\UserController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -126,6 +130,28 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('pages/search', [PageController::class, 'search']);
     Route::get('pages/by-route/{route}', [PageController::class, 'byRoute'])->where('route', '.*');
     Route::apiResource('pages', PageController::class);
+    
+    // Rutas para Comments
+    Route::post('comments/{comment}/like', [CommentController::class, 'like']);
+    Route::post('comments/{comment}/approve', [CommentController::class, 'approve']);
+    Route::post('comments/{comment}/reject', [CommentController::class, 'reject']);
+    Route::get('comments/thread/{comment}', [CommentController::class, 'thread']);
+    Route::apiResource('comments', CommentController::class);
+    
+    // Rutas para Menus
+    Route::get('menus/hierarchy', [MenuController::class, 'hierarchy']);
+    Route::get('menus/by-group/{group}', [MenuController::class, 'byGroup']);
+    Route::apiResource('menus', MenuController::class);
+    
+    // Rutas para Organizations
+    Route::get('organizations/{organization}/stats', [OrganizationController::class, 'stats']);
+    Route::get('organizations/{organization}/features', [OrganizationController::class, 'features']);
+    Route::apiResource('organizations', OrganizationController::class);
+    
+    // Rutas para Users
+    Route::get('users/me', [UserController::class, 'me']);
+    Route::put('users/me', [UserController::class, 'updateMe']);
+    Route::apiResource('users', UserController::class);
 });
 
 // Rutas públicas
@@ -159,6 +185,22 @@ Route::prefix('v1')->group(function () {
     Route::get('pages/search', [PageController::class, 'search']);
     Route::get('pages/by-route/{route}', [PageController::class, 'byRoute'])->where('route', '.*');
     Route::get('pages/{page}', [PageController::class, 'show']);
+    
+    // Rutas públicas para Comments (solo lectura)
+    Route::get('comments', [CommentController::class, 'index']);
+    Route::get('comments/{comment}', [CommentController::class, 'show']);
+    Route::get('comments/thread/{comment}', [CommentController::class, 'thread']);
+    Route::post('comments/{comment}/like', [CommentController::class, 'like']);
+    
+    // Rutas públicas para Menus (solo lectura)
+    Route::get('menus', [MenuController::class, 'index']);
+    Route::get('menus/hierarchy', [MenuController::class, 'hierarchy']);
+    Route::get('menus/by-group/{group}', [MenuController::class, 'byGroup']);
+    Route::get('menus/{menu}', [MenuController::class, 'show']);
+    
+    // Rutas públicas para Organizations (solo lectura)
+    Route::get('organizations', [OrganizationController::class, 'index']);
+    Route::get('organizations/{organization}', [OrganizationController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
