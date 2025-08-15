@@ -145,12 +145,7 @@ class Team extends Model
     {
         return $query->where(function ($q) {
             $q->whereNull('max_members')
-              ->orWhereColumn('max_members', '>', function ($subQuery) {
-                  $subQuery->selectRaw('COUNT(*)')
-                           ->from('team_memberships')
-                           ->whereColumn('team_id', 'teams.id')
-                           ->whereNull('left_at');
-              });
+              ->orWhereRaw('max_members > (SELECT COUNT(*) FROM team_memberships WHERE team_id = teams.id AND left_at IS NULL)');
         });
     }
 
@@ -214,6 +209,37 @@ class Team extends Model
      */
     public function addMember(User $user, string $role = 'member'): TeamMembership
     {
+        // Verificar si ya existe una membresía activa
+        $existingMembership = $this->activeMemberships()
+                                   ->where('user_id', $user->id)
+                                   ->first();
+        
+        if ($existingMembership) {
+            // Si ya es miembro, actualizar el rol si es diferente
+            if ($existingMembership->role !== $role) {
+                $existingMembership->update(['role' => $role]);
+            }
+            return $existingMembership;
+        }
+
+        // Verificar si hay una membresía inactiva que se puede reactivar
+        $inactiveMembership = $this->memberships()
+                                   ->where('user_id', $user->id)
+                                   ->whereNotNull('left_at')
+                                   ->latest('left_at')
+                                   ->first();
+        
+        if ($inactiveMembership) {
+            // Reactivar la membresía
+            $inactiveMembership->update([
+                'role' => $role,
+                'joined_at' => now(),
+                'left_at' => null,
+            ]);
+            return $inactiveMembership;
+        }
+
+        // Crear nueva membresía
         return TeamMembership::create([
             'team_id' => $this->id,
             'user_id' => $user->id,
