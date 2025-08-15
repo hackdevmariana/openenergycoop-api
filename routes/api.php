@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\V1\UserProfileController;
 use App\Http\Controllers\Api\V1\UserAchievementController;
 use App\Http\Controllers\Api\V1\ImageController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\UserDeviceController;
+use App\Http\Controllers\Api\V1\UserSettingsController;
+use App\Http\Controllers\Api\V1\ConsentLogController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -87,6 +90,28 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('categories/tree', [CategoryController::class, 'tree']);
     Route::get('categories/{category}/content', [CategoryController::class, 'content']);
     Route::apiResource('categories', CategoryController::class);
+    
+    // Rutas para User Devices
+    Route::get('user-devices/current', [UserDeviceController::class, 'current']);
+    Route::post('user-devices/{userDevice}/set-current', [UserDeviceController::class, 'setCurrent']);
+    Route::post('user-devices/{userDevice}/update-activity', [UserDeviceController::class, 'updateActivity']);
+    Route::apiResource('user-devices', UserDeviceController::class);
+    
+    // Rutas para User Settings
+    Route::get('user-settings', [UserSettingsController::class, 'show']);
+    Route::put('user-settings', [UserSettingsController::class, 'update']);
+    Route::get('user-settings/notifications', [UserSettingsController::class, 'notifications']);
+    Route::put('user-settings/notifications', [UserSettingsController::class, 'updateNotifications']);
+    Route::get('user-settings/privacy', [UserSettingsController::class, 'privacy']);
+    Route::put('user-settings/privacy', [UserSettingsController::class, 'updatePrivacy']);
+    Route::post('user-settings/reset', [UserSettingsController::class, 'reset']);
+    
+    // Rutas para Consent Logs
+    Route::get('consent-logs/current-status', [ConsentLogController::class, 'currentStatus']);
+    Route::get('consent-logs/history/{type}', [ConsentLogController::class, 'history']);
+    Route::get('consent-logs/gdpr-report', [ConsentLogController::class, 'gdprReport']);
+    Route::post('consent-logs/{consentLog}/revoke', [ConsentLogController::class, 'revoke']);
+    Route::apiResource('consent-logs', ConsentLogController::class)->except(['update', 'destroy']);
 });
 
 // Rutas públicas
