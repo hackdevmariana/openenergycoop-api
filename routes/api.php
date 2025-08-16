@@ -185,10 +185,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('text-contents', TextContentController::class);
     
     // Rutas para Documents
-    Route::get('documents/featured', [DocumentController::class, 'featured']);
-    Route::get('documents/recent', [DocumentController::class, 'recent']);
-    Route::get('documents/popular', [DocumentController::class, 'popular']);
-    Route::post('documents/{document}/download', [DocumentController::class, 'download']);
+    Route::get('documents/most-downloaded', [DocumentController::class, 'mostDownloaded'])->name('documents.most-downloaded');
+    Route::get('documents/recent', [DocumentController::class, 'recent'])->name('documents.recent');
+    Route::get('documents/popular', [DocumentController::class, 'popular'])->name('documents.popular');
+    Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::apiResource('documents', DocumentController::class);
     
     // Rutas para SEO Metadata
@@ -316,11 +316,11 @@ Route::prefix('v1')->group(function () {
     
     // Rutas públicas para Documents (solo lectura)
     Route::get('documents', [DocumentController::class, 'index']);
-    Route::get('documents/featured', [DocumentController::class, 'featured']);
+    Route::get('documents/most-downloaded', [DocumentController::class, 'mostDownloaded']);
     Route::get('documents/recent', [DocumentController::class, 'recent']);
     Route::get('documents/popular', [DocumentController::class, 'popular']);
     Route::get('documents/{document}', [DocumentController::class, 'show']);
-    Route::post('documents/{document}/download', [DocumentController::class, 'download']);
+    Route::get('documents/{document}/download', [DocumentController::class, 'download']);
     
     // Rutas públicas para Page Components (solo lectura)
     Route::get('page-components/for-page/{pageId}', [PageComponentController::class, 'forPage']);
