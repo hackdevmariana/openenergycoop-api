@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\PageComponent\StorePageComponentRequest;
+use App\Http\Requests\Api\V1\PageComponent\UpdatePageComponentRequest;
 use App\Http\Resources\Api\V1\PageComponentResource;
 use App\Models\PageComponent;
 use Illuminate\Http\Request;
@@ -44,18 +46,9 @@ class PageComponentController extends Controller
         return PageComponentResource::collection($components);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StorePageComponentRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'componentable_type' => 'required|string',
-            'componentable_id' => 'required|integer',
-            'position' => 'nullable|integer',
-            'parent_id' => 'nullable|exists:page_components,id',
-            'language' => 'required|string|in:es,en,ca,eu,gl',
-            'settings' => 'nullable|json',
-            'visibility_rules' => 'nullable|json',
-        ]);
+        $validated = $request->validated();
 
         $component = PageComponent::create($validated);
         $component->load(['page', 'componentable', 'organization']);
@@ -75,15 +68,9 @@ class PageComponentController extends Controller
         ]);
     }
 
-    public function update(Request $request, PageComponent $pageComponent): JsonResponse
+    public function update(UpdatePageComponentRequest $request, PageComponent $pageComponent): JsonResponse
     {
-        $validated = $request->validate([
-            'position' => 'nullable|integer',
-            'settings' => 'nullable|json',
-            'visibility_rules' => 'nullable|json',
-            'is_draft' => 'nullable|boolean',
-            'cache_enabled' => 'nullable|boolean',
-        ]);
+        $validated = $request->validated();
 
         $pageComponent->update($validated);
         $pageComponent->load(['page', 'componentable', 'organization']);
