@@ -94,10 +94,15 @@ class ImageController extends Controller
             
             // Obtener dimensiones si es una imagen
             if (str_starts_with($file->getMimeType(), 'image/')) {
-                $imageInfo = getimagesize($file->getPathname());
-                if ($imageInfo) {
-                    $validated['width'] = $imageInfo[0];
-                    $validated['height'] = $imageInfo[1];
+                try {
+                    $imageInfo = @getimagesize($file->getPathname());
+                    if ($imageInfo && is_array($imageInfo) && count($imageInfo) >= 2) {
+                        $validated['width'] = $imageInfo[0];
+                        $validated['height'] = $imageInfo[1];
+                    }
+                } catch (\Exception $e) {
+                    // Ignore errors when getting image dimensions
+                    // This can happen with fake test files
                 }
             }
         }
