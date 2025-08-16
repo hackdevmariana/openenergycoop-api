@@ -17,19 +17,32 @@ class ConsentLog extends Model
     protected $fillable = [
         'user_id',
         'consent_type',
+        'consent_given',
         'consented_at',
         'ip_address',
         'user_agent',
         'version',
+        'purpose',
+        'legal_basis',
+        'data_categories',
+        'retention_period',
+        'third_parties',
+        'withdrawal_method',
         'consent_document_url',
         'revoked_at',
+        'revocation_reason',
         'consent_context',
+        'metadata',
     ];
 
     protected $casts = [
+        'consent_given' => 'boolean',
         'consented_at' => 'datetime',
         'revoked_at' => 'datetime',
         'consent_context' => 'array',
+        'data_categories' => 'array',
+        'third_parties' => 'array',
+        'metadata' => 'array',
     ];
 
     /**
@@ -82,7 +95,7 @@ class ConsentLog extends Model
      */
     public function isActive(): bool
     {
-        return is_null($this->revoked_at);
+        return $this->consent_given && is_null($this->revoked_at);
     }
 
     /**
@@ -157,11 +170,9 @@ class ConsentLog extends Model
     public static function recordConsent(
         int $userId,
         string $consentType,
-        ?string $ipAddress = null,
-        ?string $userAgent = null,
+        bool $consentGiven,
         ?string $version = null,
-        ?string $documentUrl = null,
-        ?array $context = null
+        array $metadata = []
     ): self {
         // Revocar consentimientos anteriores del mismo tipo si existe una nueva versión
         if ($version) {
@@ -172,16 +183,22 @@ class ConsentLog extends Model
                 ->update(['revoked_at' => now()]);
         }
 
-        return self::create([
+        $data = [
             'user_id' => $userId,
             'consent_type' => $consentType,
+            'consent_given' => $consentGiven,
             'consented_at' => now(),
-            'ip_address' => $ipAddress,
-            'user_agent' => $userAgent,
             'version' => $version,
-            'consent_document_url' => $documentUrl,
-            'consent_context' => $context,
-        ]);
+        ];
+
+        // Add optional metadata fields
+        foreach (['purpose', 'legal_basis', 'data_categories', 'retention_period', 'third_parties', 'withdrawal_method', 'ip_address', 'user_agent', 'consent_document_url', 'consent_context', 'metadata'] as $field) {
+            if (isset($metadata[$field])) {
+                $data[$field] = $metadata[$field];
+            }
+        }
+
+        return self::create($data);
     }
 
     /**
