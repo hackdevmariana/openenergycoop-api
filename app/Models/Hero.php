@@ -339,9 +339,19 @@ class Hero extends Model implements HasMedia, Cacheable, Publishable, Multilingu
 
     public function getNextPosition(): int
     {
-        return self::where('organization_id', $this->organization_id)
-            ->where('language', $this->language)
-            ->max('position') + 1;
+        $query = self::query();
+        
+        if ($this->organization_id) {
+            $query->where('organization_id', $this->organization_id);
+        } else {
+            $query->whereNull('organization_id');
+        }
+        
+        if ($this->language) {
+            $query->where('language', $this->language);
+        }
+        
+        return ($query->max('position') ?? 0) + 1;
     }
 
     public function getWordCount(): int
@@ -359,7 +369,7 @@ class Hero extends Model implements HasMedia, Cacheable, Publishable, Multilingu
         
         // Auto-set position if not provided
         static::creating(function ($hero) {
-            if (is_null($hero->position)) {
+            if (is_null($hero->position) || $hero->position === 0) {
                 $hero->position = $hero->getNextPosition();
             }
         });
