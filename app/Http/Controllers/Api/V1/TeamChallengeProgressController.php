@@ -38,11 +38,11 @@ class TeamChallengeProgressController extends Controller
                 schema: new OA\Schema(type: 'integer')
             ),
             new OA\Parameter(
-                name: 'status',
+                name: 'completed',
                 in: 'query',
-                description: 'Filtrar por estado',
+                description: 'Filtrar por estado de finalización',
                 required: false,
-                schema: new OA\Schema(type: 'string', enum: ['in_progress', 'completed', 'failed'])
+                schema: new OA\Schema(type: 'boolean')
             )
         ],
         responses: [
@@ -71,8 +71,12 @@ class TeamChallengeProgressController extends Controller
             $query->where('challenge_id', $request->challenge_id);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->has('completed')) {
+            if ($request->boolean('completed')) {
+                $query->completed();
+            } else {
+                $query->inProgress();
+            }
         }
 
         $progress = $query->get();
@@ -92,8 +96,7 @@ class TeamChallengeProgressController extends Controller
                 properties: [
                     new OA\Property(property: 'team_id', type: 'integer', example: 1),
                     new OA\Property(property: 'challenge_id', type: 'integer', example: 1),
-                    new OA\Property(property: 'current_value', type: 'number', format: 'float', nullable: true, example: 75.5),
-                    new OA\Property(property: 'notes', type: 'string', nullable: true, example: 'Progreso actualizado manualmente')
+                    new OA\Property(property: 'progress_kwh', type: 'number', format: 'float', nullable: true, example: 75.5, description: 'Progress in kWh')
                 ]
             )
         ),
@@ -116,8 +119,7 @@ class TeamChallengeProgressController extends Controller
         $validated = $request->validate([
             'team_id' => 'required|exists:teams,id',
             'challenge_id' => 'required|exists:challenges,id',
-            'current_value' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string',
+            'progress_kwh' => 'nullable|numeric|min:0',
         ]);
 
         $progress = TeamChallengeProgress::create($validated);
@@ -183,9 +185,7 @@ class TeamChallengeProgressController extends Controller
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'current_value', type: 'number', format: 'float', nullable: true, example: 85.0),
-                    new OA\Property(property: 'notes', type: 'string', nullable: true, example: 'Progreso actualizado por el líder del equipo'),
-                    new OA\Property(property: 'status', type: 'string', enum: ['active', 'completed', 'failed', 'paused'], example: 'active')
+                    new OA\Property(property: 'progress_kwh', type: 'number', format: 'float', nullable: true, example: 85.0, description: 'Updated progress in kWh')
                 ]
             )
         ),
@@ -207,9 +207,7 @@ class TeamChallengeProgressController extends Controller
     public function update(Request $request, TeamChallengeProgress $teamChallengeProgress): JsonResponse
     {
         $validated = $request->validate([
-            'current_value' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string',
-            'status' => 'sometimes|in:active,completed,failed,paused',
+            'progress_kwh' => 'nullable|numeric|min:0',
         ]);
 
         $teamChallengeProgress->update($validated);
@@ -297,8 +295,7 @@ class TeamChallengeProgressController extends Controller
         $query = TeamChallengeProgress::query()
             ->with(['team'])
             ->where('challenge_id', $challengeId)
-            ->where('status', 'active')
-            ->orderBy('current_value', 'desc');
+            ->orderBy('progress_kwh', 'desc');
 
         $limit = min($request->get('limit', 10), 50);
         $progress = $query->limit($limit)->get();
@@ -358,8 +355,7 @@ class TeamChallengeProgressController extends Controller
             'increment' => 'required|numeric'
         ]);
 
-        $newValue = $teamChallengeProgress->current_value + $request->increment;
-        $teamChallengeProgress->update(['current_value' => max(0, $newValue)]);
+        $teamChallengeProgress->updateProgress($request->increment);
 
         return response()->json([
             'data' => new TeamChallengeProgressResource($teamChallengeProgress->fresh()),

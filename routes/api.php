@@ -193,8 +193,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('documents', DocumentController::class);
     
     // Rutas para SEO Metadata
-    Route::get('seo-metadata/for-model/{type}/{id}', [SeoMetaDataController::class, 'forModel']);
-    Route::apiResource('seo-metadata', SeoMetaDataController::class);
+    Route::get('seo-meta-data/for-model/{type}/{id}', [SeoMetaDataController::class, 'forModel']);
+    Route::apiResource('seo-meta-data', SeoMetaDataController::class);
     
     // Rutas para Page Components (CMS)
     Route::get('page-components/for-page/{pageId}', [PageComponentController::class, 'forPage']);

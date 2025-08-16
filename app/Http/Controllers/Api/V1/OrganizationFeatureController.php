@@ -31,9 +31,23 @@ class OrganizationFeatureController extends Controller
                 schema: new OA\Schema(type: 'integer')
             ),
             new OA\Parameter(
-                name: 'is_enabled',
+                name: 'feature_key',
                 in: 'query',
-                description: 'Filtrar por estado habilitado',
+                description: 'Filtrar por clave de característica',
+                required: false,
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'enabled_dashboard',
+                in: 'query',
+                description: 'Filtrar por estado en dashboard',
+                required: false,
+                schema: new OA\Schema(type: 'boolean')
+            ),
+            new OA\Parameter(
+                name: 'enabled_web',
+                in: 'query',
+                description: 'Filtrar por estado en web',
                 required: false,
                 schema: new OA\Schema(type: 'boolean')
             )
@@ -60,8 +74,16 @@ class OrganizationFeatureController extends Controller
             $query->where('organization_id', $request->organization_id);
         }
 
-        if ($request->has('is_enabled')) {
-            $query->where('is_enabled', $request->boolean('is_enabled'));
+        if ($request->filled('feature_key')) {
+            $query->where('feature_key', $request->feature_key);
+        }
+
+        if ($request->has('enabled_dashboard')) {
+            $query->where('enabled_dashboard', $request->boolean('enabled_dashboard'));
+        }
+
+        if ($request->has('enabled_web')) {
+            $query->where('enabled_web', $request->boolean('enabled_web'));
         }
 
         $features = $query->get();
@@ -77,13 +99,13 @@ class OrganizationFeatureController extends Controller
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ['name', 'organization_id'],
+                required: ['feature_key', 'organization_id'],
                 properties: [
-                    new OA\Property(property: 'name', type: 'string', maxLength: 255, example: 'Gestión de Energía Solar'),
-                    new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Permite gestionar paneles solares'),
+                    new OA\Property(property: 'feature_key', type: 'string', maxLength: 255, example: 'energy_management'),
                     new OA\Property(property: 'organization_id', type: 'integer', example: 1),
-                    new OA\Property(property: 'is_enabled', type: 'boolean', example: true),
-                    new OA\Property(property: 'config', type: 'object', nullable: true, example: ['max_panels' => 100])
+                    new OA\Property(property: 'enabled_dashboard', type: 'boolean', example: true),
+                    new OA\Property(property: 'enabled_web', type: 'boolean', example: true),
+                    new OA\Property(property: 'notes', type: 'string', maxLength: 1000, nullable: true, example: 'Feature enabled for solar panel management')
                 ]
             )
         ),
@@ -109,10 +131,10 @@ class OrganizationFeatureController extends Controller
 
         $validated = $request->validate([
             'organization_id' => 'required|exists:organizations,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'config' => 'nullable|array',
-            'is_enabled' => 'boolean',
+            'feature_key' => 'required|string|max:255',
+            'enabled_dashboard' => 'boolean',
+            'enabled_web' => 'boolean',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $feature = OrganizationFeature::create($validated);
@@ -177,10 +199,9 @@ class OrganizationFeatureController extends Controller
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'name', type: 'string', maxLength: 255, example: 'Gestión de Energía Eólica'),
-                    new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Permite gestionar turbinas eólicas'),
-                    new OA\Property(property: 'is_enabled', type: 'boolean', example: false),
-                    new OA\Property(property: 'config', type: 'object', nullable: true, example: ['max_turbines' => 50])
+                    new OA\Property(property: 'enabled_dashboard', type: 'boolean', example: false),
+                    new OA\Property(property: 'enabled_web', type: 'boolean', example: true),
+                    new OA\Property(property: 'notes', type: 'string', maxLength: 1000, nullable: true, example: 'Updated feature configuration')
                 ]
             )
         ),
@@ -207,9 +228,9 @@ class OrganizationFeatureController extends Controller
         }
 
         $validated = $request->validate([
-            'description' => 'nullable|string',
-            'config' => 'nullable|array',
-            'is_enabled' => 'boolean',
+            'enabled_dashboard' => 'boolean',
+            'enabled_web' => 'boolean',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $organizationFeature->update($validated);
