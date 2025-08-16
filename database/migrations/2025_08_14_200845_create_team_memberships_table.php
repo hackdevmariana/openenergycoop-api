@@ -24,7 +24,10 @@ return new class extends Migration
             $table->index(['team_id', 'left_at']); // Para obtener miembros activos
             $table->index(['user_id', 'left_at']); // Para obtener equipos de un usuario
             $table->index('role');
-            $table->unique(['team_id', 'user_id'], 'team_user_unique'); // Un usuario solo puede estar una vez en un equipo
+            // Un usuario solo puede tener una membresía activa por equipo
+            // El constraint único se maneja en la lógica de aplicación ya que MySQL no soporta 
+            // constraints únicos condicionales de forma nativa
+            $table->index(['team_id', 'user_id'], 'team_user_index');
         });
     }
 

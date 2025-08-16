@@ -42,7 +42,7 @@ class TeamMembershipController extends Controller
                 in: 'query',
                 description: 'Filtrar por rol',
                 required: false,
-                schema: new OA\Schema(type: 'string', enum: ['leader', 'member', 'moderator'])
+                schema: new OA\Schema(type: 'string', enum: ['member', 'admin', 'moderator'])
             ),
             new OA\Parameter(
                 name: 'is_active',
@@ -83,10 +83,14 @@ class TeamMembershipController extends Controller
         }
 
         if ($request->has('is_active')) {
-            $query->where('is_active', $request->boolean('is_active'));
+            if ($request->boolean('is_active')) {
+                $query->whereNull('left_at');
+            } else {
+                $query->whereNotNull('left_at');
+            }
         }
 
-        $memberships = $query->get();
+        $memberships = $query->paginate(request('per_page', 15));
         return TeamMembershipResource::collection($memberships);
     }
 
@@ -103,7 +107,7 @@ class TeamMembershipController extends Controller
                 properties: [
                     new OA\Property(property: 'team_id', type: 'integer', example: 1),
                     new OA\Property(property: 'user_id', type: 'integer', example: 2),
-                    new OA\Property(property: 'role', type: 'string', enum: ['member', 'leader', 'admin'], example: 'member')
+                    new OA\Property(property: 'role', type: 'string', enum: ['member', 'admin', 'moderator'], example: 'member')
                 ]
             )
         ),
@@ -126,13 +130,13 @@ class TeamMembershipController extends Controller
         $validated = $request->validate([
             'team_id' => 'required|exists:teams,id',
             'user_id' => 'required|exists:users,id',
-            'role' => 'required|string|in:member,leader,admin',
+            'role' => 'required|string|in:member,admin,moderator',
         ]);
 
         // Verificar que el usuario no esté ya en el equipo
         $existing = TeamMembership::where('team_id', $validated['team_id'])
             ->where('user_id', $validated['user_id'])
-            ->where('is_active', true)
+            ->whereNull('left_at')
             ->first();
 
         if ($existing) {
@@ -204,8 +208,7 @@ class TeamMembershipController extends Controller
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'role', type: 'string', enum: ['member', 'leader', 'admin'], example: 'leader'),
-                    new OA\Property(property: 'is_active', type: 'boolean', example: true)
+                    new OA\Property(property: 'role', type: 'string', enum: ['member', 'admin', 'moderator'], example: 'admin')
                 ]
             )
         ),
@@ -227,8 +230,7 @@ class TeamMembershipController extends Controller
     public function update(Request $request, TeamMembership $teamMembership): JsonResponse
     {
         $validated = $request->validate([
-            'role' => 'sometimes|string|in:member,leader,admin',
-            'is_active' => 'boolean',
+            'role' => 'sometimes|string|in:member,admin,moderator',
         ]);
 
         $teamMembership->update($validated);
@@ -312,7 +314,7 @@ class TeamMembershipController extends Controller
 
         $membership = TeamMembership::where('team_id', $request->team_id)
             ->where('user_id', auth()->id())
-            ->where('is_active', true)
+            ->whereNull('left_at')
             ->first();
 
         if (!$membership) {
@@ -321,7 +323,7 @@ class TeamMembershipController extends Controller
             ], 422);
         }
 
-        $membership->update(['is_active' => false, 'left_at' => now()]);
+        $membership->update(['left_at' => now()]);
 
         return response()->json([
             'message' => 'Has abandonado el equipo exitosamente'

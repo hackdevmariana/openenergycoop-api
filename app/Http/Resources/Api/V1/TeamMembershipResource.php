@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'id', type: 'integer', example: 1),
         new OA\Property(property: 'team_id', type: 'integer', example: 1),
         new OA\Property(property: 'user_id', type: 'integer', example: 2),
-        new OA\Property(property: 'role', type: 'string', enum: ['member', 'leader', 'admin'], example: 'member'),
+        new OA\Property(property: 'role', type: 'string', enum: ['member', 'admin', 'moderator'], example: 'member'),
         new OA\Property(property: 'is_active', type: 'boolean', example: true),
         new OA\Property(property: 'joined_at', type: 'string', format: 'date-time', example: '2024-01-15T10:30:00Z'),
         new OA\Property(property: 'left_at', type: 'string', format: 'date-time', nullable: true, example: null),

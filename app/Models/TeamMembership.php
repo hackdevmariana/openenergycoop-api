@@ -18,6 +18,10 @@ class TeamMembership extends Model
         'left_at',
     ];
 
+    protected $appends = [
+        'is_active'
+    ];
+
     protected $casts = [
         'joined_at' => 'datetime',
         'left_at' => 'datetime',
@@ -111,6 +115,14 @@ class TeamMembership extends Model
     public function isActive(): bool
     {
         return is_null($this->left_at);
+    }
+
+    /**
+     * Accessor para is_active
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->isActive();
     }
 
     /**
@@ -274,11 +286,17 @@ class TeamMembership extends Model
             }
         });
 
-        // Validar que no haya membresías duplicadas activas
+        // Validar que no haya membresías duplicadas activas antes de crear
         static::creating(function ($membership) {
+            // Eliminar cualquier membresía inactiva previa para evitar constraint único
+            static::where('team_id', $membership->team_id)
+                  ->where('user_id', $membership->user_id)
+                  ->whereNotNull('left_at')
+                  ->delete();
+                             
             $existing = static::where('team_id', $membership->team_id)
                              ->where('user_id', $membership->user_id)
-                             ->active()
+                             ->whereNull('left_at')
                              ->exists();
             
             if ($existing) {
