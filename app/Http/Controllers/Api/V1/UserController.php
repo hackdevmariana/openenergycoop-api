@@ -24,12 +24,12 @@ class UserController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         // Solo administradores pueden listar usuarios
-        if (!auth()->user()->can('manage users')) {
+        if (!auth('sanctum')->user()->can('manage users')) {
             abort(403, 'No tienes permisos para listar usuarios');
         }
 
         $query = User::query()
-            ->with(['profile', 'organizations', 'roles'])
+            ->with(['roles', 'permissions'])
             ->orderBy('created_at', 'desc');
 
         // Filtros
@@ -61,7 +61,7 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): JsonResponse
     {
-        if (!auth()->user()->can('manage users')) {
+        if (!auth('sanctum')->user()->can('manage users')) {
             abort(403, 'No tienes permisos para crear usuarios');
         }
 
@@ -78,7 +78,7 @@ class UserController extends Controller
             $user->assignRole($request->role);
         }
 
-        $user->load(['profile', 'organizations', 'roles']);
+        $user->load(['roles', 'permissions']);
 
         return response()->json([
             'data' => new UserResource($user),
@@ -88,19 +88,19 @@ class UserController extends Controller
 
     public function show(Request $request, User $user): JsonResponse
     {
-        if (auth()->id() !== $user->id && !auth()->user()->can('manage users')) {
+        if (auth('sanctum')->id() !== $user->id && !auth('sanctum')->user()->can('manage users')) {
             abort(403, 'No tienes permisos para ver este usuario');
         }
 
-        $user->load(['profile', 'organizations', 'roles', 'permissions']);
+        $user->load(['roles', 'permissions']);
 
         $data = ['data' => new UserResource($user)];
 
         if ($request->boolean('include_stats')) {
             $data['stats'] = [
-                'total_teams' => $user->teams()->count(),
-                'total_achievements' => $user->achievements()->count(),
-                'total_comments' => $user->comments()->count(),
+                'total_devices' => $user->devices()->count(),
+                'total_settings' => $user->settings()->count(),
+                'total_consents' => $user->consentLogs()->count(),
                 'account_age_days' => $user->created_at->diffInDays(now()),
             ];
         }
@@ -110,7 +110,7 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        if (auth()->id() !== $user->id && !auth()->user()->can('manage users')) {
+        if (auth('sanctum')->id() !== $user->id && !auth('sanctum')->user()->can('manage users')) {
             abort(403, 'No tienes permisos para actualizar este usuario');
         }
 
@@ -122,11 +122,11 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        if ($request->filled('role') && auth()->user()->can('manage users')) {
+        if ($request->filled('role') && auth('sanctum')->user()->can('manage users')) {
             $user->syncRoles([$request->role]);
         }
 
-        $user->load(['profile', 'organizations', 'roles']);
+        $user->load(['roles', 'permissions']);
 
         return response()->json([
             'data' => new UserResource($user),
@@ -136,11 +136,11 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
-        if (!auth()->user()->can('manage users')) {
+        if (!auth('sanctum')->user()->can('manage users')) {
             abort(403, 'No tienes permisos para eliminar usuarios');
         }
 
-        if (auth()->id() === $user->id) {
+        if (auth('sanctum')->id() === $user->id) {
             return response()->json([
                 'message' => 'No puedes eliminar tu propia cuenta'
             ], 422);
@@ -155,8 +155,8 @@ class UserController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $user = auth()->user();
-        $user->load(['profile', 'organizations', 'roles', 'permissions']);
+        $user = auth('sanctum')->user();
+        $user->load(['roles', 'permissions']);
 
         return response()->json([
             'data' => new UserResource($user)
@@ -165,7 +165,7 @@ class UserController extends Controller
 
     public function updateMe(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
         
         $rules = [
             'name' => 'sometimes|string|max:255',
@@ -190,7 +190,7 @@ class UserController extends Controller
         }
 
         $user->update($validated);
-        $user->load(['profile', 'organizations', 'roles']);
+        $user->load(['roles', 'permissions']);
 
         return response()->json([
             'data' => new UserResource($user),
