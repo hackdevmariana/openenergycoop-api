@@ -33,7 +33,7 @@ class TextContentController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                  ->orWhere('text', 'like', "%{$search}%");
             });
         }
 
@@ -45,7 +45,7 @@ class TextContentController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'text' => 'required|string',
             'language' => 'required|string|in:es,en,ca,eu,gl',
             'organization_id' => 'nullable|exists:organizations,id',
         ]);
@@ -78,7 +78,7 @@ class TextContentController extends Controller
     {
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
-            'content' => 'sometimes|string',
+            'text' => 'sometimes|string',
             'language' => 'sometimes|string|in:es,en,ca,eu,gl',
         ]);
 
