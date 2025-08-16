@@ -33,6 +33,35 @@ class FaqResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'topic_id' => $this->topic_id,
+            'question' => $this->question,
+            'answer' => $this->answer,
+            'position' => $this->position,
+            'views_count' => $this->views_count,
+            'helpful_count' => $this->helpful_count,
+            'not_helpful_count' => $this->not_helpful_count,
+            'is_featured' => $this->is_featured,
+            'tags' => $this->tags,
+            'organization_id' => $this->organization_id,
+            'language' => $this->language,
+            'is_draft' => $this->is_draft,
+            'published_at' => $this->published_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            
+            // Relationships
+            'topic' => $this->whenLoaded('topic'),
+            'organization' => $this->whenLoaded('organization'),
+            'created_by' => $this->whenLoaded('createdBy'),
+            'updated_by' => $this->whenLoaded('updatedBy'),
+            
+            // Computed Properties
+            'is_published' => $this->isPublished(),
+            'helpful_rate' => $this->helpful_rate,
+            'readable_answer' => $this->readable_answer,
+            'short_answer' => $this->short_answer,
+        ];
     }
 }

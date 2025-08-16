@@ -200,14 +200,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('page-components/{pageComponent}/reorder', [PageComponentController::class, 'reorder']);
     Route::apiResource('page-components', PageComponentController::class);
     
-    // Rutas para FAQs
-    Route::get('faqs/featured', [FaqController::class, 'featured']);
-    Route::get('faqs/search', [FaqController::class, 'search']);
-    Route::apiResource('faqs', FaqController::class);
+    // Rutas para FAQs (solo escritura)
+    Route::post('faqs', [FaqController::class, 'store']);
+    Route::put('faqs/{faq}', [FaqController::class, 'update']);
+    Route::patch('faqs/{faq}', [FaqController::class, 'update']);
+    Route::delete('faqs/{faq}', [FaqController::class, 'destroy']);
     
-    // Rutas para FAQ Topics
-    Route::get('faq-topics/{faqTopic}/faqs', [FaqTopicController::class, 'faqs']);
-    Route::apiResource('faq-topics', FaqTopicController::class);
+    // Rutas para FAQ Topics (solo escritura)
+    Route::post('faq-topics', [FaqTopicController::class, 'store']);
+    Route::put('faq-topics/{faqTopic}', [FaqTopicController::class, 'update']);
+    Route::patch('faq-topics/{faqTopic}', [FaqTopicController::class, 'update']);
+    Route::delete('faq-topics/{faqTopic}', [FaqTopicController::class, 'destroy']);
     
     // Rutas para Contacts
     Route::get('contacts/by-type/{type}', [ContactController::class, 'byType']);
