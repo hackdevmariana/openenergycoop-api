@@ -268,7 +268,7 @@ class Document extends Model implements HasMedia, Cacheable, Publishable, Multil
 
     public function getSecureDownloadUrl(): string
     {
-        return route('documents.download', ['document' => $this->id]);
+        return url("/api/v1/documents/{$this->id}/download");
     }
 
     public function getThumbnailUrl(): ?string

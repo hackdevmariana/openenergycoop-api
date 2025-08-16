@@ -25,9 +25,8 @@ class DocumentController extends Controller
         $query = Document::query()
             ->with(['category', 'organization', 'uploadedBy'])
             ->published()
-            ->where('is_public', true)
-            ->orderBy('is_featured', 'desc')
-            ->orderBy('created_at', 'desc');
+            ->where('visible', true)
+            ->orderBy('uploaded_at', 'desc');
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -38,7 +37,7 @@ class DocumentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('tags', 'like', "%{$search}%");
+                  ->orWhereJsonContains('search_keywords', $search);
             });
         }
 
@@ -46,9 +45,7 @@ class DocumentController extends Controller
             $query->where('file_type', $request->type);
         }
 
-        if ($request->boolean('featured')) {
-            $query->where('is_featured', true);
-        }
+        // Removido filtro de featured ya que no existe en la migración
 
         $perPage = min($request->get('per_page', 15), 50);
         $documents = $query->paginate($perPage);
@@ -59,7 +56,8 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $validated['uploaded_by_user_id'] = auth()->id();
+        $validated['uploaded_by'] = auth()->id();
+        $validated['uploaded_at'] = now();
 
         $document = Document::create($validated);
         $document->load(['category', 'organization', 'uploadedBy']);
@@ -72,7 +70,7 @@ class DocumentController extends Controller
 
     public function show(Document $document): JsonResponse
     {
-        if (!$document->isPublished() || !$document->is_public) {
+        if (!$document->isPublished() || !$document->visible) {
             return response()->json(['message' => 'Documento no encontrado'], 404);
         }
 
@@ -108,7 +106,7 @@ class DocumentController extends Controller
 
     public function download(Document $document): JsonResponse
     {
-        if (!$document->isPublished() || !$document->is_public) {
+        if (!$document->isPublished() || !$document->visible) {
             return response()->json(['message' => 'Documento no encontrado'], 404);
         }
 
@@ -124,14 +122,14 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function featured(Request $request): JsonResponse
+    public function mostDownloaded(Request $request): JsonResponse
     {
         $query = Document::query()
             ->with(['category', 'organization'])
             ->published()
-            ->where('is_public', true)
-            ->where('is_featured', true)
-            ->orderBy('created_at', 'desc');
+            ->where('visible', true)
+            ->where('download_count', '>', 0)
+            ->orderBy('download_count', 'desc');
 
         $limit = min($request->get('limit', 10), 20);
         $documents = $query->limit($limit)->get();
@@ -147,8 +145,8 @@ class DocumentController extends Controller
         $query = Document::query()
             ->with(['category', 'organization'])
             ->published()
-            ->where('is_public', true)
-            ->orderBy('created_at', 'desc');
+            ->where('visible', true)
+            ->orderBy('uploaded_at', 'desc');
 
         $limit = min($request->get('limit', 10), 20);
         $documents = $query->limit($limit)->get();
@@ -164,7 +162,7 @@ class DocumentController extends Controller
         $query = Document::query()
             ->with(['category', 'organization'])
             ->published()
-            ->where('is_public', true)
+            ->where('visible', true)
             ->orderBy('download_count', 'desc');
 
         $limit = min($request->get('limit', 10), 20);
