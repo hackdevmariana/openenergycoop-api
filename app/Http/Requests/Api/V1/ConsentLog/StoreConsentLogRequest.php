@@ -23,7 +23,7 @@ class StoreConsentLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'consent_type' => 'required|string|in:' . implode(',', AppEnums::CONSENT_TYPES),
+            'consent_type' => 'required|string|in:' . implode(',', array_keys(AppEnums::CONSENT_TYPES)),
             'consent_given' => 'required|boolean',
             'version' => 'nullable|string|max:50',
             'purpose' => 'nullable|string|max:500',
@@ -62,7 +62,7 @@ class StoreConsentLogRequest extends FormRequest
     {
         return [
             'consent_type.required' => 'El tipo de consentimiento es obligatorio.',
-            'consent_type.in' => 'El tipo de consentimiento debe ser uno de: ' . implode(', ', AppEnums::CONSENT_TYPES),
+            'consent_type.in' => 'El tipo de consentimiento debe ser uno de: ' . implode(', ', array_keys(AppEnums::CONSENT_TYPES)),
             'consent_given.required' => 'Debe especificar si el consentimiento fue otorgado.',
             'consent_given.boolean' => 'El consentimiento debe ser verdadero o falso.',
             'version.max' => 'La versión no puede tener más de 50 caracteres.',

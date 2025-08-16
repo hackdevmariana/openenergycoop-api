@@ -229,7 +229,7 @@ class ConsentLogController extends Controller
     public function currentStatus(): JsonResponse
     {
         $userId = auth()->id();
-        $consentTypes = ['privacy_policy', 'terms_of_service', 'marketing', 'cookies', 'data_processing', 'newsletter', 'analytics'];
+        $consentTypes = array_keys(\App\Enums\AppEnums::CONSENT_TYPES);
         
         $currentConsents = [];
 
@@ -274,7 +274,10 @@ class ConsentLogController extends Controller
      */
     public function history(string $type): JsonResponse
     {
-        $consents = ConsentLog::getConsentHistory(auth()->id(), $type);
+        $consents = ConsentLog::forUser(auth()->id())
+            ->ofType($type)
+            ->orderByDesc('created_at')
+            ->get();
 
         return response()->json([
             'data' => ConsentLogResource::collection($consents)
