@@ -50,7 +50,7 @@ class UpdateUserSettingsRequest extends FormRequest
             'energy_unit' => 'sometimes|string|in:kWh,MWh,GWh',
             
             // Configuraciones personalizadas
-            'custom_settings' => 'sometimes|array',
+            'custom_settings' => 'sometimes|nullable|array',
         ];
     }
 

@@ -18,129 +18,208 @@ class UserSettingsFactory extends Factory
      */
     public function definition(): array
     {
-        $settingKeys = array_keys(UserSettings::DEFAULT_SETTINGS);
-        $key = $this->faker->randomElement($settingKeys);
-        
         return [
             'user_id' => User::factory(),
-            'key' => $key,
-            'value' => $this->generateValueForKey($key),
+            'language' => $this->faker->randomElement(UserSettings::SUPPORTED_LANGUAGES),
+            'timezone' => $this->faker->randomElement([
+                'Europe/Madrid', 'Europe/London', 'America/New_York', 
+                'America/Los_Angeles', 'Asia/Tokyo', 'Australia/Sydney'
+            ]),
+            'theme' => $this->faker->randomElement(UserSettings::SUPPORTED_THEMES),
+            'notifications_enabled' => $this->faker->boolean(80),
+            'email_notifications' => $this->faker->boolean(70),
+            'push_notifications' => $this->faker->boolean(60),
+            'sms_notifications' => $this->faker->boolean(20),
+            'marketing_emails' => $this->faker->boolean(40),
+            'newsletter_subscription' => $this->faker->boolean(50),
+            'privacy_level' => $this->faker->randomElement(UserSettings::PRIVACY_LEVELS),
+            'profile_visibility' => $this->faker->randomElement(UserSettings::PROFILE_VISIBILITY_LEVELS),
+            'show_achievements' => $this->faker->boolean(75),
+            'show_statistics' => $this->faker->boolean(70),
+            'show_activity' => $this->faker->boolean(65),
+            'date_format' => $this->faker->randomElement(['d/m/Y', 'm/d/Y', 'Y-m-d', 'd-m-Y']),
+            'time_format' => $this->faker->randomElement(UserSettings::TIME_FORMATS),
+            'currency' => $this->faker->randomElement(['EUR', 'USD', 'GBP', 'JPY', 'CAD']),
+            'measurement_unit' => $this->faker->randomElement(UserSettings::MEASUREMENT_UNITS),
+            'energy_unit' => $this->faker->randomElement(UserSettings::ENERGY_UNITS),
+            'custom_settings' => $this->faker->optional(0.3)->randomElement([
+                ['dashboard_layout' => 'grid', 'chart_type' => 'line'],
+                ['dark_mode_auto' => true, 'compact_view' => false],
+                ['show_tips' => true, 'animation_speed' => 'normal'],
+            ]),
         ];
     }
 
     /**
-     * Generar un valor apropiado para una clave específica
+     * State for default settings (all default values)
      */
-    private function generateValueForKey(string $key)
+    public function defaults(): static
     {
-        return match ($key) {
-            'dashboard_view' => $this->faker->randomElement(['grid', 'list', 'compact']),
-            'theme' => $this->faker->randomElement(['light', 'dark', 'auto']),
-            'language' => $this->faker->randomElement(['es', 'en', 'ca']),
-            'timezone' => $this->faker->randomElement(['Europe/Madrid', 'Europe/London', 'America/New_York']),
-            'date_format' => $this->faker->randomElement(['d/m/Y', 'm/d/Y', 'Y-m-d']),
-            'time_format' => $this->faker->randomElement(['H:i', 'h:i A']),
-            'currency' => $this->faker->randomElement(['EUR', 'USD', 'GBP']),
-            'energy_units' => $this->faker->randomElement(['kwh', 'mwh', 'wh']),
-            'notifications' => [
-                'email' => [
-                    'system' => $this->faker->boolean(80),
-                    'marketing' => $this->faker->boolean(30),
-                    'achievements' => $this->faker->boolean(70),
-                    'team_updates' => $this->faker->boolean(60),
-                    'challenges' => $this->faker->boolean(75),
-                ],
-                'push' => [
-                    'system' => $this->faker->boolean(70),
-                    'achievements' => $this->faker->boolean(80),
-                    'team_updates' => $this->faker->boolean(40),
-                    'challenges' => $this->faker->boolean(65),
-                ],
-                'sms' => [
-                    'system' => $this->faker->boolean(20),
-                    'security' => $this->faker->boolean(60),
-                ],
-            ],
-            'privacy' => [
-                'show_in_rankings' => $this->faker->boolean(70),
-                'show_profile_public' => $this->faker->boolean(30),
-                'share_achievements' => $this->faker->boolean(60),
-            ],
-            'dashboard_widgets' => [
-                'energy_overview' => $this->faker->boolean(90),
-                'recent_achievements' => $this->faker->boolean(75),
-                'team_progress' => $this->faker->boolean(80),
-                'challenges' => $this->faker->boolean(85),
-                'leaderboard' => $this->faker->boolean(45),
-            ],
-            'chart_preferences' => [
-                'default_period' => $this->faker->randomElement(['week', 'month', 'quarter', 'year']),
-                'show_comparisons' => $this->faker->boolean(70),
-                'show_goals' => $this->faker->boolean(80),
-            ],
-            default => UserSettings::DEFAULT_SETTINGS[$key] ?? null,
-        };
+        return $this->state(fn (array $attributes) => UserSettings::DEFAULT_VALUES);
     }
 
     /**
-     * Estado para una configuración específica
+     * State for Spanish language settings
      */
-    public function forKey(string $key): static
+    public function spanish(): static
     {
         return $this->state(fn (array $attributes) => [
-            'key' => $key,
-            'value' => $this->generateValueForKey($key),
+            'language' => 'es',
+            'timezone' => 'Europe/Madrid',
+            'currency' => 'EUR',
+            'date_format' => 'd/m/Y',
         ]);
     }
 
     /**
-     * Estado para configuración de notificaciones
+     * State for English language settings
      */
-    public function notifications(): static
-    {
-        return $this->forKey('notifications');
-    }
-
-    /**
-     * Estado para configuración de privacidad
-     */
-    public function privacy(): static
-    {
-        return $this->forKey('privacy');
-    }
-
-    /**
-     * Estado para configuración de widgets del dashboard
-     */
-    public function dashboardWidgets(): static
-    {
-        return $this->forKey('dashboard_widgets');
-    }
-
-    /**
-     * Estado para tema
-     */
-    public function theme(): static
-    {
-        return $this->forKey('theme');
-    }
-
-    /**
-     * Estado para idioma
-     */
-    public function language(): static
-    {
-        return $this->forKey('language');
-    }
-
-    /**
-     * Estado para configuración personalizada
-     */
-    public function custom(string $key, $value): static
+    public function english(): static
     {
         return $this->state(fn (array $attributes) => [
-            'key' => $key,
-            'value' => $value,
+            'language' => 'en',
+            'timezone' => 'Europe/London',
+            'currency' => 'GBP',
+            'date_format' => 'd/m/Y',
+        ]);
+    }
+
+    /**
+     * State for notifications enabled
+     */
+    public function notificationsEnabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'notifications_enabled' => true,
+            'email_notifications' => true,
+            'push_notifications' => true,
+            'marketing_emails' => true,
+            'newsletter_subscription' => true,
+        ]);
+    }
+
+    /**
+     * State for notifications disabled
+     */
+    public function notificationsDisabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'notifications_enabled' => false,
+            'email_notifications' => false,
+            'push_notifications' => false,
+            'sms_notifications' => false,
+            'marketing_emails' => false,
+            'newsletter_subscription' => false,
+        ]);
+    }
+
+    /**
+     * State for public privacy settings
+     */
+    public function publicPrivacy(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'privacy_level' => 'public',
+            'profile_visibility' => 'public',
+            'show_achievements' => true,
+            'show_statistics' => true,
+            'show_activity' => true,
+        ]);
+    }
+
+    /**
+     * State for private privacy settings
+     */
+    public function privatePrivacy(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'privacy_level' => 'private',
+            'profile_visibility' => 'private',
+            'show_achievements' => false,
+            'show_statistics' => false,
+            'show_activity' => false,
+        ]);
+    }
+
+    /**
+     * State for dark theme
+     */
+    public function darkTheme(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'theme' => 'dark',
+        ]);
+    }
+
+    /**
+     * State for light theme
+     */
+    public function lightTheme(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'theme' => 'light',
+        ]);
+    }
+
+    /**
+     * State for custom settings
+     */
+    public function withCustomSettings(array $customSettings): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'custom_settings' => $customSettings,
+        ]);
+    }
+
+    /**
+     * State for specific user
+     */
+    public function forUser(User $user): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_id' => $user->id,
+        ]);
+    }
+
+    /**
+     * State for metric units
+     */
+    public function metricUnits(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'measurement_unit' => 'metric',
+            'energy_unit' => 'kWh',
+        ]);
+    }
+
+    /**
+     * State for imperial units
+     */
+    public function imperialUnits(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'measurement_unit' => 'imperial',
+            'energy_unit' => 'kWh', // Energy unit typically stays the same
+        ]);
+    }
+
+    /**
+     * State for 12-hour time format
+     */
+    public function twelveHourFormat(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'time_format' => '12',
+        ]);
+    }
+
+    /**
+     * State for 24-hour time format
+     */
+    public function twentyFourHourFormat(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'time_format' => '24',
         ]);
     }
 }

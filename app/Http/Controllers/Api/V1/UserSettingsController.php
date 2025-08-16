@@ -36,9 +36,7 @@ class UserSettingsController extends Controller
      */
     public function show(): JsonResponse
     {
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         return response()->json([
             'data' => new UserSettingsResource($settings)
@@ -89,9 +87,7 @@ class UserSettingsController extends Controller
      */
     public function update(UpdateUserSettingsRequest $request): JsonResponse
     {
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         $settings->update($request->validated());
 
@@ -116,9 +112,7 @@ class UserSettingsController extends Controller
      */
     public function notifications(): JsonResponse
     {
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         return response()->json([
             'notifications_enabled' => $settings->notifications_enabled,
@@ -165,9 +159,7 @@ class UserSettingsController extends Controller
             'newsletter_subscription' => 'sometimes|boolean',
         ]);
 
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         $settings->update($request->only([
             'notifications_enabled',
@@ -198,9 +190,7 @@ class UserSettingsController extends Controller
      */
     public function privacy(): JsonResponse
     {
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         return response()->json([
             'privacy_level' => $settings->privacy_level,
@@ -244,9 +234,7 @@ class UserSettingsController extends Controller
             'show_activity' => 'sometimes|boolean',
         ]);
 
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         $settings->update($request->only([
             'privacy_level',
@@ -276,9 +264,7 @@ class UserSettingsController extends Controller
      */
     public function reset(): JsonResponse
     {
-        $settings = UserSettings::firstOrCreate([
-            'user_id' => auth()->id()
-        ]);
+        $settings = UserSettings::getForUser(auth()->id());
 
         // Restablecer a valores por defecto
         $settings->update([
