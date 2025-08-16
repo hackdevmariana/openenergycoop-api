@@ -219,8 +219,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('social-links', SocialLinkController::class);
     
     // Rutas para Collaborators
-    Route::get('collaborators/featured', [CollaboratorController::class, 'featured']);
-    Route::get('collaborators/by-department/{department}', [CollaboratorController::class, 'byDepartment']);
+    Route::get('collaborators/active', [CollaboratorController::class, 'active']);
+    Route::get('collaborators/by-type/{type}', [CollaboratorController::class, 'byType']);
     Route::apiResource('collaborators', CollaboratorController::class);
     
     // Rutas para Messages
@@ -349,8 +349,8 @@ Route::prefix('v1')->group(function () {
     
     // Rutas públicas para Collaborators (solo lectura)
     Route::get('collaborators', [CollaboratorController::class, 'index']);
-    Route::get('collaborators/featured', [CollaboratorController::class, 'featured']);
-    Route::get('collaborators/by-department/{department}', [CollaboratorController::class, 'byDepartment']);
+    Route::get('collaborators/active', [CollaboratorController::class, 'active']);
+    Route::get('collaborators/by-type/{type}', [CollaboratorController::class, 'byType']);
     Route::get('collaborators/{collaborator}', [CollaboratorController::class, 'show']);
     
     // Rutas públicas para Newsletter (suscripción pública)

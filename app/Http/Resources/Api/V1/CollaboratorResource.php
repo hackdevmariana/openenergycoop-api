@@ -34,6 +34,27 @@ class CollaboratorResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'logo' => $this->logo,
+            'url' => $this->url,
+            'description' => $this->description,
+            'order' => $this->order,
+            'is_active' => $this->is_active,
+            'collaborator_type' => $this->collaborator_type,
+            'is_draft' => $this->is_draft,
+            'published_at' => $this->published_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relaciones
+            'organization' => $this->whenLoaded('organization'),
+            'created_by' => $this->whenLoaded('createdBy'),
+
+            // Computed fields
+            'is_published' => $this->isPublished(),
+            'type_label' => $this->getTypeLabel(),
+        ];
     }
 }
