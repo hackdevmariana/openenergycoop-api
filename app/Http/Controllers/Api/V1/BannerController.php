@@ -25,19 +25,15 @@ class BannerController extends Controller
         $query = Banner::query()
             ->with(['organization', 'createdBy'])
             ->published()
-            ->orderBy('priority', 'desc')
+            ->orderBy('position', 'desc')
             ->orderBy('created_at', 'desc');
 
         if ($request->has('active')) {
-            $query->where('is_active', $request->boolean('active'));
+            $query->where('active', $request->boolean('active'));
         }
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        if ($request->filled('language')) {
-            $query->where('language', $request->language);
+            $query->where('banner_type', $request->type);
         }
 
         if ($request->filled('position')) {
@@ -64,7 +60,7 @@ class BannerController extends Controller
 
     public function show(Banner $banner): JsonResponse
     {
-        if (!$banner->isPublished() || !$banner->is_active) {
+        if (!$banner->isPublished() || !$banner->active) {
             return response()->json(['message' => 'Banner no encontrado'], 404);
         }
 
@@ -103,13 +99,11 @@ class BannerController extends Controller
         $query = Banner::query()
             ->with(['organization'])
             ->published()
-            ->where('is_active', true)
+            ->where('active', true)
             ->where('position', $position)
-            ->orderBy('priority', 'desc');
+            ->orderBy('position', 'desc');
 
-        if ($request->filled('language')) {
-            $query->where('language', $request->language);
-        }
+
 
         $banners = $query->get();
 
@@ -125,15 +119,13 @@ class BannerController extends Controller
         $query = Banner::query()
             ->with(['organization'])
             ->published()
-            ->where('is_active', true)
-            ->orderBy('priority', 'desc');
+            ->where('active', true)
+            ->orderBy('position', 'desc');
 
-        if ($request->filled('language')) {
-            $query->where('language', $request->language);
-        }
+
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $query->where('banner_type', $request->type);
         }
 
         $banners = $query->get();
