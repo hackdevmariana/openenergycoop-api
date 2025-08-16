@@ -100,14 +100,14 @@ class Article extends Model implements HasMedia, Cacheable, Publishable, Multili
         return $this->belongsTo(Category::class);
     }
 
-    public function comments(): HasMany
+    public function comments(): MorphMany
     {
-        return $this->hasMany(Comment::class)->orderBy('created_at', 'desc');
+        return $this->morphMany(Comment::class, 'commentable')->orderBy('created_at', 'desc');
     }
 
-    public function approvedComments(): HasMany
+    public function approvedComments(): MorphMany
     {
-        return $this->hasMany(Comment::class)
+        return $this->morphMany(Comment::class, 'commentable')
             ->where('status', 'approved')
             ->orderBy('created_at', 'desc');
     }
