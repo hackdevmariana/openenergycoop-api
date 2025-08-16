@@ -245,11 +245,16 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::put('messages/{message}', [MessageController::class, 'update']);
     Route::delete('messages/{message}', [MessageController::class, 'destroy']);
     
-    // Rutas para Newsletter Subscriptions
-    Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
-    Route::post('newsletter/resubscribe', [NewsletterSubscriptionController::class, 'resubscribe']);
-    Route::get('newsletter/stats', [NewsletterSubscriptionController::class, 'stats']);
-    Route::apiResource('newsletter-subscriptions', NewsletterSubscriptionController::class);
+    // Rutas para Newsletter Subscriptions (gestión interna)
+    Route::get('newsletter-subscriptions', [NewsletterSubscriptionController::class, 'index']);
+    Route::get('newsletter-subscriptions/stats', [NewsletterSubscriptionController::class, 'stats']);
+    Route::get('newsletter-subscriptions/export', [NewsletterSubscriptionController::class, 'export']);
+    Route::get('newsletter-subscriptions/{newsletterSubscription}', [NewsletterSubscriptionController::class, 'show']);
+    Route::put('newsletter-subscriptions/{newsletterSubscription}', [NewsletterSubscriptionController::class, 'update']);
+    Route::delete('newsletter-subscriptions/{newsletterSubscription}', [NewsletterSubscriptionController::class, 'destroy']);
+    Route::post('newsletter-subscriptions/{newsletterSubscription}/mark-bounced', [NewsletterSubscriptionController::class, 'markBounced']);
+    Route::post('newsletter-subscriptions/{newsletterSubscription}/mark-complaint', [NewsletterSubscriptionController::class, 'markComplaint']);
+    Route::post('newsletter-subscriptions/{newsletterSubscription}/record-email', [NewsletterSubscriptionController::class, 'recordEmail']);
     
     // Rutas para Form Submissions
     Route::apiResource('form-submissions', FormSubmissionController::class);
@@ -375,6 +380,7 @@ Route::prefix('v1')->group(function () {
     
     // Rutas públicas para Newsletter (suscripción pública)
     Route::post('newsletter-subscriptions', [NewsletterSubscriptionController::class, 'store']);
+    Route::post('newsletter/confirm', [NewsletterSubscriptionController::class, 'confirm']);
     Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
     Route::post('newsletter/resubscribe', [NewsletterSubscriptionController::class, 'resubscribe']);
     
