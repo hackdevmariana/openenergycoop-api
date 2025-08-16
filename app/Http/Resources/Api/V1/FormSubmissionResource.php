@@ -33,6 +33,54 @@ class FormSubmissionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'form_name' => $this->form_name,
+            'fields' => $this->fields,
+            'status' => $this->status,
+            'source_url' => $this->source_url,
+            'referrer' => $this->referrer,
+            'ip_address' => $this->when(
+                auth()->check(), // Only show IP to authenticated users
+                $this->ip_address
+            ),
+            'user_agent' => $this->when(
+                auth()->check(), // Only show user agent to authenticated users
+                $this->user_agent
+            ),
+            'processed_at' => $this->processed_at,
+            'processed_by_user_id' => $this->processed_by_user_id,
+            'processing_notes' => $this->processing_notes,
+            'organization_id' => $this->organization_id,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relationships
+            'processed_by' => $this->whenLoaded('processedBy'),
+            'organization' => $this->whenLoaded('organization'),
+
+            // Computed properties
+            'status_label' => $this->getStatusLabel(),
+            'form_type_label' => $this->getFormTypeLabel(),
+            'name' => $this->getName(),
+            'email' => $this->getEmail(),
+            'phone' => $this->getPhone(),
+            'message' => $this->getMessage(),
+            'subject' => $this->getSubject(),
+            'is_pending' => $this->isPending(),
+            'is_processed' => $this->isProcessed(),
+            'is_archived' => $this->isArchived(),
+            'is_spam' => $this->isSpam(),
+            'has_been_processed' => $this->hasBeenProcessed(),
+            'days_since_submission' => $this->getDaysSinceSubmission(),
+            'processing_time_hours' => $this->getProcessingTime(),
+            'source_domain' => $this->getSourceDomain(),
+            'referrer_domain' => $this->getReferrerDomain(),
+            'browser' => $this->getBrowser(),
+            'is_mobile' => $this->isMobile(),
+            'has_required_fields' => $this->hasRequiredFields(),
+            'is_potential_spam' => $this->isPotentialSpam(),
+            'field_count' => $this->getFieldCount(),
+        ];
     }
 }

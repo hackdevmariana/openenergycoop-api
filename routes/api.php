@@ -256,8 +256,16 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('newsletter-subscriptions/{newsletterSubscription}/mark-complaint', [NewsletterSubscriptionController::class, 'markComplaint']);
     Route::post('newsletter-subscriptions/{newsletterSubscription}/record-email', [NewsletterSubscriptionController::class, 'recordEmail']);
     
-    // Rutas para Form Submissions
-    Route::apiResource('form-submissions', FormSubmissionController::class);
+    // Rutas para Form Submissions (gestión interna)
+    Route::get('form-submissions', [FormSubmissionController::class, 'index']);
+    Route::get('form-submissions/stats', [FormSubmissionController::class, 'stats']);
+    Route::get('form-submissions/{formSubmission}', [FormSubmissionController::class, 'show']);
+    Route::put('form-submissions/{formSubmission}', [FormSubmissionController::class, 'update']);
+    Route::delete('form-submissions/{formSubmission}', [FormSubmissionController::class, 'destroy']);
+    Route::post('form-submissions/{formSubmission}/mark-as-processed', [FormSubmissionController::class, 'markAsProcessed']);
+    Route::post('form-submissions/{formSubmission}/mark-as-spam', [FormSubmissionController::class, 'markAsSpam']);
+    Route::post('form-submissions/{formSubmission}/archive', [FormSubmissionController::class, 'archive']);
+    Route::post('form-submissions/{formSubmission}/reopen', [FormSubmissionController::class, 'reopen']);
     
     // Rutas para Organization Features
     Route::apiResource('organization-features', OrganizationFeatureController::class);
@@ -384,7 +392,7 @@ Route::prefix('v1')->group(function () {
     Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
     Route::post('newsletter/resubscribe', [NewsletterSubscriptionController::class, 'resubscribe']);
     
-    // Rutas públicas para Form Submissions (envío público)
+    // Rutas públicas para Form Submissions (envío de formularios)
     Route::post('form-submissions', [FormSubmissionController::class, 'store']);
 });
 
