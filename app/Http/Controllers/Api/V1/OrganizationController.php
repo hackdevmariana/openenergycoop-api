@@ -66,7 +66,7 @@ class OrganizationController extends Controller
         }
 
         if ($request->has('active')) {
-            $query->where('is_active', $request->boolean('active'));
+            $query->where('active', $request->boolean('active'));
         }
 
         $perPage = min($request->get('per_page', 15), 50);
@@ -146,7 +146,7 @@ class OrganizationController extends Controller
      */
     public function show(Request $request, Organization $organization): JsonResponse
     {
-        if (!$organization->is_active) {
+        if (!$organization->active) {
             return response()->json(['message' => 'Organización no encontrada'], 404);
         }
 

@@ -42,4 +42,29 @@ class Organization extends Model implements HasMedia
     {
         return $this->hasMany(OrganizationFeature::class);
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function teams()
+    {
+        return $this->hasMany(Team::class);
+    }
+
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
+
+    public function pages()
+    {
+        return $this->hasMany(Page::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasManyThrough(Comment::class, Article::class);
+    }
 }
