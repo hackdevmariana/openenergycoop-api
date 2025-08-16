@@ -206,7 +206,8 @@ class Page extends Model implements HasMedia, Cacheable, Publishable, Multilingu
     public function getUrl(): string
     {
         if ($this->route) {
-            return route($this->route);
+            // The route field stores the URL path, not a route name
+            return $this->route;
         }
         
         return '/' . $this->getFullSlug();

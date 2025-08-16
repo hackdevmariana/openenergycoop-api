@@ -34,6 +34,68 @@ class PageResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'slug' => $this->slug,
+            'route' => $this->route,
+            'language' => $this->language,
+            'organization_id' => $this->organization_id,
+            'is_draft' => $this->is_draft,
+            'template' => $this->template,
+            'meta_data' => $this->meta_data,
+            'cache_duration' => $this->cache_duration,
+            'requires_auth' => $this->requires_auth,
+            'allowed_roles' => $this->allowed_roles,
+            'parent_id' => $this->parent_id,
+            'sort_order' => $this->sort_order,
+            'published_at' => $this->published_at,
+            'search_keywords' => $this->search_keywords,
+            'internal_notes' => $this->internal_notes,
+            'last_reviewed_at' => $this->last_reviewed_at,
+            'accessibility_notes' => $this->accessibility_notes,
+            'reading_level' => $this->reading_level,
+            'created_by_user_id' => $this->created_by_user_id,
+            'updated_by_user_id' => $this->updated_by_user_id,
+            'approved_by_user_id' => $this->approved_by_user_id,
+            'approved_at' => $this->approved_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relationships
+            'parent' => $this->whenLoaded('parent'),
+            'children' => $this->whenLoaded('children'),
+            'organization' => $this->whenLoaded('organization'),
+            'components' => $this->whenLoaded('components'),
+            'published_components' => $this->whenLoaded('publishedComponents'),
+            'seo_meta_data' => $this->whenLoaded('seoMetaData'),
+            'created_by' => $this->whenLoaded('createdBy'),
+            'updated_by' => $this->whenLoaded('updatedBy'),
+            'approved_by' => $this->whenLoaded('approvedBy'),
+
+            // Computed properties
+            'full_slug' => $this->getFullSlug(),
+            'breadcrumb' => $this->getBreadcrumb(),
+            'url' => $this->getUrl(),
+            'can_be_published' => $this->canBePublished(),
+            'has_published_content' => $this->hasPublishedContent(),
+            'template_label' => $this->getTemplateLabel(),
+            'is_home_page' => $this->isHomePage(),
+            'estimated_reading_time' => $this->getEstimatedReadingTime(),
+            'is_published' => $this->isPublished(),
+            'children_count' => $this->children_count ?? $this->children()->count(),
+            'components_count' => $this->components_count ?? $this->components()->count(),
+
+            // Media
+            'featured_image_url' => $this->getFirstMediaUrl('featured_images'),
+            'gallery_images' => $this->getMedia('gallery')->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                    'name' => $media->name,
+                    'alt' => $media->getCustomProperty('alt_text'),
+                ];
+            }),
+        ];
     }
 }
