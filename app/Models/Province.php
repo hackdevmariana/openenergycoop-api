@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Traits\HasCaching;
+
 use Illuminate\Support\Str;
 
 class Province extends Model
 {
-    use HasFactory, HasCaching;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -36,7 +36,7 @@ class Province extends Model
         return $this->hasMany(Municipality::class);
     }
 
-    public function weatherSnapshots(): HasMany
+    public function weatherSnapshots()
     {
         return $this->hasManyThrough(WeatherSnapshot::class, Municipality::class);
     }
@@ -72,16 +72,12 @@ class Province extends Model
     // Métodos de negocio
     public function getMunicipalitiesCount(): int
     {
-        return $this->getCachedCount('municipalities_count', function () {
-            return $this->municipalities()->count();
-        });
+        return $this->municipalities()->count();
     }
 
     public function getOperatingMunicipalitiesCount(): int
     {
-        return $this->getCachedCount('operating_municipalities_count', function () {
-            return $this->municipalities()->whereNotNull('text')->count();
-        });
+        return $this->municipalities()->whereNotNull('text')->count();
     }
 
     /**
@@ -89,12 +85,10 @@ class Province extends Model
      */
     public function getOperatingMunicipalities()
     {
-        return $this->getCachedData('operating_municipalities', function () {
-            return $this->municipalities()
-                       ->whereNotNull('text')
-                       ->orderBy('name')
-                       ->get();
-        });
+        return $this->municipalities()
+                   ->whereNotNull('text')
+                   ->orderBy('name')
+                   ->get();
     }
 
     /**
@@ -102,13 +96,11 @@ class Province extends Model
      */
     public function getLatestWeatherData()
     {
-        return $this->getCachedData('latest_weather', function () {
-            return $this->weatherSnapshots()
-                       ->with('municipality')
-                       ->latest('timestamp')
-                       ->limit(10)
-                       ->get();
-        }, 300); // Cache for 5 minutes
+        return $this->weatherSnapshots()
+                   ->with('municipality')
+                   ->latest('timestamp')
+                   ->limit(10)
+                   ->get();
     }
 
     /**
@@ -116,28 +108,24 @@ class Province extends Model
      */
     public function getAverageWeatherConditions(?\Carbon\Carbon $from = null, ?\Carbon\Carbon $to = null): array
     {
-        $cacheKey = 'weather_avg_' . ($from?->format('Y-m-d') ?? 'all') . '_' . ($to?->format('Y-m-d') ?? 'all');
-        
-        return $this->getCachedData($cacheKey, function () use ($from, $to) {
-            $query = $this->weatherSnapshots();
+        $query = $this->weatherSnapshots();
 
-            if ($from) {
-                $query->where('timestamp', '>=', $from);
-            }
-            if ($to) {
-                $query->where('timestamp', '<=', $to);
-            }
+        if ($from) {
+            $query->where('timestamp', '>=', $from);
+        }
+        if ($to) {
+            $query->where('timestamp', '<=', $to);
+        }
 
-            return [
-                'avg_temperature' => round($query->avg('temperature'), 2),
-                'avg_cloud_coverage' => round($query->avg('cloud_coverage'), 2),
-                'avg_solar_radiation' => round($query->avg('solar_radiation'), 2),
-                'min_temperature' => $query->min('temperature'),
-                'max_temperature' => $query->max('temperature'),
-                'max_solar_radiation' => $query->max('solar_radiation'),
-                'data_points' => $query->count(),
-            ];
-        }, 1800); // Cache for 30 minutes
+        return [
+            'avg_temperature' => round($query->avg('temperature'), 2),
+            'avg_cloud_coverage' => round($query->avg('cloud_coverage'), 2),
+            'avg_solar_radiation' => round($query->avg('solar_radiation'), 2),
+            'min_temperature' => $query->min('temperature'),
+            'max_temperature' => $query->max('temperature'),
+            'max_solar_radiation' => $query->max('solar_radiation'),
+            'data_points' => $query->count(),
+        ];
     }
 
     /**
@@ -145,23 +133,21 @@ class Province extends Model
      */
     public function getBestSolarMunicipalities(int $limit = 5): array
     {
-        return $this->getCachedData("best_solar_municipalities_{$limit}", function () use ($limit) {
-            return $this->weatherSnapshots()
-                       ->selectRaw('municipality_id, AVG(solar_radiation) as avg_solar_radiation')
-                       ->whereNotNull('solar_radiation')
-                       ->groupBy('municipality_id')
-                       ->orderByDesc('avg_solar_radiation')
-                       ->limit($limit)
-                       ->with('municipality')
-                       ->get()
-                       ->map(function ($snapshot) {
-                           return [
-                               'municipality' => $snapshot->municipality->name,
-                               'avg_solar_radiation' => round($snapshot->avg_solar_radiation, 2),
-                           ];
-                       })
-                       ->toArray();
-        }, 3600); // Cache for 1 hour
+        return $this->weatherSnapshots()
+                   ->selectRaw('municipality_id, AVG(solar_radiation) as avg_solar_radiation')
+                   ->whereNotNull('solar_radiation')
+                   ->groupBy('municipality_id')
+                   ->orderByDesc('avg_solar_radiation')
+                   ->limit($limit)
+                   ->with('municipality')
+                   ->get()
+                   ->map(function ($snapshot) {
+                       return [
+                           'municipality' => $snapshot->municipality->name,
+                           'avg_solar_radiation' => round($snapshot->avg_solar_radiation, 2),
+                       ];
+                   })
+                   ->toArray();
     }
 
     /**
@@ -169,14 +155,8 @@ class Province extends Model
      */
     public function hasWeatherMonitoring(): bool
     {
-        return $this->getCachedData('has_weather_monitoring', function () {
-            return $this->weatherSnapshots()->exists();
-        });
+        return $this->weatherSnapshots()->exists();
     }
 
-    // Cache tags para invalidación
-    public function getCacheTags(): array
-    {
-        return ['provinces', "province:{$this->id}", "region:{$this->region_id}"];
-    }
+
 }
