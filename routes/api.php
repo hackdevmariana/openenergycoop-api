@@ -216,10 +216,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('contacts/by-type/{type}', [ContactController::class, 'byType']);
     Route::apiResource('contacts', ContactController::class);
     
-    // Rutas para Social Links
-    Route::get('social-links/by-platform/{platform}', [SocialLinkController::class, 'byPlatform']);
-    Route::get('social-links/popular', [SocialLinkController::class, 'popular']);
-    Route::apiResource('social-links', SocialLinkController::class);
+    // Rutas para Social Links (solo escritura)
+    Route::post('social-links', [SocialLinkController::class, 'store']);
+    Route::put('social-links/{socialLink}', [SocialLinkController::class, 'update']);
+    Route::patch('social-links/{socialLink}', [SocialLinkController::class, 'update']);
+    Route::delete('social-links/{socialLink}', [SocialLinkController::class, 'destroy']);
     
     // Rutas para Collaborators
     Route::get('collaborators/active', [CollaboratorController::class, 'active']);

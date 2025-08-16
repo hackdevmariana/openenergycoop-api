@@ -31,6 +31,33 @@ class SocialLinkResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'platform' => $this->platform,
+            'url' => $this->url,
+            'icon' => $this->icon,
+            'css_class' => $this->css_class,
+            'color' => $this->color,
+            'order' => $this->order,
+            'is_active' => $this->is_active,
+            'followers_count' => $this->followers_count,
+            'organization_id' => $this->organization_id,
+            'is_draft' => $this->is_draft,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            
+            // Relationships
+            'organization' => $this->whenLoaded('organization'),
+            'created_by' => $this->whenLoaded('createdBy'),
+            
+            // Computed Properties
+            'is_published' => $this->isPublished(),
+            'platform_label' => $this->getPlatformLabel(),
+            'platform_color' => $this->getPlatformColor(),
+            'platform_icon' => $this->getPlatformIcon(),
+            'formatted_followers_count' => $this->getFormattedFollowersCount(),
+            'is_verified' => $this->isVerified(),
+            'css_class_computed' => $this->getCssClass(),
+        ];
     }
 }

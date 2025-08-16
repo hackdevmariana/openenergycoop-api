@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\SocialLink\StoreSocialLinkRequest;
+use App\Http\Requests\Api\V1\SocialLink\UpdateSocialLinkRequest;
 use App\Http\Resources\Api\V1\SocialLinkResource;
 use App\Models\SocialLink;
 use Illuminate\Http\Request;
@@ -21,35 +23,30 @@ class SocialLinkController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = SocialLink::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('platform');
+            ->with(['organization', 'createdBy'])
+            ->active()
+            ->published()
+            ->ordered();
 
         if ($request->filled('platform')) {
-            $query->where('platform', $request->platform);
+            $query->byPlatform($request->platform);
+        }
+
+        if ($request->boolean('only_verified')) {
+            $query->whereNotNull('followers_count')->where('followers_count', '>=', 10000);
         }
 
         $socialLinks = $query->get();
         return SocialLinkResource::collection($socialLinks);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreSocialLinkRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'platform' => 'required|string|in:facebook,twitter,instagram,linkedin,youtube,tiktok,telegram,whatsapp,other',
-            'url' => 'required|url',
-            'username' => 'nullable|string|max:100',
-            'followers_count' => 'nullable|integer|min:0',
-            'description' => 'nullable|string|max:255',
-            'icon' => 'nullable|string',
-            'color' => 'nullable|string|max:7',
-            'sort_order' => 'nullable|integer',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
+        $validated['created_by_user_id'] = auth()->id();
 
         $socialLink = SocialLink::create($validated);
-        $socialLink->load(['organization']);
+        $socialLink->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new SocialLinkResource($socialLink),
@@ -59,29 +56,23 @@ class SocialLinkController extends Controller
 
     public function show(SocialLink $socialLink): JsonResponse
     {
-        if (!$socialLink->is_active) {
+        if (!$socialLink->is_active || !$socialLink->isPublished()) {
             return response()->json(['message' => 'Enlace social no encontrado'], 404);
         }
 
-        $socialLink->load(['organization']);
+        $socialLink->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new SocialLinkResource($socialLink)
         ]);
     }
 
-    public function update(Request $request, SocialLink $socialLink): JsonResponse
+    public function update(UpdateSocialLinkRequest $request, SocialLink $socialLink): JsonResponse
     {
-        $validated = $request->validate([
-            'url' => 'sometimes|url',
-            'username' => 'nullable|string|max:100',
-            'followers_count' => 'nullable|integer|min:0',
-            'description' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $socialLink->update($validated);
-        $socialLink->load(['organization']);
+        $socialLink->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new SocialLinkResource($socialLink),
@@ -101,9 +92,10 @@ class SocialLinkController extends Controller
     public function byPlatform(Request $request, string $platform): JsonResponse
     {
         $socialLink = SocialLink::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->where('platform', $platform)
+            ->with(['organization', 'createdBy'])
+            ->active()
+            ->published()
+            ->byPlatform($platform)
             ->first();
 
         if (!$socialLink) {
@@ -118,10 +110,10 @@ class SocialLinkController extends Controller
     public function popular(Request $request): JsonResponse
     {
         $query = SocialLink::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->whereNotNull('followers_count')
-            ->orderBy('followers_count', 'desc');
+            ->with(['organization', 'createdBy'])
+            ->active()
+            ->published()
+            ->popular();
 
         $limit = min($request->get('limit', 5), 10);
         $socialLinks = $query->limit($limit)->get();
