@@ -99,17 +99,13 @@ class UserDeviceController extends Controller
         // Registrar dispositivo usando el método del modelo
         $device = UserDevice::registerDevice(
             auth()->id(),
-            $validated['device_name'],
             $validated['device_type'],
+            $validated['device_name'],
             $validated['platform'],
-            array_filter([
-                'browser' => $validated['browser'] ?? null,
-                'browser_version' => $validated['browser_version'] ?? null,
-                'os_version' => $validated['os_version'] ?? null,
-                'push_token' => $validated['push_token'] ?? null,
-                'user_agent' => $request->userAgent(),
-                'ip_address' => $request->ip(),
-            ])
+            $request->userAgent(),
+            $request->ip(),
+            $validated['push_token'] ?? null,
+            false // Don't set as current yet, we'll handle it below
         );
 
         // Si se marca como dispositivo actual, actualizar
