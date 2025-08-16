@@ -33,6 +33,45 @@ class PageComponentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'page_id' => $this->page_id,
+            'componentable_type' => $this->componentable_type,
+            'componentable_id' => $this->componentable_id,
+            'position' => $this->position,
+            'parent_id' => $this->parent_id,
+            'language' => $this->language,
+            'organization_id' => $this->organization_id,
+            'is_draft' => $this->is_draft,
+            'version' => $this->version,
+            'published_at' => $this->published_at,
+            'preview_token' => $this->preview_token,
+            'settings' => $this->settings,
+            'cache_enabled' => $this->cache_enabled,
+            'visibility_rules' => $this->visibility_rules,
+            'ab_test_group' => $this->ab_test_group,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relationships
+            'page' => $this->whenLoaded('page'),
+            'componentable' => $this->whenLoaded('componentable'),
+            'organization' => $this->whenLoaded('organization'),
+            'parent' => $this->whenLoaded('parent'),
+            'children' => $this->whenLoaded('children'),
+
+            // Computed properties
+            'component_type_name' => $this->getComponentTypeName(),
+            'is_visible' => $this->isVisible(),
+            'can_be_published' => $this->canBePublished(),
+            'is_published' => $this->isPublished(),
+            'next_position' => $this->getNextPosition(),
+            'children_count' => $this->children_count ?? $this->children()->count(),
+            
+            // Preview & settings helpers
+            'preview_url' => $this->preview_token ? $this->generatePreviewUrl() : null,
+            'has_visibility_rules' => !empty($this->visibility_rules),
+            'component_class' => class_basename($this->componentable_type),
+        ];
     }
 }

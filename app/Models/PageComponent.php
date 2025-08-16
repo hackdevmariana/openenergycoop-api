@@ -127,7 +127,8 @@ class PageComponent extends Model implements Cacheable, Publishable, Multilingua
      */
     public function getComponentTypeName(): string
     {
-        return self::COMPONENT_TYPES[$this->componentable_type] ?? $this->componentable_type;
+        $shortName = class_basename($this->componentable_type);
+        return self::COMPONENT_TYPES[$shortName] ?? $this->componentable_type;
     }
 
     public function isVisible(): bool
