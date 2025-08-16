@@ -18,8 +18,8 @@ class UserDeviceFactory extends Factory
      */
     public function definition(): array
     {
-        $deviceTypes = array_keys(UserDevice::DEVICE_TYPES);
-        $platforms = array_keys(UserDevice::PLATFORMS);
+        $deviceTypes = array_keys(\App\Enums\AppEnums::USER_DEVICE_TYPES);
+        $platforms = array_keys(\App\Enums\AppEnums::USER_DEVICE_PLATFORMS);
         
         return [
             'user_id' => User::factory(),
