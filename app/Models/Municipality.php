@@ -33,7 +33,7 @@ class Municipality extends Model
         return $this->belongsTo(Province::class);
     }
 
-    public function region(): BelongsTo
+    public function region()
     {
         return $this->hasOneThrough(Region::class, Province::class, 'id', 'id', 'province_id', 'region_id');
     }
