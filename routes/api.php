@@ -49,8 +49,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
     Route::apiResource('customer-profiles', CustomerProfileController::class);
     Route::apiResource('customer-profile-contact-infos', CustomerProfileContactInfoController::class);
-    Route::apiResource('legal-documents', LegalDocumentController::class);
+    Route::get('legal-documents/{id}/versions', [LegalDocumentController::class, 'versions']);
+    Route::get('legal-documents/{id}/download', [LegalDocumentController::class, 'download']);
+    Route::post('legal-documents/{id}/new-version', [LegalDocumentController::class, 'newVersion']);
     Route::post('legal-documents/{id}/verify', [LegalDocumentController::class, 'verify']);
+    Route::apiResource('legal-documents', LegalDocumentController::class);
     
     // Nuevas rutas para las entidades del sistema
     Route::apiResource('companies', CompanyController::class);

@@ -53,18 +53,18 @@ class LegalDocumentController extends Controller
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Parameter(
-     *         name="document_type",
+     *         name="type",
      *         in="query",
      *         description="Filter by document type",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"id_card", "passport", "drivers_license", "contract", "invoice", "certificate", "other"})
+     *         @OA\Schema(type="string", enum={"dni", "iban_receipt", "contract", "invoice", "other"})
      *     ),
      *     @OA\Parameter(
-     *         name="verification_status",
+     *         name="verified",
      *         in="query",
      *         description="Filter by verification status",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"pending", "verified", "rejected", "expired"})
+     *         @OA\Schema(type="boolean", description="true for verified documents, false for pending")
      *     ),
      *     @OA\Parameter(
      *         name="verifier_user_id",
@@ -107,12 +107,16 @@ class LegalDocumentController extends Controller
                 $query->where('customer_profile_id', $request->customer_profile_id);
             }
 
-            if ($request->filled('document_type')) {
-                $query->where('document_type', $request->document_type);
+            if ($request->filled('type')) {
+                $query->byType($request->type);
             }
 
-            if ($request->filled('verification_status')) {
-                $query->where('verification_status', $request->verification_status);
+            if ($request->has('verified')) {
+                if ($request->boolean('verified')) {
+                    $query->verified();
+                } else {
+                    $query->pendingVerification();
+                }
             }
 
             if ($request->filled('verifier_user_id')) {
@@ -173,17 +177,12 @@ class LegalDocumentController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"customer_profile_id", "document_type", "document_file"},
+     *                 required={"customer_profile_id", "type", "document_file"},
      *                 @OA\Property(property="customer_profile_id", type="integer", description="ID of the customer profile"),
-     *                 @OA\Property(property="document_type", type="string", enum={"id_card", "passport", "drivers_license", "contract", "invoice", "certificate", "other"}, description="Type of legal document"),
+     *                 @OA\Property(property="type", type="string", enum={"dni", "iban_receipt", "contract", "invoice", "other"}, description="Type of legal document"),
      *                 @OA\Property(property="document_file", type="string", format="binary", description="The document file to upload"),
-     *                 @OA\Property(property="document_number", type="string", description="Document number or identifier", maxLength=100),
-     *                 @OA\Property(property="issue_date", type="string", format="date", description="Document issue date"),
-     *                 @OA\Property(property="expiry_date", type="string", format="date", description="Document expiry date"),
-     *                 @OA\Property(property="issuing_authority", type="string", description="Authority that issued the document", maxLength=255),
-     *                 @OA\Property(property="verification_status", type="string", enum={"pending", "verified", "rejected", "expired"}, description="Verification status", default="pending"),
-     *                 @OA\Property(property="verification_notes", type="string", description="Notes about verification", maxLength=1000),
-     *                 @OA\Property(property="is_active", type="boolean", description="Whether the document is active", default=true),
+     *                 @OA\Property(property="version", type="string", description="Document version", example="1.0"),
+     *                 @OA\Property(property="expires_at", type="string", format="date", description="Document expiry date"),
      *                 @OA\Property(property="notes", type="string", description="Additional notes about the document", maxLength=1000)
      *             )
      *         )
@@ -225,15 +224,10 @@ class LegalDocumentController extends Controller
 
             $validated = $request->validate([
                 'customer_profile_id' => 'required|integer|exists:customer_profiles,id',
-                'document_type' => 'required|string|in:id_card,passport,drivers_license,contract,invoice,certificate,other',
-                'document_file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
-                'document_number' => 'nullable|string|max:100',
-                'issue_date' => 'nullable|date',
-                'expiry_date' => 'nullable|date|after:issue_date',
-                'issuing_authority' => 'nullable|string|max:255',
-                'verification_status' => 'string|in:pending,verified,rejected,expired',
-                'verification_notes' => 'nullable|string|max:1000',
-                'is_active' => 'boolean',
+                'type' => 'required|string|in:dni,iban_receipt,contract,invoice,other',
+                'document_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240', // 10MB max
+                'version' => 'nullable|string|max:10',
+                'expires_at' => 'nullable|date|after:today',
                 'notes' => 'nullable|string|max:1000',
             ]);
 
@@ -246,8 +240,17 @@ class LegalDocumentController extends Controller
                 ], 404);
             }
 
-            // Set organization ID
+            // Set organization ID and upload timestamp
             $validated['organization_id'] = auth()->user()->organization_id;
+            $validated['uploaded_at'] = now();
+            
+            // Auto-generate version if not provided
+            if (!isset($validated['version'])) {
+                $latestVersion = LegalDocument::where('customer_profile_id', $validated['customer_profile_id'])
+                                            ->where('type', $validated['type'])
+                                            ->max('version');
+                $validated['version'] = $latestVersion ? ((float) $latestVersion + 0.1) : '1.0';
+            }
 
             // Create the legal document
             $legalDocument = LegalDocument::create($validated);
@@ -381,14 +384,8 @@ class LegalDocumentController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="document_type", type="string", enum={"id_card", "passport", "drivers_license", "contract", "invoice", "certificate", "other"}),
-     *             @OA\Property(property="document_number", type="string", maxLength=100),
-     *             @OA\Property(property="issue_date", type="string", format="date"),
-     *             @OA\Property(property="expiry_date", type="string", format="date"),
-     *             @OA\Property(property="issuing_authority", type="string", maxLength=255),
-     *             @OA\Property(property="verification_status", type="string", enum={"pending", "verified", "rejected", "expired"}),
-     *             @OA\Property(property="verification_notes", type="string", maxLength=1000),
-     *             @OA\Property(property="is_active", type="boolean"),
+     *             @OA\Property(property="type", type="string", enum={"dni", "iban_receipt", "contract", "invoice", "other"}),
+     *             @OA\Property(property="expires_at", type="string", format="date"),
      *             @OA\Property(property="notes", type="string", maxLength=1000)
      *         )
      *     ),
@@ -429,14 +426,8 @@ class LegalDocumentController extends Controller
             $this->authorize('update', $legalDocument);
 
             $validated = $request->validate([
-                'document_type' => 'sometimes|string|in:id_card,passport,drivers_license,contract,invoice,certificate,other',
-                'document_number' => 'nullable|string|max:100',
-                'issue_date' => 'nullable|date',
-                'expiry_date' => 'nullable|date|after:issue_date',
-                'issuing_authority' => 'nullable|string|max:255',
-                'verification_status' => 'sometimes|string|in:pending,verified,rejected,expired',
-                'verification_notes' => 'nullable|string|max:1000',
-                'is_active' => 'boolean',
+                'type' => 'sometimes|string|in:dni,iban_receipt,contract,invoice,other',
+                'expires_at' => 'nullable|date|after:today',
                 'notes' => 'nullable|string|max:1000',
             ]);
 
@@ -565,9 +556,7 @@ class LegalDocumentController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"verification_status"},
-     *             @OA\Property(property="verification_status", type="string", enum={"verified", "rejected", "expired"}, description="New verification status"),
-     *             @OA\Property(property="verification_notes", type="string", description="Notes about the verification", maxLength=1000)
+     *             @OA\Property(property="notes", type="string", description="Notes about the verification", maxLength=1000)
      *         )
      *     ),
      *     @OA\Response(
@@ -607,14 +596,11 @@ class LegalDocumentController extends Controller
             $this->authorize('verify', $legalDocument);
 
             $validated = $request->validate([
-                'verification_status' => 'required|string|in:verified,rejected,expired',
-                'verification_notes' => 'nullable|string|max:1000',
+                'notes' => 'nullable|string|max:1000',
             ]);
 
-            $validated['verifier_user_id'] = auth()->id();
-            $validated['verified_at'] = now();
-
-            $legalDocument->update($validated);
+            // Use the model's markAsVerified method
+            $legalDocument->markAsVerified(auth()->user(), $validated['notes'] ?? null);
 
             return response()->json([
                 'message' => 'Legal document verified successfully',
@@ -640,6 +626,240 @@ class LegalDocumentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while verifying the legal document.',
+                'error' => 'internal_server_error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload a new version of an existing document.
+     *
+     * @OA\Post(
+     *     path="/api/v1/legal-documents/{id}/new-version",
+     *     summary="Upload new version of document",
+     *     description="Creates a new version of an existing legal document",
+     *     operationId="newVersionLegalDocument",
+     *     tags={"Legal Documents"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Legal document ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"document_file"},
+     *                 @OA\Property(property="document_file", type="string", format="binary", description="The new document file"),
+     *                 @OA\Property(property="version", type="string", description="Version number (auto-incremented if not provided)"),
+     *                 @OA\Property(property="notes", type="string", description="Notes about this version", maxLength=1000)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="New version created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="New document version created successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/LegalDocument")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Bad request",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationError")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Legal document not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *     )
+     * )
+     */
+    public function newVersion(Request $request, int $id): JsonResponse
+    {
+        try {
+            $legalDocument = LegalDocument::findOrFail($id);
+            $this->authorize('update', $legalDocument);
+
+            $validated = $request->validate([
+                'document_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'version' => 'nullable|string|max:10',
+                'notes' => 'nullable|string|max:1000',
+            ]);
+
+            // Upload new version using model method
+            $newDocument = $legalDocument->uploadNewVersion(
+                $request->file('document_file'),
+                $validated['version'] ?? null,
+                $validated['notes'] ?? null
+            );
+
+            return response()->json([
+                'message' => 'New document version created successfully',
+                'data' => $newDocument->load(['customerProfile', 'verifier', 'organization'])
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+                'error' => 'validation_error'
+            ], 400);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Legal document not found.',
+                'error' => 'not_found'
+            ], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'message' => 'You are not authorized to create new versions.',
+                'error' => 'forbidden'
+            ], 403);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while creating the new version.',
+                'error' => 'internal_server_error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all versions of a document type for a customer.
+     *
+     * @OA\Get(
+     *     path="/api/v1/legal-documents/{id}/versions",
+     *     summary="Get all document versions",
+     *     description="Returns all versions of the same document type for the customer",
+     *     operationId="versionsLegalDocument",
+     *     tags={"Legal Documents"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Legal document ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/LegalDocument"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Legal document not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *     )
+     * )
+     */
+    public function versions(int $id): JsonResponse
+    {
+        try {
+            $legalDocument = LegalDocument::findOrFail($id);
+            $this->authorize('view', $legalDocument);
+
+            $versions = $legalDocument->getAllVersions();
+
+            return response()->json([
+                'data' => $versions
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Legal document not found.',
+                'error' => 'not_found'
+            ], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'message' => 'You are not authorized to view document versions.',
+                'error' => 'forbidden'
+            ], 403);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while retrieving document versions.',
+                'error' => 'internal_server_error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Download a legal document.
+     *
+     * @OA\Get(
+     *     path="/api/v1/legal-documents/{id}/download",
+     *     summary="Download legal document",
+     *     description="Downloads the document file with security token",
+     *     operationId="downloadLegalDocument",
+     *     tags={"Legal Documents"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Legal document ID",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="conversion",
+     *         in="query",
+     *         description="Media conversion to download (e.g., thumbnail)",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="File download",
+     *         @OA\MediaType(
+     *             mediaType="application/octet-stream"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Document or file not found",
+     *         @OA\JsonContent(ref="#/components/schemas/NotFoundError")
+     *     )
+     * )
+     */
+    public function download(Request $request, int $id): JsonResponse
+    {
+        try {
+            $legalDocument = LegalDocument::findOrFail($id);
+            $this->authorize('view', $legalDocument);
+
+            $url = $legalDocument->getSecureUrl($request->get('conversion'));
+            
+            if (!$url) {
+                return response()->json([
+                    'message' => 'Document file not found.',
+                    'error' => 'not_found'
+                ], 404);
+            }
+
+            return response()->json([
+                'download_url' => $url,
+                'expires_in' => 3600 // URL valid for 1 hour
+            ]);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Legal document not found.',
+                'error' => 'not_found'
+            ], 404);
+        } catch (AuthorizationException $e) {
+            return response()->json([
+                'message' => 'You are not authorized to download this document.',
+                'error' => 'forbidden'
+            ], 403);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred while generating download URL.',
                 'error' => 'internal_server_error'
             ], 500);
         }
