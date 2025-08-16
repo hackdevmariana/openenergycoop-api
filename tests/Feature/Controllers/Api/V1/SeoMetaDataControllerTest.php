@@ -151,8 +151,11 @@ describe('SeoMetaDataController', function () {
         });
 
         it('can update or create seo data for model', function () {
+            // Create a fresh article for this test to avoid unique constraint
+            $freshArticle = Article::factory()->create();
+            
             // First call should create
-            $seoData1 = SeoMetaData::updateOrCreateForModel($this->article, [
+            $seoData1 = SeoMetaData::updateOrCreateForModel($freshArticle, [
                 'meta_title' => 'First Title',
                 'language' => 'es',
             ]);
@@ -160,7 +163,7 @@ describe('SeoMetaDataController', function () {
             expect($seoData1->meta_title)->toBe('First Title');
 
             // Second call should update
-            $seoData2 = SeoMetaData::updateOrCreateForModel($this->article, [
+            $seoData2 = SeoMetaData::updateOrCreateForModel($freshArticle, [
                 'meta_title' => 'Updated Title',
                 'language' => 'es',
             ]);

@@ -315,10 +315,12 @@ class SeoMetaData extends Model
 
     public static function updateOrCreateForModel(Model $model, array $data = []): self
     {
+        $language = $data['language'] ?? $model->language ?? app()->getLocale();
+        
         return static::updateOrCreate([
             'seoable_type' => get_class($model),
             'seoable_id' => $model->getKey(),
-            'language' => $model->language ?? app()->getLocale(),
+            'language' => $language,
         ], $data);
     }
 }

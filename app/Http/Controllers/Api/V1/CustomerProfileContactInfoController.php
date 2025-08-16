@@ -51,11 +51,11 @@ class CustomerProfileContactInfoController extends Controller
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Parameter(
-     *         name="contact_type",
+     *         name="province",
      *         in="query",
-     *         description="Filter by contact type",
+     *         description="Filter by province",
      *         required=false,
-     *         @OA\Schema(type="string", enum={"email", "phone", "address", "social_media"})
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -93,8 +93,8 @@ class CustomerProfileContactInfoController extends Controller
                 $query->where('customer_profile_id', $request->customer_profile_id);
             }
 
-            if ($request->filled('contact_type')) {
-                $query->where('contact_type', $request->contact_type);
+            if ($request->filled('province')) {
+                $query->byProvince($request->province);
             }
 
             // Apply organization scope
@@ -149,13 +149,18 @@ class CustomerProfileContactInfoController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"customer_profile_id", "contact_type", "contact_value"},
+     *             required={"customer_profile_id", "address", "postal_code", "city", "province", "valid_from"},
      *             @OA\Property(property="customer_profile_id", type="integer", description="ID of the customer profile"),
-     *             @OA\Property(property="contact_type", type="string", enum={"email", "phone", "address", "social_media"}, description="Type of contact information"),
-     *             @OA\Property(property="contact_value", type="string", description="The contact value (email, phone, address, etc.)"),
-     *             @OA\Property(property="is_primary", type="boolean", description="Whether this is the primary contact method", default=false),
-     *             @OA\Property(property="is_active", type="boolean", description="Whether this contact method is active", default=true),
-     *             @OA\Property(property="notes", type="string", description="Additional notes about this contact method")
+     *             @OA\Property(property="billing_email", type="string", format="email", description="Billing email address"),
+     *             @OA\Property(property="technical_email", type="string", format="email", description="Technical contact email"),
+     *             @OA\Property(property="address", type="string", description="Physical address"),
+     *             @OA\Property(property="postal_code", type="string", description="Postal code"),
+     *             @OA\Property(property="city", type="string", description="City"),
+     *             @OA\Property(property="province", type="string", description="Province or region"),
+     *             @OA\Property(property="iban", type="string", description="Spanish IBAN (24 characters)"),
+     *             @OA\Property(property="cups", type="string", description="Spanish CUPS code (22 characters)"),
+     *             @OA\Property(property="valid_from", type="string", format="date", description="Valid from date"),
+     *             @OA\Property(property="valid_to", type="string", format="date", description="Valid until date")
      *         )
      *     ),
      *     @OA\Response(
@@ -204,11 +209,16 @@ class CustomerProfileContactInfoController extends Controller
 
             $validated = $request->validate([
                 'customer_profile_id' => 'required|integer|exists:customer_profiles,id',
-                'contact_type' => 'required|string|in:email,phone,address,social_media',
-                'contact_value' => 'required|string|max:255',
-                'is_primary' => 'boolean',
-                'is_active' => 'boolean',
-                'notes' => 'nullable|string|max:1000',
+                'billing_email' => 'nullable|email|max:255',
+                'technical_email' => 'nullable|email|max:255',
+                'address' => 'required|string|max:500',
+                'postal_code' => 'required|string|max:10',
+                'city' => 'required|string|max:100',
+                'province' => 'required|string|max:100',
+                'iban' => 'nullable|string|size:24|regex:/^ES\d{22}$/',
+                'cups' => 'nullable|string|size:22|regex:/^ES\d{18}[A-Z]{2}$/',
+                'valid_from' => 'required|date',
+                'valid_to' => 'nullable|date|after:valid_from',
             ]);
 
             // Verify customer profile belongs to current organization
@@ -222,14 +232,6 @@ class CustomerProfileContactInfoController extends Controller
 
             // Set organization ID
             $validated['organization_id'] = auth()->user()->organization_id;
-
-            // If this is primary, unset other primary contacts of the same type
-            if ($validated['is_primary'] ?? false) {
-                CustomerProfileContactInfo::where('customer_profile_id', $validated['customer_profile_id'])
-                    ->where('contact_type', $validated['contact_type'])
-                    ->where('is_primary', true)
-                    ->update(['is_primary' => false]);
-            }
 
             $contactInfo = CustomerProfileContactInfo::create($validated);
 
@@ -359,11 +361,16 @@ class CustomerProfileContactInfoController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="contact_type", type="string", enum={"email", "phone", "address", "social_media"}),
-     *             @OA\Property(property="contact_value", type="string", maxLength=255),
-     *             @OA\Property(property="is_primary", type="boolean"),
-     *             @OA\Property(property="is_active", type="boolean"),
-     *             @OA\Property(property="notes", type="string", maxLength=1000)
+     *             @OA\Property(property="billing_email", type="string", format="email"),
+     *             @OA\Property(property="technical_email", type="string", format="email"),
+     *             @OA\Property(property="address", type="string", maxLength=500),
+     *             @OA\Property(property="postal_code", type="string", maxLength=10),
+     *             @OA\Property(property="city", type="string", maxLength=100),
+     *             @OA\Property(property="province", type="string", maxLength=100),
+     *             @OA\Property(property="iban", type="string", description="Spanish IBAN"),
+     *             @OA\Property(property="cups", type="string", description="Spanish CUPS code"),
+     *             @OA\Property(property="valid_from", type="string", format="date"),
+     *             @OA\Property(property="valid_to", type="string", format="date")
      *         )
      *     ),
      *     @OA\Response(
@@ -412,21 +419,17 @@ class CustomerProfileContactInfoController extends Controller
             $this->authorize('update', $contactInfo);
 
             $validated = $request->validate([
-                'contact_type' => 'sometimes|string|in:email,phone,address,social_media',
-                'contact_value' => 'sometimes|string|max:255',
-                'is_primary' => 'boolean',
-                'is_active' => 'boolean',
-                'notes' => 'nullable|string|max:1000',
+                'billing_email' => 'sometimes|nullable|email|max:255',
+                'technical_email' => 'sometimes|nullable|email|max:255',
+                'address' => 'sometimes|string|max:500',
+                'postal_code' => 'sometimes|string|max:10',
+                'city' => 'sometimes|string|max:100',
+                'province' => 'sometimes|string|max:100',
+                'iban' => 'sometimes|nullable|string|size:24|regex:/^ES\d{22}$/',
+                'cups' => 'sometimes|nullable|string|size:22|regex:/^ES\d{18}[A-Z]{2}$/',
+                'valid_from' => 'sometimes|date',
+                'valid_to' => 'sometimes|nullable|date|after:valid_from',
             ]);
-
-            // If this is primary, unset other primary contacts of the same type
-            if (isset($validated['is_primary']) && $validated['is_primary']) {
-                CustomerProfileContactInfo::where('customer_profile_id', $contactInfo->customer_profile_id)
-                    ->where('contact_type', $validated['contact_type'] ?? $contactInfo->contact_type)
-                    ->where('id', '!=', $id)
-                    ->where('is_primary', true)
-                    ->update(['is_primary' => false]);
-            }
 
             $contactInfo->update($validated);
 
