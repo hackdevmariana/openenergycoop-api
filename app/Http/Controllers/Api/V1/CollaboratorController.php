@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Collaborator\StoreCollaboratorRequest;
+use App\Http\Requests\Api\V1\Collaborator\UpdateCollaboratorRequest;
 use App\Http\Resources\Api\V1\CollaboratorResource;
 use App\Models\Collaborator;
 use Illuminate\Http\Request;
@@ -21,51 +23,32 @@ class CollaboratorController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Collaborator::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name');
+            ->with(['organization', 'createdBy'])
+            ->published()
+            ->orderedByPriority();
 
-        if ($request->filled('department')) {
-            $query->where('department', $request->department);
+        if ($request->filled('type')) {
+            $query->byType($request->type);
         }
 
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
-        }
-
-        if ($request->boolean('featured')) {
-            $query->where('is_featured', true);
+        if ($request->has('active')) {
+            $query->where('is_active', $request->boolean('active'));
+        } else {
+            // Por defecto, solo mostrar activos si no se especifica el filtro
+            $query->active();
         }
 
         $collaborators = $query->get();
         return CollaboratorResource::collection($collaborators);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreCollaboratorRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'role' => 'required|string|max:255',
-            'department' => 'nullable|string|max:255',
-            'bio' => 'nullable|string',
-            'avatar' => 'nullable|string',
-            'linkedin_url' => 'nullable|url',
-            'twitter_url' => 'nullable|url',
-            'personal_website' => 'nullable|url',
-            'phone' => 'nullable|string|max:20',
-            'location' => 'nullable|string|max:255',
-            'skills' => 'nullable|array',
-            'languages' => 'nullable|array',
-            'start_date' => 'nullable|date',
-            'sort_order' => 'nullable|integer',
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
+        $validated['created_by_user_id'] = auth()->id();
 
         $collaborator = Collaborator::create($validated);
-        $collaborator->load(['organization']);
+        $collaborator->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new CollaboratorResource($collaborator),
@@ -75,32 +58,23 @@ class CollaboratorController extends Controller
 
     public function show(Collaborator $collaborator): JsonResponse
     {
-        if (!$collaborator->is_active) {
+        if (!$collaborator->isPublished() || !$collaborator->is_active) {
             return response()->json(['message' => 'Colaborador no encontrado'], 404);
         }
 
-        $collaborator->load(['organization']);
+        $collaborator->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new CollaboratorResource($collaborator)
         ]);
     }
 
-    public function update(Request $request, Collaborator $collaborator): JsonResponse
+    public function update(UpdateCollaboratorRequest $request, Collaborator $collaborator): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'nullable|email',
-            'role' => 'sometimes|string|max:255',
-            'bio' => 'nullable|string',
-            'avatar' => 'nullable|string',
-            'skills' => 'nullable|array',
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $collaborator->update($validated);
-        $collaborator->load(['organization']);
+        $collaborator->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new CollaboratorResource($collaborator),
@@ -117,36 +91,41 @@ class CollaboratorController extends Controller
         ]);
     }
 
-    public function featured(Request $request): JsonResponse
+    public function byType(Request $request, string $type): JsonResponse
     {
         $query = Collaborator::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->where('is_featured', true)
-            ->orderBy('sort_order');
-
-        $limit = min($request->get('limit', 6), 12);
-        $collaborators = $query->limit($limit)->get();
-
-        return response()->json([
-            'data' => CollaboratorResource::collection($collaborators),
-            'total' => $collaborators->count()
-        ]);
-    }
-
-    public function byDepartment(Request $request, string $department): JsonResponse
-    {
-        $query = Collaborator::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->where('department', $department)
-            ->orderBy('sort_order');
+            ->with(['organization', 'createdBy'])
+            ->published()
+            ->active()
+            ->byType($type)
+            ->orderedByPriority();
 
         $collaborators = $query->get();
 
         return response()->json([
             'data' => CollaboratorResource::collection($collaborators),
-            'department' => $department,
+            'type' => $type,
+            'total' => $collaborators->count()
+        ]);
+    }
+
+    public function active(Request $request): JsonResponse
+    {
+        $query = Collaborator::query()
+            ->with(['organization', 'createdBy'])
+            ->published()
+            ->active()
+            ->orderedByPriority();
+
+        if ($request->filled('type')) {
+            $query->byType($request->type);
+        }
+
+        $limit = min($request->get('limit', 10), 50);
+        $collaborators = $query->limit($limit)->get();
+
+        return response()->json([
+            'data' => CollaboratorResource::collection($collaborators),
             'total' => $collaborators->count()
         ]);
     }
