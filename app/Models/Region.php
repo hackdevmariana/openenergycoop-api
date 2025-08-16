@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Traits\HasCaching;
+
 use Illuminate\Support\Str;
 
 class Region extends Model
 {
-    use HasFactory, HasCaching;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -59,16 +59,12 @@ class Region extends Model
     // Métodos de negocio
     public function getProvincesCount(): int
     {
-        return $this->getCachedCount('provinces_count', function () {
-            return $this->provinces()->count();
-        });
+        return $this->provinces()->count();
     }
 
     public function getMunicipalitiesCount(): int
     {
-        return $this->getCachedCount('municipalities_count', function () {
-            return $this->municipalities()->count();
-        });
+        return $this->municipalities()->count();
     }
 
     /**
@@ -76,12 +72,10 @@ class Region extends Model
      */
     public function getProvincesWithCounts()
     {
-        return $this->getCachedData('provinces_with_counts', function () {
-            return $this->provinces()
-                       ->withCount('municipalities')
-                       ->orderBy('name')
-                       ->get();
-        });
+        return $this->provinces()
+                   ->withCount('municipalities')
+                   ->orderBy('name')
+                   ->get();
     }
 
     /**
@@ -89,11 +83,9 @@ class Region extends Model
      */
     public function hasWeatherData(): bool
     {
-        return $this->getCachedData('has_weather_data', function () {
-            return WeatherSnapshot::whereHas('municipality.province', function ($query) {
-                $query->where('region_id', $this->id);
-            })->exists();
-        });
+        return WeatherSnapshot::whereHas('municipality.province', function ($query) {
+            $query->where('region_id', $this->id);
+        })->exists();
     }
 
     /**
@@ -101,11 +93,9 @@ class Region extends Model
      */
     public function getLatestWeatherSnapshot()
     {
-        return $this->getCachedData('latest_weather', function () {
-            return WeatherSnapshot::whereHas('municipality.province', function ($query) {
-                $query->where('region_id', $this->id);
-            })->latest('timestamp')->first();
-        }, 300); // Cache for 5 minutes
+        return WeatherSnapshot::whereHas('municipality.province', function ($query) {
+            $query->where('region_id', $this->id);
+        })->latest('timestamp')->first();
     }
 
     /**
@@ -113,32 +103,24 @@ class Region extends Model
      */
     public function getAverageWeatherData(?\Carbon\Carbon $from = null, ?\Carbon\Carbon $to = null): array
     {
-        $cacheKey = 'avg_weather_' . ($from?->format('Y-m-d') ?? 'all') . '_' . ($to?->format('Y-m-d') ?? 'all');
-        
-        return $this->getCachedData($cacheKey, function () use ($from, $to) {
-            $query = WeatherSnapshot::whereHas('municipality.province', function ($query) {
-                $query->where('region_id', $this->id);
-            });
+        $query = WeatherSnapshot::whereHas('municipality.province', function ($query) {
+            $query->where('region_id', $this->id);
+        });
 
-            if ($from) {
-                $query->where('timestamp', '>=', $from);
-            }
-            if ($to) {
-                $query->where('timestamp', '<=', $to);
-            }
+        if ($from) {
+            $query->where('timestamp', '>=', $from);
+        }
+        if ($to) {
+            $query->where('timestamp', '<=', $to);
+        }
 
-            return [
-                'avg_temperature' => $query->avg('temperature'),
-                'avg_cloud_coverage' => $query->avg('cloud_coverage'),
-                'avg_solar_radiation' => $query->avg('solar_radiation'),
-                'data_points' => $query->count(),
-            ];
-        }, 1800); // Cache for 30 minutes
+        return [
+            'avg_temperature' => $query->avg('temperature'),
+            'avg_cloud_coverage' => $query->avg('cloud_coverage'),
+            'avg_solar_radiation' => $query->avg('solar_radiation'),
+            'data_points' => $query->count(),
+        ];
     }
 
-    // Cache tags para invalidación
-    public function getCacheTags(): array
-    {
-        return ['regions', "region:{$this->id}"];
-    }
+
 }
