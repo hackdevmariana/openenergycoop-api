@@ -72,7 +72,7 @@ class ArticleController extends Controller
         $query = Article::query()
             ->with(['category', 'author', 'organization'])
             ->published()
-            ->orderByDesc('is_featured')
+            ->orderByDesc('featured')
             ->orderByDesc('published_at');
 
         // Filtros
@@ -81,7 +81,7 @@ class ArticleController extends Controller
         }
 
         if ($request->boolean('featured')) {
-            $query->where('is_featured', true);
+            $query->where('featured', true);
         }
 
         if ($request->filled('search')) {
@@ -89,7 +89,7 @@ class ArticleController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('excerpt', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
+                  ->orWhere('text', 'like', "%{$search}%");
             });
         }
 
@@ -179,7 +179,7 @@ class ArticleController extends Controller
             ->firstOrFail();
 
         // Incrementar contador de vistas
-        $article->increment('views');
+        $article->increment('number_of_views');
 
         return response()->json([
             'data' => new ArticleResource($article)
@@ -283,7 +283,7 @@ class ArticleController extends Controller
         $articles = Article::query()
             ->with(['category', 'author', 'organization'])
             ->published()
-            ->where('is_featured', true)
+            ->where('featured', true)
             ->orderByDesc('published_at')
             ->limit($limit)
             ->get();
@@ -362,7 +362,7 @@ class ArticleController extends Controller
         $query = Article::query()
             ->with(['category', 'author', 'organization'])
             ->published()
-            ->orderByDesc('views');
+            ->orderByDesc('number_of_views');
 
         // Filtrar por período si no es 'all'
         if ($period !== 'all') {
