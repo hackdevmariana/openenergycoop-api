@@ -27,7 +27,7 @@ class StoreCategoryRequest extends FormRequest
             'slug' => 'nullable|string|max:255|unique:categories,slug',
             'description' => 'nullable|string|max:1000',
             'parent_id' => 'nullable|exists:categories,id',
-            'type' => 'nullable|string|max:50',
+            'category_type' => 'nullable|string|max:50',
             'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'icon' => 'nullable|string|max:100',
             'language' => 'nullable|string|in:es,en,ca,eu,gl',
@@ -49,7 +49,7 @@ class StoreCategoryRequest extends FormRequest
             'slug' => 'slug',
             'description' => 'descripción',
             'parent_id' => 'categoría padre',
-            'type' => 'tipo',
+            'category_type' => 'tipo',
             'color' => 'color',
             'icon' => 'icono',
             'language' => 'idioma',
@@ -97,7 +97,7 @@ class StoreCategoryRequest extends FormRequest
             'is_active' => $this->has('is_active') ? $this->boolean('is_active') : true,
 
             'sort_order' => $this->sort_order ?? 0,
-            'type' => $this->type ?? 'general',
+            'category_type' => $this->category_type ?? 'article',
         ]);
     }
 
