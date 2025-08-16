@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 
 class UserSettings extends Model
 {
@@ -14,66 +13,104 @@ class UserSettings extends Model
 
     protected $fillable = [
         'user_id',
-        'key',
-        'value',
+        'language',
+        'timezone',
+        'theme',
+        'notifications_enabled',
+        'email_notifications',
+        'push_notifications',
+        'sms_notifications',
+        'marketing_emails',
+        'newsletter_subscription',
+        'privacy_level',
+        'profile_visibility',
+        'show_achievements',
+        'show_statistics',
+        'show_activity',
+        'date_format',
+        'time_format',
+        'currency',
+        'measurement_unit',
+        'energy_unit',
+        'custom_settings',
     ];
 
     protected $casts = [
-        'value' => 'array',
+        'notifications_enabled' => 'boolean',
+        'email_notifications' => 'boolean',
+        'push_notifications' => 'boolean',
+        'sms_notifications' => 'boolean',
+        'marketing_emails' => 'boolean',
+        'newsletter_subscription' => 'boolean',
+        'show_achievements' => 'boolean',
+        'show_statistics' => 'boolean',
+        'show_activity' => 'boolean',
+        'custom_settings' => 'array',
     ];
 
     /**
-     * Configuraciones predefinidas con sus valores por defecto
+     * Default values for settings
      */
-    public const DEFAULT_SETTINGS = [
-        'dashboard_view' => 'grid', // grid, list, compact
-        'theme' => 'auto', // light, dark, auto
-        'language' => 'es', // es, en, ca, etc.
+    public const DEFAULT_VALUES = [
+        'language' => 'es',
         'timezone' => 'Europe/Madrid',
+        'theme' => 'light',
+        'notifications_enabled' => true,
+        'email_notifications' => true,
+        'push_notifications' => true,
+        'sms_notifications' => false,
+        'marketing_emails' => true,
+        'newsletter_subscription' => true,
+        'privacy_level' => 'public',
+        'profile_visibility' => 'public',
+        'show_achievements' => true,
+        'show_statistics' => true,
+        'show_activity' => true,
         'date_format' => 'd/m/Y',
-        'time_format' => 'H:i',
+        'time_format' => '24',
         'currency' => 'EUR',
-        'notifications' => [
-            'email' => [
-                'system' => true,
-                'marketing' => false,
-                'achievements' => true,
-                'team_updates' => true,
-                'challenges' => true,
-            ],
-            'push' => [
-                'system' => true,
-                'achievements' => true,
-                'team_updates' => false,
-                'challenges' => true,
-            ],
-            'sms' => [
-                'system' => false,
-                'security' => true,
-            ],
-        ],
-        'privacy' => [
-            'show_in_rankings' => true,
-            'show_profile_public' => false,
-            'share_achievements' => true,
-        ],
-        'dashboard_widgets' => [
-            'energy_overview' => true,
-            'recent_achievements' => true,
-            'team_progress' => true,
-            'challenges' => true,
-            'leaderboard' => false,
-        ],
-        'energy_units' => 'kwh', // kwh, mwh, wh
-        'chart_preferences' => [
-            'default_period' => 'month', // week, month, quarter, year
-            'show_comparisons' => true,
-            'show_goals' => true,
-        ],
+        'measurement_unit' => 'metric',
+        'energy_unit' => 'kWh',
+        'custom_settings' => null,
     ];
 
     /**
-     * Relación con el usuario
+     * Supported languages
+     */
+    public const SUPPORTED_LANGUAGES = ['es', 'en', 'ca', 'eu', 'gl'];
+
+    /**
+     * Supported themes
+     */
+    public const SUPPORTED_THEMES = ['light', 'dark', 'auto'];
+
+    /**
+     * Supported privacy levels
+     */
+    public const PRIVACY_LEVELS = ['public', 'friends', 'private'];
+
+    /**
+     * Supported profile visibility levels
+     */
+    public const PROFILE_VISIBILITY_LEVELS = ['public', 'registered', 'private'];
+
+    /**
+     * Supported time formats
+     */
+    public const TIME_FORMATS = ['12', '24'];
+
+    /**
+     * Supported measurement units
+     */
+    public const MEASUREMENT_UNITS = ['metric', 'imperial'];
+
+    /**
+     * Supported energy units
+     */
+    public const ENERGY_UNITS = ['kWh', 'MWh', 'GWh'];
+
+    /**
+     * Relationship with user
      */
     public function user(): BelongsTo
     {
@@ -81,7 +118,7 @@ class UserSettings extends Model
     }
 
     /**
-     * Scope para obtener configuraciones por usuario
+     * Scope for filtering by user
      */
     public function scopeForUser(Builder $query, int $userId): Builder
     {
@@ -89,190 +126,259 @@ class UserSettings extends Model
     }
 
     /**
-     * Scope para filtrar por clave de configuración
+     * Get or create settings for a user with default values
      */
-    public function scopeForKey(Builder $query, string $key): Builder
+    public static function getForUser(int $userId): self
     {
-        return $query->where('key', $key);
-    }
-
-    /**
-     * Obtener una configuración específica de un usuario
-     */
-    public static function getUserSetting(int $userId, string $key, $default = null)
-    {
-        $setting = self::forUser($userId)->forKey($key)->first();
-        
-        if ($setting) {
-            return $setting->value;
-        }
-
-        // Devolver valor por defecto predefinido si existe
-        return self::DEFAULT_SETTINGS[$key] ?? $default;
-    }
-
-    /**
-     * Establecer una configuración para un usuario
-     */
-    public static function setUserSetting(int $userId, string $key, $value): self
-    {
-        return self::updateOrCreate(
-            ['user_id' => $userId, 'key' => $key],
-            ['value' => $value]
+        return static::firstOrCreate(
+            ['user_id' => $userId],
+            static::DEFAULT_VALUES
         );
     }
 
     /**
-     * Obtener todas las configuraciones de un usuario
+     * Reset all settings to default values
      */
-    public static function getUserSettings(int $userId): Collection
+    public function resetToDefaults(): bool
     {
-        $userSettings = self::forUser($userId)->get()->keyBy('key');
-        $allSettings = collect();
-
-        // Combinar configuraciones por defecto con las del usuario
-        foreach (self::DEFAULT_SETTINGS as $key => $defaultValue) {
-            $allSettings[$key] = $userSettings->has($key) 
-                ? $userSettings[$key]->value 
-                : $defaultValue;
-        }
-
-        // Agregar configuraciones personalizadas que no están en los defaults
-        foreach ($userSettings as $key => $setting) {
-            if (!isset(self::DEFAULT_SETTINGS[$key])) {
-                $allSettings[$key] = $setting->value;
-            }
-        }
-
-        return $allSettings;
+        return $this->update(static::DEFAULT_VALUES);
     }
 
     /**
-     * Establecer múltiples configuraciones para un usuario
+     * Check if notifications are enabled
      */
-    public static function setUserSettings(int $userId, array $settings): void
+    public function hasNotificationsEnabled(): bool
     {
-        foreach ($settings as $key => $value) {
-            self::setUserSetting($userId, $key, $value);
-        }
+        return $this->notifications_enabled;
     }
 
     /**
-     * Eliminar una configuración específica de un usuario
+     * Check if email notifications are enabled
      */
-    public static function removeUserSetting(int $userId, string $key): bool
+    public function hasEmailNotificationsEnabled(): bool
     {
-        return self::forUser($userId)->forKey($key)->delete() > 0;
+        return $this->notifications_enabled && $this->email_notifications;
     }
 
     /**
-     * Resetear una configuración a su valor por defecto
+     * Check if push notifications are enabled
      */
-    public static function resetUserSetting(int $userId, string $key): ?self
+    public function hasPushNotificationsEnabled(): bool
     {
-        if (!isset(self::DEFAULT_SETTINGS[$key])) {
-            // Si no hay valor por defecto, eliminar la configuración
-            self::removeUserSetting($userId, $key);
-            return null;
-        }
-
-        return self::setUserSetting($userId, $key, self::DEFAULT_SETTINGS[$key]);
+        return $this->notifications_enabled && $this->push_notifications;
     }
 
     /**
-     * Resetear todas las configuraciones de un usuario a los valores por defecto
+     * Check if SMS notifications are enabled
      */
-    public static function resetAllUserSettings(int $userId): void
+    public function hasSmsNotificationsEnabled(): bool
     {
-        // Eliminar todas las configuraciones existentes
-        self::forUser($userId)->delete();
-
-        // Establecer configuraciones por defecto
-        foreach (self::DEFAULT_SETTINGS as $key => $value) {
-            self::setUserSetting($userId, $key, $value);
-        }
+        return $this->notifications_enabled && $this->sms_notifications;
     }
 
     /**
-     * Verificar si una configuración existe para un usuario
+     * Check if marketing emails are enabled
      */
-    public static function hasUserSetting(int $userId, string $key): bool
+    public function hasMarketingEmailsEnabled(): bool
     {
-        return self::forUser($userId)->forKey($key)->exists();
+        return $this->marketing_emails;
     }
 
     /**
-     * Obtener configuraciones de notificación de un usuario
+     * Check if newsletter subscription is enabled
      */
-    public static function getNotificationSettings(int $userId): array
+    public function hasNewsletterSubscriptionEnabled(): bool
     {
-        return self::getUserSetting($userId, 'notifications', self::DEFAULT_SETTINGS['notifications']);
+        return $this->newsletter_subscription;
     }
 
     /**
-     * Verificar si un usuario tiene activado un tipo de notificación
+     * Check if profile is public
      */
-    public static function isNotificationEnabled(int $userId, string $channel, string $type): bool
+    public function isProfilePublic(): bool
     {
-        $notifications = self::getNotificationSettings($userId);
-        return $notifications[$channel][$type] ?? false;
+        return $this->profile_visibility === 'public';
     }
 
     /**
-     * Obtener configuraciones de privacidad de un usuario
+     * Check if profile is visible to registered users
      */
-    public static function getPrivacySettings(int $userId): array
+    public function isProfileVisibleToRegistered(): bool
     {
-        return self::getUserSetting($userId, 'privacy', self::DEFAULT_SETTINGS['privacy']);
+        return in_array($this->profile_visibility, ['public', 'registered']);
     }
 
     /**
-     * Verificar si un usuario permite mostrar su información públicamente
+     * Check if profile is private
      */
-    public static function allowsPublicDisplay(int $userId, string $setting): bool
+    public function isProfilePrivate(): bool
     {
-        $privacy = self::getPrivacySettings($userId);
-        return $privacy[$setting] ?? false;
+        return $this->profile_visibility === 'private';
     }
 
     /**
-     * Obtener las configuraciones de widgets del dashboard
+     * Check if achievements should be shown
      */
-    public static function getDashboardWidgets(int $userId): array
+    public function shouldShowAchievements(): bool
     {
-        return self::getUserSetting($userId, 'dashboard_widgets', self::DEFAULT_SETTINGS['dashboard_widgets']);
+        return $this->show_achievements;
     }
 
     /**
-     * Verificar si un widget está habilitado para un usuario
+     * Check if statistics should be shown
      */
-    public static function isWidgetEnabled(int $userId, string $widget): bool
+    public function shouldShowStatistics(): bool
     {
-        $widgets = self::getDashboardWidgets($userId);
-        return $widgets[$widget] ?? false;
+        return $this->show_statistics;
     }
 
     /**
-     * Obtener la configuración de tema de un usuario
+     * Check if activity should be shown
      */
-    public static function getTheme(int $userId): string
+    public function shouldShowActivity(): bool
     {
-        return self::getUserSetting($userId, 'theme', self::DEFAULT_SETTINGS['theme']);
+        return $this->show_activity;
     }
 
     /**
-     * Obtener la configuración de idioma de un usuario
+     * Get formatted date according to user preference
      */
-    public static function getLanguage(int $userId): string
+    public function formatDate(\DateTime $date): string
     {
-        return self::getUserSetting($userId, 'language', self::DEFAULT_SETTINGS['language']);
+        return $date->format($this->date_format);
     }
 
     /**
-     * Obtener la configuración de zona horaria de un usuario
+     * Get formatted time according to user preference
      */
-    public static function getTimezone(int $userId): string
+    public function formatTime(\DateTime $time): string
     {
-        return self::getUserSetting($userId, 'timezone', self::DEFAULT_SETTINGS['timezone']);
+        $format = $this->time_format === '12' ? 'g:i A' : 'H:i';
+        return $time->format($format);
+    }
+
+    /**
+     * Get formatted datetime according to user preferences
+     */
+    public function formatDateTime(\DateTime $datetime): string
+    {
+        return $this->formatDate($datetime) . ' ' . $this->formatTime($datetime);
+    }
+
+    /**
+     * Check if user prefers dark theme
+     */
+    public function prefersDarkTheme(): bool
+    {
+        return $this->theme === 'dark';
+    }
+
+    /**
+     * Check if user prefers light theme
+     */
+    public function prefersLightTheme(): bool
+    {
+        return $this->theme === 'light';
+    }
+
+    /**
+     * Check if user has auto theme
+     */
+    public function hasAutoTheme(): bool
+    {
+        return $this->theme === 'auto';
+    }
+
+    /**
+     * Get all notification settings as array
+     */
+    public function getNotificationSettings(): array
+    {
+        return [
+            'notifications_enabled' => $this->notifications_enabled,
+            'email_notifications' => $this->email_notifications,
+            'push_notifications' => $this->push_notifications,
+            'sms_notifications' => $this->sms_notifications,
+            'marketing_emails' => $this->marketing_emails,
+            'newsletter_subscription' => $this->newsletter_subscription,
+        ];
+    }
+
+    /**
+     * Get all privacy settings as array
+     */
+    public function getPrivacySettings(): array
+    {
+        return [
+            'privacy_level' => $this->privacy_level,
+            'profile_visibility' => $this->profile_visibility,
+            'show_achievements' => $this->show_achievements,
+            'show_statistics' => $this->show_statistics,
+            'show_activity' => $this->show_activity,
+        ];
+    }
+
+    /**
+     * Update notification settings
+     */
+    public function updateNotificationSettings(array $settings): bool
+    {
+        $allowedFields = [
+            'notifications_enabled',
+            'email_notifications',
+            'push_notifications',
+            'sms_notifications',
+            'marketing_emails',
+            'newsletter_subscription',
+        ];
+
+        $validSettings = array_intersect_key($settings, array_flip($allowedFields));
+        return $this->update($validSettings);
+    }
+
+    /**
+     * Update privacy settings
+     */
+    public function updatePrivacySettings(array $settings): bool
+    {
+        $allowedFields = [
+            'privacy_level',
+            'profile_visibility',
+            'show_achievements',
+            'show_statistics',
+            'show_activity',
+        ];
+
+        $validSettings = array_intersect_key($settings, array_flip($allowedFields));
+        return $this->update($validSettings);
+    }
+
+    /**
+     * Get a specific custom setting
+     */
+    public function getCustomSetting(string $key, $default = null)
+    {
+        $customSettings = $this->custom_settings ?? [];
+        return $customSettings[$key] ?? $default;
+    }
+
+    /**
+     * Set a specific custom setting
+     */
+    public function setCustomSetting(string $key, $value): bool
+    {
+        $customSettings = $this->custom_settings ?? [];
+        $customSettings[$key] = $value;
+        return $this->update(['custom_settings' => $customSettings]);
+    }
+
+    /**
+     * Remove a specific custom setting
+     */
+    public function removeCustomSetting(string $key): bool
+    {
+        $customSettings = $this->custom_settings ?? [];
+        unset($customSettings[$key]);
+        return $this->update(['custom_settings' => $customSettings]);
     }
 }
