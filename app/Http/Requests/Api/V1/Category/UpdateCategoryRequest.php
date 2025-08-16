@@ -40,7 +40,7 @@ class UpdateCategoryRequest extends FormRequest
                 'exists:categories,id',
                 Rule::notIn([$categoryId]) // No puede ser padre de sí misma
             ],
-            'type' => 'nullable|string|max:50',
+            'category_type' => 'nullable|string|max:50',
             'color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
             'icon' => 'nullable|string|max:100',
             'language' => 'nullable|string|in:es,en,ca,eu,gl',
@@ -62,7 +62,7 @@ class UpdateCategoryRequest extends FormRequest
             'slug' => 'slug',
             'description' => 'descripción',
             'parent_id' => 'categoría padre',
-            'type' => 'tipo',
+            'category_type' => 'tipo',
             'color' => 'color',
             'icon' => 'icono',
             'language' => 'idioma',
