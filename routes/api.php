@@ -170,11 +170,12 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::put('users/me', [UserController::class, 'updateMe']);
     Route::apiResource('users', UserController::class);
     
-    // Rutas para Heroes (CMS)
-    Route::get('heroes/slideshow', [HeroController::class, 'slideshow']);
-    Route::get('heroes/active', [HeroController::class, 'active']);
+    // Rutas para Heroes (solo escritura)
+    Route::post('heroes', [HeroController::class, 'store']);
+    Route::put('heroes/{hero}', [HeroController::class, 'update']);
+    Route::patch('heroes/{hero}', [HeroController::class, 'update']);
+    Route::delete('heroes/{hero}', [HeroController::class, 'destroy']);
     Route::post('heroes/{hero}/duplicate', [HeroController::class, 'duplicate']);
-    Route::apiResource('heroes', HeroController::class);
     
     // Rutas para Banners (CMS)
     Route::get('banners/active', [BannerController::class, 'active']);
