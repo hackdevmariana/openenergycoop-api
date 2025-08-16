@@ -31,6 +31,36 @@ class ContactResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'address' => $this->address,
+            'icon_address' => $this->icon_address,
+            'phone' => $this->phone,
+            'icon_phone' => $this->icon_phone,
+            'email' => $this->email,
+            'icon_email' => $this->icon_email,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'contact_type' => $this->contact_type,
+            'business_hours' => $this->business_hours,
+            'additional_info' => $this->additional_info,
+            'organization_id' => $this->organization_id,
+            'is_draft' => $this->is_draft,
+            'is_primary' => $this->is_primary,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            
+            // Relationships
+            'organization' => $this->whenLoaded('organization'),
+            'created_by' => $this->whenLoaded('createdBy'),
+            
+            // Computed Properties
+            'is_published' => $this->isPublished(),
+            'has_location' => $this->hasLocation(),
+            'type_label' => $this->getTypeLabel(),
+            'formatted_address' => $this->getFormattedAddress(),
+            'formatted_phone' => $this->getFormattedPhone(),
+            'is_business_hours' => $this->isBusinessHours(),
+        ];
     }
 }
