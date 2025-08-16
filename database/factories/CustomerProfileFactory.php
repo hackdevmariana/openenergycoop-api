@@ -23,4 +23,47 @@ class CustomerProfileFactory extends Factory
             'contract_type' => $this->faker->randomElement(['own', 'tenant', 'company', 'ownership_change']),
         ];
     }
+
+    /**
+     * Create a customer profile for specific organization.
+     */
+    public function forOrganization(Organization $organization): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organization->id,
+        ]);
+    }
+
+    /**
+     * Create a customer profile for specific user.
+     */
+    public function forUser(User $user): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'user_id' => $user->id,
+        ]);
+    }
+
+    /**
+     * Create an individual customer profile.
+     */
+    public function individual(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'profile_type' => 'individual',
+            'legal_id_type' => $this->faker->randomElement(['dni', 'nie', 'passport']),
+        ]);
+    }
+
+    /**
+     * Create a company customer profile.
+     */
+    public function company(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'profile_type' => 'company',
+            'legal_id_type' => 'cif',
+            'legal_name' => $this->faker->company(),
+        ]);
+    }
 }
