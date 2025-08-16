@@ -45,10 +45,9 @@ class UpdateCategoryRequest extends FormRequest
             'icon' => 'nullable|string|max:100',
             'language' => 'nullable|string|in:es,en,ca,eu,gl',
             'is_active' => 'nullable|boolean',
-            'is_featured' => 'nullable|boolean',
+
             'sort_order' => 'nullable|integer|min:0',
-            'seo_title' => 'nullable|string|max:60',
-            'seo_description' => 'nullable|string|max:160',
+
             'organization_id' => 'nullable|exists:organizations,id',
         ];
     }
@@ -68,10 +67,9 @@ class UpdateCategoryRequest extends FormRequest
             'icon' => 'icono',
             'language' => 'idioma',
             'is_active' => 'activo',
-            'is_featured' => 'destacado',
+
             'sort_order' => 'orden',
-            'seo_title' => 'título SEO',
-            'seo_description' => 'descripción SEO',
+
             'organization_id' => 'organización',
         ];
     }
@@ -91,8 +89,7 @@ class UpdateCategoryRequest extends FormRequest
             'color.regex' => 'El color debe ser un código hexadecimal válido (ej: #FF0000).',
             'language.in' => 'El idioma debe ser uno de: es, en, ca, eu, gl.',
             'sort_order.min' => 'El orden debe ser un número positivo.',
-            'seo_title.max' => 'El título SEO no puede tener más de 60 caracteres.',
-            'seo_description.max' => 'La descripción SEO no puede tener más de 160 caracteres.',
+
             'organization_id.exists' => 'La organización seleccionada no existe.',
         ];
     }
@@ -114,9 +111,7 @@ class UpdateCategoryRequest extends FormRequest
             $this->merge(['is_active' => $this->boolean('is_active')]);
         }
 
-        if ($this->has('is_featured')) {
-            $this->merge(['is_featured' => $this->boolean('is_featured')]);
-        }
+
     }
 
     /**

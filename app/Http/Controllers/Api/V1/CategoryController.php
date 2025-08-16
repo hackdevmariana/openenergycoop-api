@@ -47,7 +47,7 @@ class CategoryController extends Controller
         }
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $query->where('category_type', $request->type);
         }
 
         $categories = $query->orderBy('sort_order')->orderBy('name')->get();
@@ -162,7 +162,7 @@ class CategoryController extends Controller
         }
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $query->where('category_type', $request->type);
         }
 
         $categories = $query->orderBy('sort_order')->orderBy('name')->get();
