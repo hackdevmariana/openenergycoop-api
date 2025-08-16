@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Contact\StoreContactRequest;
+use App\Http\Requests\Api\V1\Contact\UpdateContactRequest;
 use App\Http\Resources\Api\V1\ContactResource;
 use App\Models\Contact;
 use Illuminate\Http\Request;
@@ -21,43 +23,35 @@ class ContactController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Contact::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('name');
+            ->with(['organization', 'createdBy'])
+            ->published()
+            ->orderBy('is_primary', 'desc')
+            ->orderBy('contact_type')
+            ->orderBy('created_at', 'desc');
 
         if ($request->filled('type')) {
-            $query->where('type', $request->type);
+            $query->byType($request->type);
         }
 
-        if ($request->filled('language')) {
-            $query->where('language', $request->language);
+        if ($request->boolean('primary_only')) {
+            $query->primary();
+        }
+
+        if ($request->boolean('with_location')) {
+            $query->withLocation();
         }
 
         $contacts = $query->get();
         return ContactResource::collection($contacts);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreContactRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'nullable|string|max:20',
-            'position' => 'nullable|string|max:255',
-            'department' => 'nullable|string|max:255',
-            'type' => 'required|string|in:general,support,sales,media,technical',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:100',
-            'postal_code' => 'nullable|string|max:10',
-            'country' => 'nullable|string|max:100',
-            'language' => 'required|string|in:es,en,ca,eu,gl',
-            'sort_order' => 'nullable|integer',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
+        $validated['created_by_user_id'] = auth()->id();
 
         $contact = Contact::create($validated);
-        $contact->load(['organization']);
+        $contact->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new ContactResource($contact),
@@ -67,29 +61,23 @@ class ContactController extends Controller
 
     public function show(Contact $contact): JsonResponse
     {
-        if (!$contact->is_active) {
+        if (!$contact->isPublished()) {
             return response()->json(['message' => 'Contacto no encontrado'], 404);
         }
 
-        $contact->load(['organization']);
+        $contact->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new ContactResource($contact)
         ]);
     }
 
-    public function update(Request $request, Contact $contact): JsonResponse
+    public function update(UpdateContactRequest $request, Contact $contact): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email',
-            'phone' => 'nullable|string|max:20',
-            'position' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $contact->update($validated);
-        $contact->load(['organization']);
+        $contact->load(['organization', 'createdBy']);
 
         return response()->json([
             'data' => new ContactResource($contact),
@@ -109,13 +97,14 @@ class ContactController extends Controller
     public function byType(Request $request, string $type): JsonResponse
     {
         $query = Contact::query()
-            ->with(['organization'])
-            ->where('is_active', true)
-            ->where('type', $type)
-            ->orderBy('sort_order');
+            ->with(['organization', 'createdBy'])
+            ->published()
+            ->byType($type)
+            ->orderBy('is_primary', 'desc')
+            ->orderBy('created_at', 'desc');
 
-        if ($request->filled('language')) {
-            $query->where('language', $request->language);
+        if ($request->boolean('primary_only')) {
+            $query->primary();
         }
 
         $contacts = $query->get();
