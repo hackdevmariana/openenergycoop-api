@@ -21,6 +21,7 @@ class AppSetting extends Model implements HasMedia
         'secondary_color',
         'locale',
         'custom_js',
+        'favicon_path',
     ];
 
     protected $casts = [
@@ -79,18 +80,12 @@ class AppSetting extends Model implements HasMedia
     /**
      * Get cached settings for a specific organization
      */
-    public static function forOrg(?int $orgId = null): Collection
+    public static function forOrg(int $orgId): Collection
     {
-        $cacheKey = $orgId ? "app.settings.{$orgId}" : 'app.settings.global';
+        $cacheKey = "app.settings.{$orgId}";
         
         return Cache::remember($cacheKey, now()->addMinutes(self::CACHE_DURATION), function () use ($orgId) {
-            $settings = self::when($orgId, function ($query) use ($orgId) {
-                return $query->where('organization_id', $orgId);
-            })
-            ->when(!$orgId, function ($query) {
-                return $query->whereNull('organization_id');
-            })
-            ->first();
+            $settings = self::where('organization_id', $orgId)->first();
 
             if (!$settings) {
                 // Return default settings if no custom settings found
@@ -109,6 +104,47 @@ class AppSetting extends Model implements HasMedia
                 $settingsData['favicon_url'] = $settings->getFirstMediaUrl('favicon');
             }
 
+            // Add favicon_path if available
+            if ($settings->favicon_path) {
+                $settingsData['favicon_path'] = $settings->favicon_path;
+            }
+
+            return $settingsData;
+        });
+    }
+
+    /**
+     * Get cached settings for the global/default organization
+     */
+    public static function global(): Collection
+    {
+        $cacheKey = 'app.settings.global';
+        
+        return Cache::remember($cacheKey, now()->addMinutes(self::CACHE_DURATION), function () {
+            // Get the first available settings or return defaults
+            $settings = self::first();
+
+            if (!$settings) {
+                return collect(self::DEFAULT_SETTINGS);
+            }
+
+            // Convert model to collection and add media URLs
+            $settingsData = collect($settings->toArray());
+            
+            // Add media URLs
+            if ($settings->getFirstMedia('logo')) {
+                $settingsData['logo_url'] = $settings->getFirstMediaUrl('logo');
+            }
+            
+            if ($settings->getFirstMedia('favicon')) {
+                $settingsData['favicon_url'] = $settings->getFirstMediaUrl('favicon');
+            }
+
+            // Add favicon_path if available
+            if ($settings->favicon_path) {
+                $settingsData['favicon_path'] = $settings->favicon_path;
+            }
+
             return $settingsData;
         });
     }
@@ -118,7 +154,7 @@ class AppSetting extends Model implements HasMedia
      */
     public static function getSetting(string $key, ?int $orgId = null, $default = null)
     {
-        $settings = self::forOrg($orgId);
+        $settings = $orgId ? self::forOrg($orgId) : self::global();
         return $settings->get($key, $default);
     }
 
@@ -127,7 +163,7 @@ class AppSetting extends Model implements HasMedia
      */
     public static function loadIntoConfig(?int $orgId = null): void
     {
-        $settings = self::forOrg($orgId);
+        $settings = $orgId ? self::forOrg($orgId) : self::global();
         config(['appsettings' => $settings->toArray()]);
     }
 
@@ -152,7 +188,7 @@ class AppSetting extends Model implements HasMedia
      */
     public static function warmCache(?int $orgId = null): Collection
     {
-        return self::forOrg($orgId);
+        return $orgId ? self::forOrg($orgId) : self::global();
     }
 
     /**

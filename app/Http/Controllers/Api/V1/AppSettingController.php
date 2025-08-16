@@ -25,6 +25,11 @@ class AppSettingController extends Controller
     public function index()
     {
         $settings = AppSetting::with('organization')->first(); // asumiendo que sólo hay uno
+        
+        if (!$settings) {
+            return response()->json(['data' => null]);
+        }
+        
         return new AppSettingResource($settings);
     }
 

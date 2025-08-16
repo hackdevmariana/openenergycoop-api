@@ -40,12 +40,27 @@ class AppSettingResource extends JsonResource
             'secondary_color' => $this->secondary_color,
             'locale' => $this->locale,
             'custom_js' => $this->custom_js,
-            'organization' => [
-                'id' => $this->organization->id ?? null,
-                'name' => $this->organization->name ?? null,
-            ],
+            'favicon_path' => $this->favicon_path,
+            'organization_id' => $this->organization_id,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'organization' => $this->whenLoaded('organization', function () {
+                return $this->organization ? [
+                    'id' => $this->organization->id,
+                    'name' => $this->organization->name,
+                ] : null;
+            }),
             'logo_url' => $this->getFirstMediaUrl('logo'),
             'favicon_url' => $this->getFirstMediaUrl('favicon'),
+            
+            // Computed properties
+            'has_logo' => !empty($this->getFirstMediaUrl('logo')),
+            'has_favicon' => !empty($this->getFirstMediaUrl('favicon')) || !empty($this->favicon_path),
+            'effective_favicon' => $this->getFirstMediaUrl('favicon') ?: $this->favicon_path,
+            'theme_colors' => [
+                'primary' => $this->primary_color,
+                'secondary' => $this->secondary_color,
+            ],
         ];
     }
 }
