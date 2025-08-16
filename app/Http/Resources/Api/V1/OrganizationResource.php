@@ -34,6 +34,21 @@ class OrganizationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'domain' => $this->domain,
+            'contact_email' => $this->contact_email,
+            'contact_phone' => $this->contact_phone,
+
+            'css_files' => $this->css_files,
+            'active' => $this->active,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relaciones
+            'features' => $this->whenLoaded('features'),
+        ];
     }
 }
