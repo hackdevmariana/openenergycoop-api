@@ -4,8 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Comment;
 use App\Models\User;
-use App\Models\Article;
-use App\Models\Page;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,15 +22,8 @@ class CommentFactory extends Factory
         $isRegisteredUser = $this->faker->boolean(70); // 70% chance of registered user
 
         return [
-            'commentable_type' => $this->faker->randomElement([Article::class, Page::class]),
-            'commentable_id' => function (array $attributes) {
-                // Create the related model dynamically
-                $modelClass = $attributes['commentable_type'];
-                if (class_exists($modelClass)) {
-                    return $modelClass::factory()->create()->id;
-                }
-                return 1; // Fallback
-            },
+            'commentable_type' => 'App\\Models\\User', // Simplified to use existing User model
+            'commentable_id' => User::factory(),
             'user_id' => $isRegisteredUser ? User::factory() : null,
             'author_name' => $isRegisteredUser ? null : $this->faker->name(),
             'author_email' => $isRegisteredUser ? null : $this->faker->email(),
