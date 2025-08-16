@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Traits\HasCaching;
+
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class Municipality extends Model
 {
-    use HasFactory, HasCaching;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -108,9 +108,7 @@ class Municipality extends Model
      */
     public function getLatestWeather()
     {
-        return $this->getCachedData('latest_weather', function () {
-            return $this->weatherSnapshots()->latest('timestamp')->first();
-        }, 300); // Cache for 5 minutes
+        return $this->weatherSnapshots()->latest('timestamp')->first();
     }
 
     /**
@@ -118,14 +116,10 @@ class Municipality extends Model
      */
     public function getWeatherInRange(Carbon $from, Carbon $to)
     {
-        $cacheKey = "weather_range_{$from->format('Y-m-d')}_{$to->format('Y-m-d')}";
-        
-        return $this->getCachedData($cacheKey, function () use ($from, $to) {
-            return $this->weatherSnapshots()
-                       ->whereBetween('timestamp', [$from, $to])
-                       ->orderBy('timestamp')
-                       ->get();
-        }, 1800); // Cache for 30 minutes
+        return $this->weatherSnapshots()
+                   ->whereBetween('timestamp', [$from, $to])
+                   ->orderBy('timestamp')
+                   ->get();
     }
 
     /**
@@ -142,19 +136,15 @@ class Municipality extends Model
             $query->where('timestamp', '<=', $to);
         }
 
-        $cacheKey = 'avg_weather_' . ($from?->format('Y-m-d') ?? 'all') . '_' . ($to?->format('Y-m-d') ?? 'all');
-        
-        return $this->getCachedData($cacheKey, function () use ($query) {
-            return [
-                'avg_temperature' => round($query->avg('temperature'), 2),
-                'avg_cloud_coverage' => round($query->avg('cloud_coverage'), 2),
-                'avg_solar_radiation' => round($query->avg('solar_radiation'), 2),
-                'min_temperature' => $query->min('temperature'),
-                'max_temperature' => $query->max('temperature'),
-                'peak_solar_radiation' => $query->max('solar_radiation'),
-                'weather_readings' => $query->count(),
-            ];
-        }, 1800); // Cache for 30 minutes
+        return [
+            'avg_temperature' => round($query->avg('temperature'), 2),
+            'avg_cloud_coverage' => round($query->avg('cloud_coverage'), 2),
+            'avg_solar_radiation' => round($query->avg('solar_radiation'), 2),
+            'min_temperature' => $query->min('temperature'),
+            'max_temperature' => $query->max('temperature'),
+            'peak_solar_radiation' => $query->max('solar_radiation'),
+            'weather_readings' => $query->count(),
+        ];
     }
 
     /**
@@ -162,19 +152,17 @@ class Municipality extends Model
      */
     public function getSolarEnergyPotential(): float
     {
-        return $this->getCachedData('solar_potential', function () {
-            $weather = $this->getAverageWeatherConditions();
-            
-            if ($weather['weather_readings'] === 0) {
-                return 0.0;
-            }
+        $weather = $this->getAverageWeatherConditions();
+        
+        if ($weather['weather_readings'] === 0) {
+            return 0.0;
+        }
 
-            // Calcular score basado en radiación solar y cobertura de nubes
-            $solarScore = min(($weather['avg_solar_radiation'] ?? 0) / 1000 * 100, 100); // Normalizar a 100
-            $cloudPenalty = ($weather['avg_cloud_coverage'] ?? 0) / 100 * 30; // Penalizar por nubes
-            
-            return max(round($solarScore - $cloudPenalty, 1), 0.0);
-        }, 3600); // Cache for 1 hour
+        // Calcular score basado en radiación solar y cobertura de nubes
+        $solarScore = min(($weather['avg_solar_radiation'] ?? 0) / 1000 * 100, 100); // Normalizar a 100
+        $cloudPenalty = ($weather['avg_cloud_coverage'] ?? 0) / 100 * 30; // Penalizar por nubes
+        
+        return max(round($solarScore - $cloudPenalty, 1), 0.0);
     }
 
     /**
@@ -182,16 +170,14 @@ class Municipality extends Model
      */
     public function getPeakSolarHours(): float
     {
-        return $this->getCachedData('peak_solar_hours', function () {
-            $avgRadiation = $this->weatherSnapshots()->avg('solar_radiation');
-            
-            if (!$avgRadiation) {
-                return 0.0;
-            }
+        $avgRadiation = $this->weatherSnapshots()->avg('solar_radiation');
+        
+        if (!$avgRadiation) {
+            return 0.0;
+        }
 
-            // Aproximación: radiación promedio / 1000 W/m² = horas pico solares
-            return round($avgRadiation / 1000, 2);
-        }, 3600); // Cache for 1 hour
+        // Aproximación: radiación promedio / 1000 W/m² = horas pico solares
+        return round($avgRadiation / 1000, 2);
     }
 
     /**
