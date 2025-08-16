@@ -31,6 +31,26 @@ class FaqTopicResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'icon' => $this->icon,
+            'color' => $this->color,
+            'sort_order' => $this->sort_order,
+            'is_active' => $this->is_active,
+            'organization_id' => $this->organization_id,
+            'language' => $this->language,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            
+            // Relationships
+            'organization' => $this->whenLoaded('organization'),
+            'faqs' => $this->whenLoaded('faqs'),
+            
+            // Counts
+            'faqs_count' => $this->when(isset($this->faqs_count), $this->faqs_count),
+        ];
     }
 }

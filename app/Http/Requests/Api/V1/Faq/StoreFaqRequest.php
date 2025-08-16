@@ -11,7 +11,7 @@ class StoreFaqRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true; // Authorization is handled by middleware
     }
 
     /**
@@ -22,7 +22,45 @@ class StoreFaqRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'topic_id' => 'nullable|exists:faq_topics,id',
+            'question' => 'required|string|max:500',
+            'answer' => 'required|string|max:10000',
+            'position' => 'nullable|integer|min:0',
+            'is_featured' => 'nullable|boolean',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50',
+            'organization_id' => 'nullable|exists:organizations,id',
+            'language' => 'nullable|string|in:es,en,ca,eu,gl',
+            'is_draft' => 'nullable|boolean',
+            'published_at' => 'nullable|date',
         ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'question.required' => 'La pregunta es obligatoria.',
+            'answer.required' => 'La respuesta es obligatoria.',
+            'topic_id.exists' => 'El tema seleccionado no existe.',
+            'organization_id.exists' => 'La organización seleccionada no existe.',
+            'language.in' => 'El idioma debe ser: es, en, ca, eu o gl.',
+        ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Valores por defecto
+        $this->merge([
+            'is_featured' => $this->has('is_featured') ? $this->boolean('is_featured') : false,
+            'is_draft' => $this->has('is_draft') ? $this->boolean('is_draft') : true,
+            'position' => $this->position ?? 0,
+            'language' => $this->language ?? 'es',
+        ]);
     }
 }

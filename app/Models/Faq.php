@@ -14,16 +14,12 @@ class Faq extends Model
         'topic_id',
         'question',
         'answer',
-        'short_answer',
-        'slug',
         'position',
-        'view_count',
+        'views_count',
         'helpful_count',
         'not_helpful_count',
         'is_featured',
-        'keywords',
-        'priority',
-        'show_in_search',
+        'tags',
         'organization_id',
         'language',
         'is_draft',
@@ -33,11 +29,14 @@ class Faq extends Model
     ];
 
     protected $casts = [
-        'keywords' => 'array',
+        'tags' => 'array',
         'is_featured' => 'boolean',
-        'show_in_search' => 'boolean',
         'is_draft' => 'boolean',
         'published_at' => 'datetime',
+        'position' => 'integer',
+        'views_count' => 'integer',
+        'helpful_count' => 'integer',
+        'not_helpful_count' => 'integer',
     ];
 
     // Relaciones
@@ -64,7 +63,9 @@ class Faq extends Model
     // Scopes
     public function scopePublished($query)
     {
-        return $query->where('is_draft', false);
+        return $query->where('is_draft', false)
+                     ->whereNotNull('published_at')
+                     ->where('published_at', '<=', now());
     }
 
     public function scopeFeatured($query)
@@ -82,11 +83,63 @@ class Faq extends Model
         return $query->where('language', $language);
     }
 
+    public function scopeOrderedByPosition($query)
+    {
+        return $query->orderBy('position', 'asc')->orderBy('created_at', 'desc');
+    }
+
+    // Business Logic Methods
+    public function isPublished(): bool
+    {
+        return !$this->is_draft && 
+               $this->published_at !== null && 
+               $this->published_at <= now();
+    }
+
+    public function incrementViews(): void
+    {
+        $this->increment('views_count');
+    }
+
+    public function markAsHelpful(): void
+    {
+        $this->increment('helpful_count');
+    }
+
+    public function markAsNotHelpful(): void
+    {
+        $this->increment('not_helpful_count');
+    }
+
     // Accessors
     public function getHelpfulRateAttribute()
     {
         $total = $this->helpful_count + $this->not_helpful_count;
         if ($total == 0) return 0;
         return round(($this->helpful_count / $total) * 100, 1);
+    }
+
+    public function getReadableAnswerAttribute()
+    {
+        return strip_tags($this->answer);
+    }
+
+    public function getShortAnswerAttribute()
+    {
+        return \Str::limit(strip_tags($this->answer), 150);
+    }
+
+    /**
+     * Boot method
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+        
+        static::creating(function ($faq) {
+            if (is_null($faq->published_at) && !$faq->is_draft) {
+                $faq->published_at = now();
+            }
+        });
     }
 }

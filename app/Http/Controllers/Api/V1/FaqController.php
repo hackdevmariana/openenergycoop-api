@@ -25,8 +25,7 @@ class FaqController extends Controller
         $query = Faq::query()
             ->with(['topic', 'organization', 'createdBy'])
             ->published()
-            ->orderBy('sort_order')
-            ->orderBy('created_at', 'desc');
+            ->orderedByPosition();
 
         if ($request->filled('topic_id')) {
             $query->byTopic($request->topic_id);
@@ -41,7 +40,7 @@ class FaqController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('question', 'like', "%{$search}%")
                   ->orWhere('answer', 'like', "%{$search}%")
-                  ->orWhere('tags', 'like', "%{$search}%");
+                  ->orWhereJsonContains('tags', $search);
             });
         }
 
@@ -109,7 +108,7 @@ class FaqController extends Controller
             ->with(['topic', 'organization'])
             ->published()
             ->featured()
-            ->orderBy('sort_order');
+            ->orderBy('position');
 
         if ($request->filled('language')) {
             $query->inLanguage($request->language);
@@ -146,7 +145,7 @@ class FaqController extends Controller
             $query->inLanguage($request->language);
         }
 
-        $faqs = $query->orderBy('sort_order')
+        $faqs = $query->orderBy('position')
             ->limit(20)
             ->get();
 

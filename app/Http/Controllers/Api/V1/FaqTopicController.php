@@ -102,7 +102,7 @@ class FaqTopicController extends Controller
         $query = $faqTopic->faqs()
             ->with(['organization', 'createdBy'])
             ->published()
-            ->orderBy('sort_order');
+            ->orderBy('position');
 
         if ($request->filled('language')) {
             $query->inLanguage($request->language);
@@ -117,7 +117,7 @@ class FaqTopicController extends Controller
                     'id' => $faq->id,
                     'question' => $faq->question,
                     'answer' => $faq->answer,
-                    'sort_order' => $faq->sort_order,
+                    'position' => $faq->position,
                     'is_featured' => $faq->is_featured,
                     'created_at' => $faq->created_at,
                 ];
