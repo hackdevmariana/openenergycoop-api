@@ -32,6 +32,46 @@ class MessageResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'subject' => $this->subject,
+            'message' => $this->message,
+            'status' => $this->status,
+            'priority' => $this->priority,
+            'message_type' => $this->message_type,
+            'ip_address' => $this->ip_address,
+            'user_agent' => $this->user_agent,
+            'read_at' => $this->read_at,
+            'replied_at' => $this->replied_at,
+            'replied_by_user_id' => $this->replied_by_user_id,
+            'internal_notes' => $this->internal_notes,
+            'assigned_to_user_id' => $this->assigned_to_user_id,
+            'organization_id' => $this->organization_id,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relationships
+            'replied_by' => $this->whenLoaded('repliedBy'),
+            'assigned_to' => $this->whenLoaded('assignedTo'),
+            'organization' => $this->whenLoaded('organization'),
+
+            // Computed properties
+            'is_read' => $this->isRead(),
+            'is_replied' => $this->isReplied(),
+            'is_pending' => $this->isPending(),
+            'is_assigned' => $this->isAssigned(),
+            'is_urgent' => $this->isUrgent(),
+            'is_high_priority' => $this->isHighPriority(),
+            'status_label' => $this->getStatusLabel(),
+            'priority_label' => $this->getPriorityLabel(),
+            'type_label' => $this->getTypeLabel(),
+            'formatted_phone' => $this->getFormattedPhone(),
+            'response_time_hours' => $this->getResponseTime(),
+            'has_internal_notes' => $this->hasInternalNotes(),
+            'short_message' => $this->getShortMessage(),
+        ];
     }
 }

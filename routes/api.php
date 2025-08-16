@@ -228,10 +228,22 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('collaborators/by-type/{type}', [CollaboratorController::class, 'byType']);
     Route::apiResource('collaborators', CollaboratorController::class);
     
-    // Rutas para Messages
+    // Rutas para Messages (gestión interna)
+    Route::get('messages', [MessageController::class, 'index']); // Listado autenticado
+    Route::get('messages/pending', [MessageController::class, 'pending']);
     Route::get('messages/unread', [MessageController::class, 'unread']);
+    Route::get('messages/assigned', [MessageController::class, 'assigned']);
+    Route::get('messages/stats', [MessageController::class, 'stats']);
+    Route::get('messages/by-email/{email}', [MessageController::class, 'byEmail']);
+    Route::get('messages/{message}', [MessageController::class, 'show']); // Show autenticado
     Route::post('messages/{message}/mark-as-read', [MessageController::class, 'markAsRead']);
-    Route::apiResource('messages', MessageController::class)->except(['update']);
+    Route::post('messages/{message}/mark-as-replied', [MessageController::class, 'markAsReplied']);
+    Route::post('messages/{message}/mark-as-spam', [MessageController::class, 'markAsSpam']);
+    Route::post('messages/{message}/archive', [MessageController::class, 'archive']);
+    Route::post('messages/{message}/assign', [MessageController::class, 'assign']);
+    Route::delete('messages/{message}/assign', [MessageController::class, 'unassign']);
+    Route::put('messages/{message}', [MessageController::class, 'update']);
+    Route::delete('messages/{message}', [MessageController::class, 'destroy']);
     
     // Rutas para Newsletter Subscriptions
     Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
@@ -351,6 +363,9 @@ Route::prefix('v1')->group(function () {
     Route::get('social-links/by-platform/{platform}', [SocialLinkController::class, 'byPlatform']);
     Route::get('social-links/popular', [SocialLinkController::class, 'popular']);
     Route::get('social-links/{socialLink}', [SocialLinkController::class, 'show']);
+
+    // Rutas públicas para Messages (solo formulario de contacto)
+    Route::post('messages', [MessageController::class, 'store']); // Público - envío de formulario
     
     // Rutas públicas para Collaborators (solo lectura)
     Route::get('collaborators', [CollaboratorController::class, 'index']);
