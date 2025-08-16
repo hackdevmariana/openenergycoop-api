@@ -31,6 +31,38 @@ class BannerResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'image' => $this->image,
+            'mobile_image' => $this->mobile_image,
+            'internal_link' => $this->internal_link,
+            'url' => $this->url,
+            'position' => $this->position,
+            'active' => $this->active,
+            'alt_text' => $this->alt_text,
+            'title' => $this->title,
+            'description' => $this->description,
+            'exhibition_beginning' => $this->exhibition_beginning,
+            'exhibition_end' => $this->exhibition_end,
+            'banner_type' => $this->banner_type,
+            'display_rules' => $this->display_rules,
+            'click_count' => $this->click_count,
+            'impression_count' => $this->impression_count,
+            'is_draft' => $this->is_draft,
+            'published_at' => $this->published_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // Relaciones
+            'organization' => $this->whenLoaded('organization'),
+            'created_by' => $this->whenLoaded('createdBy'),
+            'updated_by' => $this->whenLoaded('updatedBy'),
+
+            // Computed fields
+            'is_published' => $this->isPublished(),
+            'is_currently_displaying' => $this->isCurrentlyDisplaying(),
+            'click_through_rate' => $this->getClickThroughRate(),
+            'type_label' => $this->getTypeLabel(),
+        ];
     }
 }
