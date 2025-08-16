@@ -44,6 +44,8 @@ use App\Http\Controllers\Api\V1\FormSubmissionController;
 use App\Http\Controllers\Api\V1\OrganizationFeatureController;
 use App\Http\Controllers\Api\V1\TeamMembershipController;
 use App\Http\Controllers\Api\V1\TeamChallengeProgressController;
+use App\Http\Controllers\Api\V1\RegionController;
+use App\Http\Controllers\Api\V1\MunicipalityController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -281,6 +283,14 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('team-challenge-progress/leaderboard/{challengeId}', [TeamChallengeProgressController::class, 'leaderboard']);
     Route::post('team-challenge-progress/{teamChallengeProgress}/update-progress', [TeamChallengeProgressController::class, 'updateProgress']);
     Route::apiResource('team-challenge-progress', TeamChallengeProgressController::class);
+    
+    // Geographic API endpoints
+    Route::get('regions/{id}/weather', [RegionController::class, 'weather']);
+    Route::get('regions/slug/{slug}', [RegionController::class, 'showBySlug']);
+    Route::apiResource('regions', RegionController::class)->only(['index', 'show']);
+    
+    Route::get('municipalities/{id}/weather', [MunicipalityController::class, 'weather']);
+    Route::apiResource('municipalities', MunicipalityController::class)->only(['index', 'show']);
 });
 
 // Rutas públicas
