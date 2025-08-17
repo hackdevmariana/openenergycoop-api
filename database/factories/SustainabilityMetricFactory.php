@@ -29,9 +29,9 @@ class SustainabilityMetricFactory extends Factory
         $trends = ['improving', 'declining', 'stable', 'unknown'];
         $verificationStatuses = ['unverified', 'self_reported', 'third_party', 'certified'];
 
-        $measurementDate = $this->faker->dateTimeBetween('-3 months', 'now');
-        $periodStart = $this->faker->dateTimeBetween('-1 month', $measurementDate);
-        $periodEnd = $this->faker->dateTimeBetween($periodStart, $measurementDate);
+        $measurementDate = $this->faker->dateTimeBetween('-1 month', 'now');
+        $periodStart = $this->faker->dateTimeBetween('-2 months', $measurementDate);
+        $periodEnd = $this->faker->dateTimeBetween($periodStart, 'now');
 
         $metricType = $this->faker->randomElement($metricTypes);
         $value = $this->generateValueForMetricType($metricType);
