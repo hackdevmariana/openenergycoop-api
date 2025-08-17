@@ -116,6 +116,118 @@ class User extends Authenticatable
     }
 
     /**
+     * Pagos del usuario
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Facturas del usuario
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Transacciones del usuario
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Transacciones de wallet del usuario
+     */
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    /**
+     * Reembolsos del usuario
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * Pagos creados por el usuario (como admin)
+     */
+    public function createdPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'created_by_id');
+    }
+
+    /**
+     * Facturas creadas por el usuario (como admin)
+     */
+    public function createdInvoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'created_by_id');
+    }
+
+    /**
+     * Transacciones creadas por el usuario (como admin)
+     */
+    public function createdTransactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'created_by_id');
+    }
+
+    /**
+     * Transacciones de wallet creadas por el usuario (como admin)
+     */
+    public function createdWalletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class, 'created_by_id');
+    }
+
+    /**
+     * Transacciones aprobadas por el usuario
+     */
+    public function approvedTransactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'approved_by_id');
+    }
+
+    /**
+     * Transacciones de wallet aprobadas por el usuario
+     */
+    public function approvedWalletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class, 'approved_by_id');
+    }
+
+    /**
+     * Reembolsos solicitados por el usuario (como admin)
+     */
+    public function requestedRefunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'requested_by_id');
+    }
+
+    /**
+     * Reembolsos aprobados por el usuario
+     */
+    public function approvedRefunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'approved_by_id');
+    }
+
+    /**
+     * Reembolsos procesados por el usuario
+     */
+    public function processedRefunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'processed_by_id');
+    }
+
+    /**
      * Obtener dispositivos activos del usuario
      */
     public function activeDevices(): HasMany

@@ -98,6 +98,31 @@ class EnergyCooperative extends Model
         return $this->hasMany(PerformanceIndicator::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
     public function members()
     {
         return $this->belongsToMany(User::class, 'user_subscriptions')
