@@ -59,6 +59,9 @@ use App\Http\Controllers\Api\V1\MarketPriceController;
 use App\Http\Controllers\Api\V1\EnergyCooperativeController;
 use App\Http\Controllers\Api\V1\UserSubscriptionController;
 use App\Http\Controllers\Api\V1\EnergySharingController;
+use App\Http\Controllers\Api\V1\EnergyReportController;
+use App\Http\Controllers\Api\V1\SustainabilityMetricController;
+use App\Http\Controllers\Api\V1\PerformanceIndicatorController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -413,6 +416,27 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('energy-sharings/{energySharing}/complete', [EnergySharingController::class, 'complete']);
     Route::post('energy-sharings/{energySharing}/rate', [EnergySharingController::class, 'rate']);
     Route::apiResource('energy-sharings', EnergySharingController::class);
+
+    // ========================================
+    // ANALYTICS Y REPORTES
+    // ========================================
+
+    // Rutas para Energy Reports (Reportes de Energía)
+    Route::get('energy-reports/my-reports', [EnergyReportController::class, 'myReports']);
+    Route::post('energy-reports/{energyReport}/generate', [EnergyReportController::class, 'generate']);
+    Route::get('energy-reports/{energyReport}/download', [EnergyReportController::class, 'download']);
+    Route::post('energy-reports/{energyReport}/share', [EnergyReportController::class, 'share']);
+    Route::get('energy-reports/scheduled', [EnergyReportController::class, 'scheduled']);
+    Route::apiResource('energy-reports', EnergyReportController::class);
+
+    // Rutas para Sustainability Metrics (Métricas de Sostenibilidad)
+    Route::get('sustainability-metrics/summary', [SustainabilityMetricController::class, 'summary']);
+    Route::apiResource('sustainability-metrics', SustainabilityMetricController::class);
+
+    // Rutas para Performance Indicators (Indicadores de Rendimiento)
+    Route::get('performance-indicators/dashboard', [PerformanceIndicatorController::class, 'dashboard']);
+    Route::get('performance-indicators/alerts', [PerformanceIndicatorController::class, 'alerts']);
+    Route::apiResource('performance-indicators', PerformanceIndicatorController::class);
 });
 
 // Rutas públicas
@@ -575,6 +599,18 @@ Route::prefix('v1')->group(function () {
     Route::get('energy-cooperatives', [EnergyCooperativeController::class, 'index']);
     Route::get('energy-cooperatives/{energyCooperative}', [EnergyCooperativeController::class, 'show']);
     Route::get('energy-cooperatives/{energyCooperative}/analytics', [EnergyCooperativeController::class, 'analytics']);
+
+    // ========================================
+    // RUTAS PÚBLICAS - ANALYTICS Y REPORTES
+    // ========================================
+
+    // Rutas públicas para Energy Reports (reportes públicos)
+    Route::get('energy-reports/public', [EnergyReportController::class, 'index'])->middleware('throttle:60,1');
+    Route::get('energy-reports/public/{energyReport}', [EnergyReportController::class, 'show'])->middleware('throttle:60,1');
+
+    // Rutas públicas para Sustainability Metrics (métricas públicas)
+    Route::get('sustainability-metrics/public', [SustainabilityMetricController::class, 'index'])->middleware('throttle:60,1');
+    Route::get('sustainability-metrics/public/summary', [SustainabilityMetricController::class, 'summary'])->middleware('throttle:60,1');
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
