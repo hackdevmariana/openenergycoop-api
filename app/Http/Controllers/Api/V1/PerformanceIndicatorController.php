@@ -43,7 +43,17 @@ class PerformanceIndicatorController extends Controller
             ->orderBy('measurement_date', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        return response()->json($indicators);
+        return response()->json([
+            'data' => $indicators->items(),
+            'meta' => [
+                'current_page' => $indicators->currentPage(),
+                'last_page' => $indicators->lastPage(),
+                'per_page' => $indicators->perPage(),
+                'total' => $indicators->total(),
+                'from' => $indicators->firstItem(),
+                'to' => $indicators->lastItem(),
+            ]
+        ]);
     }
 
     #[OA\Post(
@@ -69,6 +79,7 @@ class PerformanceIndicatorController extends Controller
             'period_start' => 'required|date',
             'period_end' => 'required|date|after:period_start',
             'period_type' => 'required|in:instant,daily,weekly,monthly,quarterly,yearly',
+            'alerts_enabled' => 'nullable|boolean',
             'energy_cooperative_id' => 'nullable|exists:energy_cooperatives,id',
         ]);
 
