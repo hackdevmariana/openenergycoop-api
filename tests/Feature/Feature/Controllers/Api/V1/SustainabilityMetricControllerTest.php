@@ -264,7 +264,7 @@ class SustainabilityMetricControllerTest extends TestCase
         $response->assertCreated();
         $this->assertDatabaseHas('sustainability_metrics', [
             'metric_code' => 'CERT-001',
-            'is_certified' => 1
+            'is_certified' => true
         ]);
     }
 }
