@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class, // Agregar este seeder primero
             RolesAndAdminSeeder::class,
             AppSettingSeeder::class,
+            ShopSeeder::class,
         ]);
     }
 }
