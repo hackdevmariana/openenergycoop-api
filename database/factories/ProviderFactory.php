@@ -112,9 +112,9 @@ class ProviderFactory extends Factory
     }
 
     /**
-     * Indicate that the provider is new.
+     * Indicate that the provider is newly registered.
      */
-    public function new(): static
+    public function newProvider(): static
     {
         return $this->state(fn (array $attributes) => [
             'rating' => null,
