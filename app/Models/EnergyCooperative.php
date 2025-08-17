@@ -83,6 +83,21 @@ class EnergyCooperative extends Model
         return $this->hasMany(EnergySharing::class);
     }
 
+    public function energyReports()
+    {
+        return $this->hasMany(EnergyReport::class);
+    }
+
+    public function sustainabilityMetrics()
+    {
+        return $this->hasMany(SustainabilityMetric::class);
+    }
+
+    public function performanceIndicators()
+    {
+        return $this->hasMany(PerformanceIndicator::class);
+    }
+
     public function members()
     {
         return $this->belongsToMany(User::class, 'user_subscriptions')
