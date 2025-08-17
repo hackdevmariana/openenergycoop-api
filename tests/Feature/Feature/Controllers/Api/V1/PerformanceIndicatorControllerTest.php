@@ -359,7 +359,7 @@ class PerformanceIndicatorControllerTest extends TestCase
         $this->assertDatabaseHas('performance_indicators', [
             'indicator_code' => 'CRIT-SYS-001',
             'criticality' => 'critical',
-            'alerts_enabled' => true
+            'alerts_enabled' => 1
         ]);
     }
 }
