@@ -17,67 +17,85 @@ class ProviderFactory extends Factory
      */
     public function definition(): array
     {
-        $types = array_keys(Provider::TYPES);
-        $certifications = array_keys(Provider::CERTIFICATIONS);
+        $types = ['renewable', 'traditional', 'hybrid'];
+        $certifications = [
+            'ISO 14001 - Gestión Ambiental',
+            'ISO 50001 - Gestión Energética', 
+            'Certificado Energía Renovable',
+            'Carbon Neutral Certified',
+            'Green Energy Certified',
+            'LEED Certified Provider'
+        ];
 
         return [
-            'name' => $this->faker->company,
+            'name' => $this->faker->company . ' Energy',
             'description' => $this->faker->paragraph(3),
-            'contact_info' => [
-                'contact_person' => $this->faker->name,
-                'phone' => $this->faker->phoneNumber,
-                'address' => $this->faker->address,
-            ],
+            'company_id' => \App\Models\Company::factory(),
             'type' => $this->faker->randomElement($types),
-            'is_active' => $this->faker->boolean(85), // 85% activos
-            'website' => $this->faker->optional(0.7)->url,
-            'email' => $this->faker->companyEmail,
-            'phone' => $this->faker->phoneNumber,
-            'address' => $this->faker->address,
-            'logo_path' => $this->faker->optional(0.4)->filePath(),
-            'rating' => $this->faker->optional(0.6)->randomFloat(2, 1, 5),
-            'total_reviews' => $this->faker->numberBetween(0, 500),
-            'certifications' => $this->faker->randomElements($certifications, $this->faker->numberBetween(0, 3)),
-            'operating_regions' => $this->faker->randomElements([
-                'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao', 
-                'Zaragoza', 'Murcia', 'Las Palmas', 'Palma', 'Córdoba'
-            ], $this->faker->numberBetween(1, 4)),
+            'rating' => $this->faker->randomFloat(2, 1, 5),
+            'total_products' => $this->faker->numberBetween(5, 100),
+            'sustainability_score' => $this->faker->numberBetween(40, 100),
+            'verification_status' => $this->faker->randomElement(['pending', 'verified', 'rejected']),
+            'is_active' => $this->faker->boolean(85),
+            'certifications' => $this->faker->randomElements($certifications, $this->faker->numberBetween(1, 4)),
+            'contact_info' => [
+                'email' => $this->faker->companyEmail,
+                'phone' => $this->faker->phoneNumber,
+                'website' => $this->faker->url,
+            ],
+            'metadata' => [
+                'established_year' => $this->faker->year,
+                'employees_count' => $this->faker->numberBetween(10, 1000),
+                'headquarters' => $this->faker->city,
+            ],
+            'last_verified_at' => $this->faker->optional(0.6)->dateTimeThisYear(),
         ];
     }
 
     /**
-     * Indicate that the provider is energy-focused.
+     * Indicate that the provider is renewable energy focused.
      */
-    public function energy(): static
+    public function renewable(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'energy',
-            'certifications' => ['iso_14001', 'renewable_energy'],
-            'rating' => $this->faker->randomFloat(2, 3.5, 5),
+            'type' => 'renewable',
+            'certifications' => [
+                'ISO 14001 - Gestión Ambiental',
+                'Certificado Energía Renovable',
+                'Carbon Neutral Certified'
+            ],
+            'rating' => $this->faker->randomFloat(2, 4.0, 5.0),
+            'sustainability_score' => $this->faker->numberBetween(80, 100),
+            'verification_status' => 'verified',
         ]);
     }
 
     /**
-     * Indicate that the provider is mining-focused.
+     * Indicate that the provider is traditional energy focused.
      */
-    public function mining(): static
+    public function traditional(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'mining',
-            'certifications' => ['energy_star'],
-            'rating' => $this->faker->randomFloat(2, 2.5, 4.5),
+            'type' => 'traditional',
+            'certifications' => ['ISO 50001 - Gestión Energética'],
+            'rating' => $this->faker->randomFloat(2, 2.5, 4.0),
+            'sustainability_score' => $this->faker->numberBetween(40, 70),
         ]);
     }
 
     /**
-     * Indicate that the provider is charity-focused.
+     * Indicate that the provider is hybrid energy focused.
      */
-    public function charity(): static
+    public function hybrid(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'charity',
-            'certifications' => ['fair_trade', 'carbon_neutral'],
-            'rating' => $this->faker->randomFloat(2, 4, 5),
+            'type' => 'hybrid',
+            'certifications' => [
+                'ISO 14001 - Gestión Ambiental',
+                'ISO 50001 - Gestión Energética'
+            ],
+            'rating' => $this->faker->randomFloat(2, 3.5, 4.5),
+            'sustainability_score' => $this->faker->numberBetween(60, 85),
         ]);
     }
 
@@ -117,16 +135,36 @@ class ProviderFactory extends Factory
     }
 
     /**
-     * Create a specific renewable energy provider.
+     * Create a verified provider.
      */
-    public function renewableEnergy(): static
+    public function verified(): static
     {
         return $this->state(fn (array $attributes) => [
-            'name' => 'Energía Verde ' . $this->faker->word,
-            'type' => 'energy',
-            'certifications' => ['iso_14001', 'renewable_energy', 'carbon_neutral'],
-            'rating' => $this->faker->randomFloat(2, 4, 5),
-            'total_reviews' => $this->faker->numberBetween(50, 300),
+            'verification_status' => 'verified',
+            'rating' => $this->faker->randomFloat(2, 4.0, 5.0),
+            'sustainability_score' => $this->faker->numberBetween(75, 100),
+            'last_verified_at' => now(),
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Create a sustainable provider.
+     */
+    public function sustainable(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'EcoGreen ' . $this->faker->word . ' Energy',
+            'type' => 'renewable',
+            'sustainability_score' => $this->faker->numberBetween(85, 100),
+            'certifications' => [
+                'ISO 14001 - Gestión Ambiental',
+                'Certificado Energía Renovable',
+                'Carbon Neutral Certified',
+                'Green Energy Certified'
+            ],
+            'rating' => $this->faker->randomFloat(2, 4.2, 5.0),
+            'verification_status' => 'verified',
             'is_active' => true,
         ]);
     }
