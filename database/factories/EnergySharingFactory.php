@@ -24,7 +24,7 @@ class EnergySharingFactory extends Factory
         $pricePerKwh = $this->faker->randomFloat(4, 0.05, 0.30);
         $proposedAt = $this->faker->dateTimeBetween('-1 month', '-1 day');
         $sharingStart = $this->faker->dateTimeBetween('+1 hour', '+1 week');
-        $sharingEnd = $this->faker->dateTimeBetween($sharingStart, '+1 day');
+        $sharingEnd = $this->faker->dateTimeBetween($sharingStart, '+2 weeks');
 
         return [
             'provider_user_id' => User::factory(),
@@ -43,10 +43,11 @@ class EnergySharingFactory extends Factory
             'is_renewable' => $this->faker->boolean(80),
             'sharing_start_datetime' => $sharingStart,
             'sharing_end_datetime' => $sharingEnd,
-            'proposal_expiry_datetime' => $this->faker->dateTimeBetween('+30 minutes', $sharingStart),
+            'proposal_expiry_datetime' => $this->faker->dateTimeBetween($proposedAt, $sharingStart),
             'duration_hours' => $this->faker->numberBetween(1, 12),
             'price_per_kwh' => $pricePerKwh,
             'total_amount' => $energyAmount * $pricePerKwh,
+            'net_amount' => $energyAmount * $pricePerKwh * 0.95, // Descuento por comisiones
             'currency' => 'EUR',
             'payment_method' => $this->faker->randomElement(['credits', 'bank_transfer', 'energy_tokens']),
             'allows_partial_delivery' => $this->faker->boolean(60),
@@ -96,6 +97,7 @@ class EnergySharingFactory extends Factory
                 'completed_at' => $this->faker->dateTimeBetween('-2 days', 'now'),
                 'energy_delivered_kwh' => $energyDelivered,
                 'energy_remaining_kwh' => $attributes['energy_amount_kwh'] - $energyDelivered,
+                'net_amount' => $energyDelivered * $attributes['price_per_kwh'] * 0.95,
                 'quality_score' => $this->faker->randomFloat(1, 3, 5),
             ];
         });
