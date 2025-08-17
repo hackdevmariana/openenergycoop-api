@@ -84,6 +84,38 @@ class User extends Authenticatable
     }
 
     /**
+     * Reportes de energía del usuario
+     */
+    public function energyReports(): HasMany
+    {
+        return $this->hasMany(EnergyReport::class);
+    }
+
+    /**
+     * Métricas de sostenibilidad del usuario
+     */
+    public function sustainabilityMetrics(): HasMany
+    {
+        return $this->hasMany(SustainabilityMetric::class);
+    }
+
+    /**
+     * Indicadores de rendimiento del usuario
+     */
+    public function performanceIndicators(): HasMany
+    {
+        return $this->hasMany(PerformanceIndicator::class);
+    }
+
+    /**
+     * Reportes creados por el usuario
+     */
+    public function createdReports(): HasMany
+    {
+        return $this->hasMany(EnergyReport::class, 'created_by_id');
+    }
+
+    /**
      * Obtener dispositivos activos del usuario
      */
     public function activeDevices(): HasMany
