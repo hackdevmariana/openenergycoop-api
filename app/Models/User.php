@@ -76,6 +76,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Obtener las suscripciones del usuario
+     */
+    public function userSubscriptions(): HasMany
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    /**
      * Obtener dispositivos activos del usuario
      */
     public function activeDevices(): HasMany

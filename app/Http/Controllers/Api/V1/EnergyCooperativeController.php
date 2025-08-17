@@ -101,19 +101,141 @@ class EnergyCooperativeController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, EnergyCooperative $energyCooperative): JsonResponse
     {
-        //
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'sometimes|in:pending,active,suspended,inactive,dissolved',
+            'max_members' => 'nullable|integer|min:1',
+            'open_enrollment' => 'boolean',
+            'allows_energy_sharing' => 'boolean',
+            'allows_trading' => 'boolean',
+        ]);
+
+        $energyCooperative->update($validated);
+        $energyCooperative->load(['founder', 'administrator']);
+
+        return response()->json([
+            'message' => 'Cooperativa energética actualizada exitosamente',
+            'data' => $energyCooperative
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(EnergyCooperative $energyCooperative): JsonResponse
     {
-        //
+        // Verificar si tiene miembros activos
+        $activeMembersCount = $energyCooperative->userSubscriptions()
+            ->where('status', 'active')
+            ->count();
+
+        if ($activeMembersCount > 0) {
+            return response()->json([
+                'error' => 'No se puede eliminar la cooperativa: tiene miembros activos',
+                'active_members_count' => $activeMembersCount
+            ], 409);
+        }
+
+        $energyCooperative->delete();
+
+        return response()->json([
+            'message' => 'Cooperativa energética eliminada exitosamente'
+        ]);
+    }
+
+    public function members(Request $request, EnergyCooperative $energyCooperative): JsonResponse
+    {
+        $query = $energyCooperative->userSubscriptions()->with('user');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $members = $query->paginate(20);
+
+        return response()->json([
+            'data' => $members,
+            'cooperative' => $energyCooperative->only(['id', 'name', 'code', 'current_members'])
+        ]);
+    }
+
+    public function analytics(EnergyCooperative $energyCooperative): JsonResponse
+    {
+        $membersStats = [
+            'total_members' => $energyCooperative->current_members ?? 0,
+            'max_members' => $energyCooperative->max_members,
+            'active_subscriptions' => $energyCooperative->userSubscriptions()->where('status', 'active')->count(),
+            'pending_subscriptions' => $energyCooperative->userSubscriptions()->where('status', 'pending')->count(),
+            'occupancy_percentage' => $energyCooperative->max_members > 0 
+                ? round(($energyCooperative->current_members / $energyCooperative->max_members) * 100, 2)
+                : null
+        ];
+
+        $energyStats = [
+            'total_capacity_kw' => $energyCooperative->total_capacity_kw,
+            'available_capacity_kw' => $energyCooperative->available_capacity_kw,
+            'used_capacity_kw' => $energyCooperative->total_capacity_kw - $energyCooperative->available_capacity_kw,
+            'capacity_utilization_percentage' => $energyCooperative->total_capacity_kw > 0
+                ? round((($energyCooperative->total_capacity_kw - $energyCooperative->available_capacity_kw) / $energyCooperative->total_capacity_kw) * 100, 2)
+                : 0,
+            'total_energy_shared_kwh' => $energyCooperative->total_energy_shared_kwh,
+            'active_energy_sharings' => $energyCooperative->energySharings()->where('status', 'active')->count(),
+        ];
+
+        $sustainabilityStats = [
+            'total_co2_reduction_kg' => $energyCooperative->total_co2_reduction_kg,
+            'total_projects' => $energyCooperative->total_projects,
+            'average_member_satisfaction' => $energyCooperative->average_member_satisfaction,
+        ];
+
+        return response()->json([
+            'cooperative' => $energyCooperative->only(['id', 'name', 'code', 'status']),
+            'members_stats' => $membersStats,
+            'energy_stats' => $energyStats,
+            'sustainability_stats' => $sustainabilityStats,
+            'generated_at' => now()->toISOString()
+        ]);
+    }
+
+    public function join(Request $request, EnergyCooperative $energyCooperative): JsonResponse
+    {
+        $user = $request->user();
+
+        // Verificar si ya es miembro
+        $existingSubscription = $energyCooperative->userSubscriptions()
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['active', 'pending'])
+            ->first();
+
+        if ($existingSubscription) {
+            return response()->json([
+                'error' => 'Ya eres miembro o tienes una solicitud pendiente en esta cooperativa'
+            ], 409);
+        }
+
+        $validated = $request->validate([
+            'subscription_type' => 'required|string|max:255',
+            'plan_name' => 'required|string|max:255',
+            'billing_frequency' => 'nullable|in:monthly,quarterly,annual'
+        ]);
+
+        $subscription = $energyCooperative->userSubscriptions()->create([
+            'user_id' => $user->id,
+            'subscription_type' => $validated['subscription_type'],
+            'plan_name' => $validated['plan_name'],
+            'service_category' => 'cooperative_membership',
+            'status' => 'pending',
+            'start_date' => now(),
+            'billing_frequency' => $validated['billing_frequency'] ?? 'monthly',
+            'price' => $energyCooperative->membership_fee ?? 0,
+            'currency' => $energyCooperative->currency ?? 'EUR',
+        ]);
+
+        $subscription->load(['user', 'energyCooperative']);
+
+        return response()->json([
+            'message' => 'Solicitud de membresía enviada exitosamente',
+            'data' => $subscription
+        ], 201);
     }
 }
