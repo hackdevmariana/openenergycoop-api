@@ -46,6 +46,10 @@ use App\Http\Controllers\Api\V1\TeamMembershipController;
 use App\Http\Controllers\Api\V1\TeamChallengeProgressController;
 use App\Http\Controllers\Api\V1\RegionController;
 use App\Http\Controllers\Api\V1\MunicipalityController;
+use App\Http\Controllers\Api\V1\ProviderController;
+use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\UserAssetController;
+use App\Http\Controllers\Api\V1\BalanceController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -291,6 +295,42 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     
     Route::get('municipalities/{id}/weather', [MunicipalityController::class, 'weather']);
     Route::apiResource('municipalities', MunicipalityController::class)->only(['index', 'show']);
+    
+    // ========================================
+    // ENERGY STORE API ENDPOINTS - TIENDA ENERGÉTICA
+    // ========================================
+    
+    // Rutas para Providers (Proveedores Energéticos)
+    Route::get('providers/top-rated', [ProviderController::class, 'topRated']);
+    Route::get('providers/renewable', [ProviderController::class, 'renewable']);
+    Route::get('providers/{provider}/certifications', [ProviderController::class, 'certifications']);
+    Route::get('providers/{provider}/statistics', [ProviderController::class, 'statistics']);
+    Route::apiResource('providers', ProviderController::class);
+    
+    // Rutas para Products (Productos Energéticos)
+    Route::get('products/sustainable', [ProductController::class, 'sustainable']);
+    Route::get('products/recommendations/{user}', [ProductController::class, 'recommendations']);
+    Route::get('products/{product}/pricing', [ProductController::class, 'pricing']);
+    Route::get('products/{product}/sustainability', [ProductController::class, 'sustainability']);
+    Route::apiResource('products', ProductController::class);
+    
+    // Rutas para User Assets (Activos de Usuarios)
+    Route::get('user-assets/my-assets', [UserAssetController::class, 'myAssets']);
+    Route::get('user-assets/portfolio-summary', [UserAssetController::class, 'portfolioSummary']);
+    Route::get('user-assets/{userAsset}/performance', [UserAssetController::class, 'performance']);
+    Route::post('user-assets/{userAsset}/toggle-auto-reinvest', [UserAssetController::class, 'toggleAutoReinvest']);
+    Route::post('user-assets/{userAsset}/process-yield', [UserAssetController::class, 'processYield']);
+    Route::apiResource('user-assets', UserAssetController::class);
+    
+    // Rutas para Balances (Sistema Económico)
+    Route::get('balances/my-balance', [BalanceController::class, 'myBalance']);
+    Route::get('balances/transaction-history', [BalanceController::class, 'transactionHistory']);
+    Route::get('balances/analytics', [BalanceController::class, 'analytics']);
+    Route::post('balances/deposit', [BalanceController::class, 'deposit']);
+    Route::post('balances/withdraw', [BalanceController::class, 'withdraw']);
+    Route::post('balances/investment', [BalanceController::class, 'investment']);
+    Route::post('balances/yield', [BalanceController::class, 'yield']);
+    Route::apiResource('balances', BalanceController::class)->only(['index', 'show']);
 });
 
 // Rutas públicas
@@ -407,6 +447,24 @@ Route::prefix('v1')->group(function () {
     
     // Rutas públicas para Form Submissions (envío de formularios)
     Route::post('form-submissions', [FormSubmissionController::class, 'store']);
+    
+    // ========================================
+    // ENERGY STORE PUBLIC API ENDPOINTS - TIENDA ENERGÉTICA PÚBLICA
+    // ========================================
+    
+    // Rutas públicas para Providers (solo lectura)
+    Route::get('providers', [ProviderController::class, 'index']);
+    Route::get('providers/top-rated', [ProviderController::class, 'topRated']);
+    Route::get('providers/renewable', [ProviderController::class, 'renewable']);
+    Route::get('providers/{provider}', [ProviderController::class, 'show']);
+    Route::get('providers/{provider}/statistics', [ProviderController::class, 'statistics']);
+    
+    // Rutas públicas para Products (solo lectura)
+    Route::get('products', [ProductController::class, 'index']);
+    Route::get('products/sustainable', [ProductController::class, 'sustainable']);
+    Route::get('products/{product}', [ProductController::class, 'show']);
+    Route::get('products/{product}/pricing', [ProductController::class, 'pricing']);
+    Route::get('products/{product}/sustainability', [ProductController::class, 'sustainability']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
