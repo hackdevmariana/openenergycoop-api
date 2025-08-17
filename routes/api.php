@@ -56,6 +56,9 @@ use App\Http\Controllers\Api\V1\EnergyStorageController;
 use App\Http\Controllers\Api\V1\EnergyProductionController;
 use App\Http\Controllers\Api\V1\CarbonCreditController;
 use App\Http\Controllers\Api\V1\MarketPriceController;
+use App\Http\Controllers\Api\V1\EnergyCooperativeController;
+use App\Http\Controllers\Api\V1\UserSubscriptionController;
+use App\Http\Controllers\Api\V1\EnergySharingController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -385,6 +388,31 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('market-prices/analytics', [MarketPriceController::class, 'analytics']);
     Route::get('market-prices/markets', [MarketPriceController::class, 'markets']);
     Route::apiResource('market-prices', MarketPriceController::class);
+
+    // ========================================
+    // GESTIÓN DE COMUNIDAD - COOPERATIVAS Y SUSCRIPCIONES
+    // ========================================
+
+    // Rutas para Energy Cooperatives (Cooperativas Energéticas)
+    Route::get('energy-cooperatives/{energyCooperative}/members', [EnergyCooperativeController::class, 'members']);
+    Route::get('energy-cooperatives/{energyCooperative}/analytics', [EnergyCooperativeController::class, 'analytics']);
+    Route::post('energy-cooperatives/{energyCooperative}/join', [EnergyCooperativeController::class, 'join']);
+    Route::apiResource('energy-cooperatives', EnergyCooperativeController::class);
+
+    // Rutas para User Subscriptions (Suscripciones de Usuario)
+    Route::get('user-subscriptions/my-subscriptions', [UserSubscriptionController::class, 'mySubscriptions']);
+    Route::post('user-subscriptions/{userSubscription}/pause', [UserSubscriptionController::class, 'pause']);
+    Route::post('user-subscriptions/{userSubscription}/resume', [UserSubscriptionController::class, 'resume']);
+    Route::get('user-subscriptions/{userSubscription}/usage', [UserSubscriptionController::class, 'usage']);
+    Route::apiResource('user-subscriptions', UserSubscriptionController::class);
+
+    // Rutas para Energy Sharing (Intercambios de Energía)
+    Route::get('energy-sharings/my-sharings', [EnergySharingController::class, 'mySharings']);
+    Route::post('energy-sharings/{energySharing}/accept', [EnergySharingController::class, 'accept']);
+    Route::post('energy-sharings/{energySharing}/start', [EnergySharingController::class, 'start']);
+    Route::post('energy-sharings/{energySharing}/complete', [EnergySharingController::class, 'complete']);
+    Route::post('energy-sharings/{energySharing}/rate', [EnergySharingController::class, 'rate']);
+    Route::apiResource('energy-sharings', EnergySharingController::class);
 });
 
 // Rutas públicas
@@ -538,6 +566,15 @@ Route::prefix('v1')->group(function () {
 
     // Rutas públicas para Energy Storage Overview (estadísticas generales)
     Route::get('energy-storages/storage-overview', [EnergyStorageController::class, 'storageOverview']);
+
+    // ========================================
+    // RUTAS PÚBLICAS - GESTIÓN DE COMUNIDAD
+    // ========================================
+
+    // Rutas públicas para Energy Cooperatives (información pública)
+    Route::get('energy-cooperatives', [EnergyCooperativeController::class, 'index']);
+    Route::get('energy-cooperatives/{energyCooperative}', [EnergyCooperativeController::class, 'show']);
+    Route::get('energy-cooperatives/{energyCooperative}/analytics', [EnergyCooperativeController::class, 'analytics']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
