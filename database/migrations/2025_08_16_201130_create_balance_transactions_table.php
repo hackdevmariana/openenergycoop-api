@@ -56,7 +56,6 @@ return new class extends Migration
             $table->index('type');
             $table->index('batch_id');
             $table->index('status');
-            $table->index(['related_model_type', 'related_model_id']);
             $table->index('created_at'); // Para consultas temporales
             $table->index('processed_at');
             $table->index('is_reconciled');
