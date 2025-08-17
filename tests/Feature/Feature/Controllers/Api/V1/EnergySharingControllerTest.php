@@ -53,6 +53,8 @@ class EnergySharingControllerTest extends TestCase
             'proposal_expiry_datetime' => now()->addHours(2)->format('Y-m-d H:i:s'),
             'duration_hours' => 8,
             'price_per_kwh' => 0.15,
+            'total_amount' => 15.075,
+            'net_amount' => 14.32, // Después de comisiones
             'payment_method' => 'credits',
             'allows_partial_delivery' => true,
             'certified_green_energy' => true,

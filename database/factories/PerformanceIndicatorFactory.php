@@ -35,8 +35,8 @@ class PerformanceIndicatorFactory extends Factory
 
         $measurementTimestamp = $this->faker->dateTimeBetween('-1 month', 'now');
         $measurementDate = $measurementTimestamp->format('Y-m-d');
-        $periodStart = $this->faker->dateTimeBetween('-1 week', $measurementTimestamp);
-        $periodEnd = $this->faker->dateTimeBetween($periodStart, $measurementTimestamp);
+        $periodStart = $this->faker->dateTimeBetween('-2 months', $measurementTimestamp);
+        $periodEnd = $this->faker->dateTimeBetween($periodStart, 'now');
 
         $indicatorType = $this->faker->randomElement($indicatorTypes);
         $category = $this->faker->randomElement($categories);

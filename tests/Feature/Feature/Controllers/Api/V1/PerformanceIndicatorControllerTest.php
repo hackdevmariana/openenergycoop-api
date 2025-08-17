@@ -348,7 +348,7 @@ class PerformanceIndicatorControllerTest extends TestCase
             'alerts_enabled' => true,
             'measurement_timestamp' => now()->toISOString(),
             'measurement_date' => now()->format('Y-m-d'),
-            'period_start' => now()->subHour()->format('Y-m-d'),
+            'period_start' => now()->subDay()->format('Y-m-d'),
             'period_end' => now()->format('Y-m-d'),
             'period_type' => 'instant',
         ];
