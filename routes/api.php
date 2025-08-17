@@ -50,6 +50,12 @@ use App\Http\Controllers\Api\V1\ProviderController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\UserAssetController;
 use App\Http\Controllers\Api\V1\BalanceController;
+use App\Http\Controllers\Api\V1\EnergyContractController;
+use App\Http\Controllers\Api\V1\EnergyConsumptionController;
+use App\Http\Controllers\Api\V1\EnergyStorageController;
+use App\Http\Controllers\Api\V1\EnergyProductionController;
+use App\Http\Controllers\Api\V1\CarbonCreditController;
+use App\Http\Controllers\Api\V1\MarketPriceController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -331,6 +337,54 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('balances/investment', [BalanceController::class, 'investment']);
     Route::post('balances/yield', [BalanceController::class, 'yield']);
     Route::apiResource('balances', BalanceController::class)->only(['index', 'show']);
+
+    // ========================================
+    // NUEVOS ENERGY STORE API ENDPOINTS - ECOSISTEMA ENERGÉTICO AVANZADO
+    // ========================================
+
+    // Rutas para Energy Contracts (Contratos Energéticos)
+    Route::get('energy-contracts/my-contracts', [EnergyContractController::class, 'myContracts']);
+    Route::get('energy-contracts/analytics', [EnergyContractController::class, 'analytics']);
+    Route::post('energy-contracts/{energyContract}/approve', [EnergyContractController::class, 'approve']);
+    Route::post('energy-contracts/{energyContract}/suspend', [EnergyContractController::class, 'suspend']);
+    Route::post('energy-contracts/{energyContract}/terminate', [EnergyContractController::class, 'terminate']);
+    Route::apiResource('energy-contracts', EnergyContractController::class);
+
+    // Rutas para Energy Consumption (Consumo Energético)
+    Route::get('energy-consumptions/my-consumptions', [EnergyConsumptionController::class, 'myConsumptions']);
+    Route::get('energy-consumptions/analytics', [EnergyConsumptionController::class, 'analytics']);
+    Route::apiResource('energy-consumptions', EnergyConsumptionController::class);
+
+    // Rutas para Energy Storage (Almacenamiento Energético)
+    Route::get('energy-storages/my-storage-systems', [EnergyStorageController::class, 'myStorageSystems']);
+    Route::get('energy-storages/storage-overview', [EnergyStorageController::class, 'storageOverview']);
+    Route::post('energy-storages/{energyStorage}/start-charging', [EnergyStorageController::class, 'startCharging']);
+    Route::post('energy-storages/{energyStorage}/start-discharging', [EnergyStorageController::class, 'startDischarging']);
+    Route::post('energy-storages/{energyStorage}/stop-operation', [EnergyStorageController::class, 'stopOperation']);
+    Route::post('energy-storages/{energyStorage}/update-charge-level', [EnergyStorageController::class, 'updateChargeLevel']);
+    Route::get('energy-storages/{energyStorage}/performance', [EnergyStorageController::class, 'performance']);
+    Route::apiResource('energy-storages', EnergyStorageController::class);
+
+    // Rutas para Energy Production (Producción Energética)
+    Route::get('energy-productions/my-productions', [EnergyProductionController::class, 'myProductions']);
+    Route::get('energy-productions/analytics', [EnergyProductionController::class, 'analytics']);
+    Route::apiResource('energy-productions', EnergyProductionController::class);
+
+    // Rutas para Carbon Credits (Créditos de Carbono)
+    Route::get('carbon-credits/my-credits', [CarbonCreditController::class, 'myCredits']);
+    Route::get('carbon-credits/marketplace', [CarbonCreditController::class, 'marketplace']);
+    Route::get('carbon-credits/analytics', [CarbonCreditController::class, 'analytics']);
+    Route::post('carbon-credits/{carbonCredit}/verify', [CarbonCreditController::class, 'verify']);
+    Route::post('carbon-credits/{carbonCredit}/retire', [CarbonCreditController::class, 'retire']);
+    Route::post('carbon-credits/{carbonCredit}/transfer', [CarbonCreditController::class, 'transfer']);
+    Route::get('carbon-credits/{carbonCredit}/traceability', [CarbonCreditController::class, 'traceability']);
+    Route::apiResource('carbon-credits', CarbonCreditController::class);
+
+    // Rutas para Market Prices (Precios de Mercado)
+    Route::get('market-prices/latest', [MarketPriceController::class, 'latest']);
+    Route::get('market-prices/analytics', [MarketPriceController::class, 'analytics']);
+    Route::get('market-prices/markets', [MarketPriceController::class, 'markets']);
+    Route::apiResource('market-prices', MarketPriceController::class);
 });
 
 // Rutas públicas
@@ -465,6 +519,25 @@ Route::prefix('v1')->group(function () {
     Route::get('products/{product}', [ProductController::class, 'show']);
     Route::get('products/{product}/pricing', [ProductController::class, 'pricing']);
     Route::get('products/{product}/sustainability', [ProductController::class, 'sustainability']);
+
+    // ========================================
+    // NUEVOS ENERGY STORE PUBLIC API ENDPOINTS - ECOSISTEMA ENERGÉTICO PÚBLICO
+    // ========================================
+
+    // Rutas públicas para Carbon Credits Marketplace
+    Route::get('carbon-credits/marketplace', [CarbonCreditController::class, 'marketplace']);
+    Route::get('carbon-credits/analytics', [CarbonCreditController::class, 'analytics']);
+    Route::get('carbon-credits/{carbonCredit}/traceability', [CarbonCreditController::class, 'traceability']);
+
+    // Rutas públicas para Market Prices (datos en tiempo real)
+    Route::get('market-prices', [MarketPriceController::class, 'index']);
+    Route::get('market-prices/latest', [MarketPriceController::class, 'latest']);
+    Route::get('market-prices/analytics', [MarketPriceController::class, 'analytics']);
+    Route::get('market-prices/markets', [MarketPriceController::class, 'markets']);
+    Route::get('market-prices/{marketPrice}', [MarketPriceController::class, 'show']);
+
+    // Rutas públicas para Energy Storage Overview (estadísticas generales)
+    Route::get('energy-storages/storage-overview', [EnergyStorageController::class, 'storageOverview']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
