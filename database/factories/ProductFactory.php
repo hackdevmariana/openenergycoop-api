@@ -19,66 +19,58 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->words(3, true);
-        $types = array_keys(Product::TYPES);
-        $units = array_keys(Product::UNITS);
+        $types = ['solar', 'wind', 'hydro', 'biomass', 'geothermal', 'battery', 'efficiency'];
+        $energyNames = [
+            'Panel Solar Premium', 'Turbina Eólica', 'Sistema Hidroeléctrico',
+            'Planta Biomasa', 'Sistema Geotérmico', 'Batería Litio', 'Sistema Eficiencia'
+        ];
 
         return [
             'provider_id' => Provider::factory(),
-            'name' => ucwords($name),
-            'slug' => Str::slug($name),
+            'name' => $this->faker->randomElement($energyNames) . ' ' . $this->faker->word,
             'description' => $this->faker->paragraphs(2, true),
             'type' => $this->faker->randomElement($types),
-            'base_purchase_price' => $this->faker->randomFloat(2, 10, 1000),
-            'base_sale_price' => $this->faker->randomFloat(2, 15, 1200),
-            'commission_type' => $this->faker->randomElement(['percentage', 'fixed', 'none']),
-            'commission_value' => $this->faker->randomFloat(4, 0, 15),
-            'surcharge_type' => $this->faker->randomElement(['percentage', 'fixed', 'none']),
-            'surcharge_value' => $this->faker->randomFloat(4, 0, 10),
-            'unit' => $this->faker->randomElement($units),
-            'is_active' => $this->faker->boolean(90), // 90% activos
-            'start_date' => $this->faker->optional(0.3)->dateTimeBetween('-1 month', '+1 month'),
-            'end_date' => $this->faker->optional(0.2)->dateTimeBetween('+1 month', '+1 year'),
+            'unit_price' => $this->faker->randomFloat(2, 100, 5000),
+            'currency' => 'EUR',
+            'unit' => $this->faker->randomElement(['kWh', 'MW', 'panel', 'sistema', 'batería']),
+            'minimum_investment' => $this->faker->randomFloat(2, 50, 500),
+            'maximum_investment' => $this->faker->randomFloat(2, 1000, 50000),
+            'expected_yield_percentage' => $this->faker->randomFloat(2, 3, 12),
+            'risk_level' => $this->faker->randomElement(['low', 'medium', 'high']),
+            'renewable_percentage' => $this->faker->numberBetween(60, 100),
+            'co2_reduction' => $this->faker->randomFloat(2, 50, 500),
+            'energy_efficiency' => $this->faker->randomElement(['A++', 'A+', 'A', 'B', 'C']),
+            'carbon_footprint' => $this->faker->randomFloat(4, 0.001, 0.5),
+            'water_saving' => $this->faker->randomFloat(2, 0, 1000),
+            'certifications' => $this->faker->randomElements([
+                'ISO 14001', 'Energy Star', 'LEED Certified', 'Carbon Neutral'
+            ], $this->faker->numberBetween(1, 3)),
+            'availability' => $this->faker->numberBetween(10, 1000),
+            'is_active' => $this->faker->boolean(90),
+            'sustainability_score' => $this->faker->numberBetween(50, 100),
+            'total_sales' => $this->faker->numberBetween(0, 10000),
             'metadata' => [
                 'technical_specs' => $this->faker->words(5),
-                'warranty_years' => $this->faker->numberBetween(1, 10),
+                'warranty_years' => $this->faker->numberBetween(5, 25),
+                'installation_time' => $this->faker->numberBetween(1, 30) . ' días',
             ],
-            'renewable_percentage' => $this->faker->randomFloat(2, 0, 100),
-            'carbon_footprint' => $this->faker->randomFloat(4, 0.001, 1.5),
-            'geographical_zone' => $this->faker->randomElement([
-                'Madrid', 'Cataluña', 'Andalucía', 'Valencia', 'País Vasco'
-            ]),
-            'image_path' => $this->faker->optional(0.6)->filePath(),
-            'features' => $this->faker->words(4),
-            'stock_quantity' => $this->faker->optional(0.7)->numberBetween(1, 1000),
-            'weight' => $this->faker->optional(0.5)->randomFloat(3, 0.1, 100),
-            'dimensions' => [
-                'length' => $this->faker->numberBetween(10, 200),
-                'width' => $this->faker->numberBetween(10, 200),
-                'height' => $this->faker->numberBetween(5, 50),
-            ],
-            'warranty_info' => $this->faker->optional(0.7)->sentence,
-            'estimated_lifespan_years' => $this->faker->optional(0.8)->numberBetween(5, 25),
-            'meta_title' => $this->faker->optional(0.4)->sentence,
-            'meta_description' => $this->faker->optional(0.4)->paragraph,
-            'keywords' => $this->faker->words(5),
         ];
     }
 
     /**
-     * Indicate that the product is energy-related.
+     * Indicate that the product is solar energy.
      */
-    public function energy(): static
+    public function solar(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'energy_kwh',
+            'type' => 'solar',
+            'name' => 'Panel Solar ' . $this->faker->word,
             'unit' => 'kWh',
-            'renewable_percentage' => $this->faker->randomFloat(2, 70, 100),
-            'carbon_footprint' => $this->faker->randomFloat(4, 0.001, 0.1),
-            'base_purchase_price' => $this->faker->randomFloat(2, 0.05, 0.25),
-            'base_sale_price' => $this->faker->randomFloat(2, 0.08, 0.35),
-            'estimated_lifespan_years' => null,
-            'weight' => null,
+            'renewable_percentage' => 100,
+            'energy_efficiency' => $this->faker->randomElement(['A++', 'A+']),
+            'expected_yield_percentage' => $this->faker->randomFloat(2, 6, 10),
+            'sustainability_score' => $this->faker->numberBetween(85, 100),
+            'co2_reduction' => $this->faker->randomFloat(2, 200, 500),
         ]);
     }
 
