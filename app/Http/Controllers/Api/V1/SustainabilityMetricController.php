@@ -38,7 +38,17 @@ class SustainabilityMetricController extends Controller
         $metrics = $query->orderBy('measurement_date', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        return response()->json($metrics);
+        return response()->json([
+            'data' => $metrics->items(),
+            'meta' => [
+                'current_page' => $metrics->currentPage(),
+                'last_page' => $metrics->lastPage(),
+                'per_page' => $metrics->perPage(),
+                'total' => $metrics->total(),
+                'from' => $metrics->firstItem(),
+                'to' => $metrics->lastItem(),
+            ]
+        ]);
     }
 
     #[OA\Post(
@@ -60,6 +70,7 @@ class SustainabilityMetricController extends Controller
             'period_start' => 'required|date',
             'period_end' => 'required|date|after:period_start',
             'period_type' => 'required|in:daily,weekly,monthly,quarterly,yearly',
+            'is_certified' => 'nullable|boolean',
             'entity_type' => 'nullable|string',
             'entity_id' => 'nullable|integer',
             'energy_cooperative_id' => 'nullable|exists:energy_cooperatives,id',
