@@ -23,7 +23,7 @@ class MarketPriceResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Precios de Mercado';
     
-    protected static ?string $navigationGroup = 'Tienda Energética';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     
     protected static ?int $navigationSort = 6;
 

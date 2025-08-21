@@ -16,7 +16,7 @@ class ProviderResource extends Resource
     protected static ?string $model = Provider::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-    protected static ?string $navigationGroup = 'Tienda Energética';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     protected static ?string $modelLabel = 'Proveedor';
     protected static ?string $pluralModelLabel = 'Proveedores';
     protected static ?int $navigationSort = 1;

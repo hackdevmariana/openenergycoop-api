@@ -18,7 +18,7 @@ class UserOrganizationRoleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Gestión de Roles';
+    protected static ?string $navigationGroup = 'Administración del Sistema';
 
     protected static ?int $navigationSort = 4;
 

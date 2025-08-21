@@ -23,7 +23,7 @@ class CollaboratorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     
-    protected static ?string $navigationGroup = 'Información Corporativa';
+    protected static ?string $navigationGroup = 'Comunicación';
     
     protected static ?string $navigationLabel = 'Colaboradores';
     

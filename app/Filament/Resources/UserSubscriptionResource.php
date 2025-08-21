@@ -25,7 +25,7 @@ class UserSubscriptionResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Suscripciones';
 
-    protected static ?string $navigationGroup = 'Gestión de Comunidad';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 2;
 

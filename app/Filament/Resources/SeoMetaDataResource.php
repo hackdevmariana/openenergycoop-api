@@ -26,7 +26,7 @@ class SeoMetaDataResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Metadatos SEO';
     
-    protected static ?string $navigationGroup = 'SEO y Marketing';
+    protected static ?string $navigationGroup = 'Contenido Web';
     
     protected static ?int $navigationSort = 1;
 

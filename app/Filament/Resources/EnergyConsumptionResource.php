@@ -23,7 +23,7 @@ class EnergyConsumptionResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Consumos Energéticos';
     
-    protected static ?string $navigationGroup = 'Tienda Energética';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     
     protected static ?int $navigationSort = 2;
 

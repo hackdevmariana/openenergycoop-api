@@ -20,7 +20,7 @@ class RegionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-europe-africa';
     
-    protected static ?string $navigationGroup = 'Geografía';
+    protected static ?string $navigationGroup = 'Infraestructura';
     
     protected static ?string $modelLabel = 'Región';
     

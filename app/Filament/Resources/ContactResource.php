@@ -20,7 +20,7 @@ class ContactResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-phone';
     
-    protected static ?string $navigationGroup = 'Información Corporativa';
+    protected static ?string $navigationGroup = 'Comunicación';
     
     protected static ?string $navigationLabel = 'Contactos';
     

@@ -19,7 +19,7 @@ class AppSettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     
-    protected static ?string $navigationGroup = 'Configuración del Sistema';
+    protected static ?string $navigationGroup = 'Administración del Sistema';
     
     protected static ?string $navigationLabel = 'Configuraciones';
     

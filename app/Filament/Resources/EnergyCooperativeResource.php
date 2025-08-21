@@ -25,7 +25,7 @@ class EnergyCooperativeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Cooperativas Energéticas';
 
-    protected static ?string $navigationGroup = 'Gestión de Comunidad';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 1;
 
