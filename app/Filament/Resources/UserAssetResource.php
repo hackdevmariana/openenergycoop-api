@@ -18,7 +18,7 @@ class UserAssetResource extends Resource
     protected static ?string $model = UserAsset::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-wallet';
-    protected static ?string $navigationGroup = 'Tienda Energética';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     protected static ?string $modelLabel = 'Activo de Usuario';
     protected static ?string $pluralModelLabel = 'Activos de Usuarios';
     protected static ?int $navigationSort = 3;

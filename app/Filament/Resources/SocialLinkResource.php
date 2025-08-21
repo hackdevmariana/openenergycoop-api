@@ -20,7 +20,7 @@ class SocialLinkResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-share';
     
-    protected static ?string $navigationGroup = 'Información Corporativa';
+    protected static ?string $navigationGroup = 'Comunicación';
     
     protected static ?string $navigationLabel = 'Redes Sociales';
     

@@ -28,7 +28,7 @@ class EnergyContractResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Contratos Energéticos';
     
-    protected static ?string $navigationGroup = 'Tienda Energética';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     
     protected static ?int $navigationSort = 1;
 

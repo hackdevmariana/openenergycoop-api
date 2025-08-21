@@ -17,7 +17,7 @@ class BalanceResource extends Resource
     protected static ?string $model = Balance::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationGroup = 'Tienda Energética';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     protected static ?string $modelLabel = 'Balance';
     protected static ?string $pluralModelLabel = 'Balances';
     protected static ?int $navigationSort = 4;

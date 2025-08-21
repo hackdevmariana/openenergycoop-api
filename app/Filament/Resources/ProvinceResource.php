@@ -21,7 +21,7 @@ class ProvinceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
     
-    protected static ?string $navigationGroup = 'Geografía';
+    protected static ?string $navigationGroup = 'Infraestructura';
     
     protected static ?string $modelLabel = 'Provincia';
     
