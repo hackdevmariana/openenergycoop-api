@@ -13,92 +13,123 @@ class DiscountCode extends Model
 
     protected $fillable = [
         'code',
+        'name',
+        'description',
         'discount_type',
         'discount_value',
-        'valid_from',
-        'valid_to',
-        'usage_limit',
-        'current_usage',
-        'affiliate_id',
-        'applies_to_type',
-        'applies_to_id',
-        'is_active',
-        'description',
-        'minimum_order_amount',
+        'minimum_purchase_amount',
         'maximum_discount_amount',
+        'status',
+        'start_date',
+        'end_date',
+        'usage_limit',
+        'usage_count',
+        'per_user_limit',
         'is_first_time_only',
+        'is_new_customer_only',
+        'applicable_products',
+        'excluded_products',
+        'applicable_categories',
+        'excluded_categories',
+        'applicable_user_groups',
+        'excluded_user_groups',
+        'can_be_combined',
+        'combination_rules',
+        'terms_conditions',
+        'usage_instructions',
+        'tags',
+        'created_by',
+        'approved_by',
+        'approved_at',
+        'notes',
     ];
 
     protected $casts = [
         'discount_value' => 'decimal:2',
-        'usage_limit' => 'integer',
-        'current_usage' => 'integer',
-        'valid_from' => 'datetime',
-        'valid_to' => 'datetime',
-        'is_active' => 'boolean',
-        'minimum_order_amount' => 'decimal:2',
+        'minimum_purchase_amount' => 'decimal:2',
         'maximum_discount_amount' => 'decimal:2',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'usage_limit' => 'integer',
+        'usage_count' => 'integer',
+        'per_user_limit' => 'integer',
         'is_first_time_only' => 'boolean',
+        'is_new_customer_only' => 'boolean',
+        'can_be_combined' => 'boolean',
+        'approved_at' => 'datetime',
+        'applicable_products' => 'array',
+        'excluded_products' => 'array',
+        'applicable_categories' => 'array',
+        'excluded_categories' => 'array',
+        'applicable_user_groups' => 'array',
+        'excluded_user_groups' => 'array',
+        'combination_rules' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
     const DISCOUNT_TYPE_PERCENTAGE = 'percentage';
-    const DISCOUNT_TYPE_FIXED = 'fixed';
+    const DISCOUNT_TYPE_FIXED_AMOUNT = 'fixed_amount';
+    const DISCOUNT_TYPE_FREE_SHIPPING = 'free_shipping';
+    const DISCOUNT_TYPE_BUY_ONE_GET_ONE = 'buy_one_get_one';
+    const DISCOUNT_TYPE_TIERED = 'tiered';
 
-    const APPLIES_TO_TYPE_PRODUCT = 'product';
-    const APPLIES_TO_TYPE_PROVIDER = 'provider';
-    const APPLIES_TO_TYPE_CATEGORY = 'category';
-    const APPLIES_TO_TYPE_ALL = 'all';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
+    const STATUS_EXPIRED = 'expired';
+    const STATUS_DEPLETED = 'depleted';
 
     public static function getDiscountTypes(): array
     {
         return [
             self::DISCOUNT_TYPE_PERCENTAGE => 'Porcentaje',
-            self::DISCOUNT_TYPE_FIXED => 'Fijo',
+            self::DISCOUNT_TYPE_FIXED_AMOUNT => 'Monto Fijo',
+            self::DISCOUNT_TYPE_FREE_SHIPPING => 'Envío Gratis',
+            self::DISCOUNT_TYPE_BUY_ONE_GET_ONE => 'Compra Uno Lleva Otro',
+            self::DISCOUNT_TYPE_TIERED => 'Por Niveles',
         ];
     }
 
-    public static function getAppliesToTypes(): array
+    public static function getStatuses(): array
     {
         return [
-            self::APPLIES_TO_TYPE_PRODUCT => 'Producto',
-            self::APPLIES_TO_TYPE_PROVIDER => 'Proveedor',
-            self::APPLIES_TO_TYPE_CATEGORY => 'Categoría',
-            self::APPLIES_TO_TYPE_ALL => 'Todo',
+            self::STATUS_ACTIVE => 'Activo',
+            self::STATUS_INACTIVE => 'Inactivo',
+            self::STATUS_EXPIRED => 'Expirado',
+            self::STATUS_DEPLETED => 'Agotado',
         ];
     }
 
     // Relaciones
-    public function affiliate(): BelongsTo
+    public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(Affiliate::class);
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function applicableEntity(): BelongsTo
+    public function approvedBy(): BelongsTo
     {
-        return $this->morphTo('applies_to');
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('status', self::STATUS_ACTIVE);
     }
 
     public function scopeValid($query)
     {
         $now = now();
-        return $query->where('valid_from', '<=', $now)
-                    ->where('valid_to', '>=', $now);
+        return $query->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now);
     }
 
     public function scopeAvailable($query)
     {
-        return $query->active()
-                    ->valid()
+        return $query->where('status', self::STATUS_ACTIVE)
                     ->where(function($q) {
                         $q->whereNull('usage_limit')
-                          ->orWhere('current_usage', '<', \DB::raw('usage_limit'));
+                          ->orWhere('usage_count', '<', \DB::raw('usage_limit'));
                     });
     }
 
@@ -107,82 +138,186 @@ class DiscountCode extends Model
         return $query->where('code', strtoupper($code));
     }
 
-    // Métodos
+    public function scopeByType($query, $type)
+    {
+        return $query->where('discount_type', $type);
+    }
+
+    public function scopeByStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeExpired($query)
+    {
+        return $query->where('end_date', '<', now());
+    }
+
+    public function scopeDepleted($query)
+    {
+        return $query->where('status', self::STATUS_DEPLETED);
+    }
+
+    public function scopeFirstTimeOnly($query)
+    {
+        return $query->where('is_first_time_only', true);
+    }
+
+    public function scopeNewCustomerOnly($query)
+    {
+        return $query->where('is_new_customer_only', true);
+    }
+
+    public function scopeCanBeCombined($query)
+    {
+        return $query->where('can_be_combined', true);
+    }
+
+    // Métodos de validación
     public function isValid(): bool
     {
-        if (!$this->is_active) {
+        if ($this->status !== self::STATUS_ACTIVE) {
             return false;
         }
 
         $now = now();
-        if ($this->valid_from && $this->valid_from->isFuture()) {
+        if ($this->start_date && $this->start_date->isFuture()) {
             return false;
         }
 
-        if ($this->valid_to && $this->valid_to->isPast()) {
+        if ($this->end_date && $this->end_date->isPast()) {
             return false;
         }
 
-        if ($this->usage_limit && $this->current_usage >= $this->usage_limit) {
+        if ($this->usage_limit && $this->usage_count >= $this->usage_limit) {
             return false;
         }
 
         return true;
     }
 
+    public function isExpired(): bool
+    {
+        return $this->status === self::STATUS_EXPIRED || 
+               ($this->end_date && $this->end_date->isPast());
+    }
+
+    public function isDepleted(): bool
+    {
+        return $this->status === self::STATUS_DEPLETED || 
+               ($this->usage_limit && $this->usage_count >= $this->usage_limit);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === self::STATUS_INACTIVE;
+    }
+
+    public function isFirstTimeOnly(): bool
+    {
+        return $this->is_first_time_only;
+    }
+
+    public function isNewCustomerOnly(): bool
+    {
+        return $this->is_new_customer_only;
+    }
+
+    public function canBeCombined(): bool
+    {
+        return $this->can_be_combined;
+    }
+
+    // Métodos de cálculo
     public function calculateDiscount(float $orderAmount): float
     {
         if (!$this->isValid()) {
             return 0;
         }
 
-        if ($this->minimum_order_amount && $orderAmount < $this->minimum_order_amount) {
+        // Verificar monto mínimo de compra
+        if ($this->minimum_purchase_amount && $orderAmount < $this->minimum_purchase_amount) {
             return 0;
         }
 
         $discount = 0;
-        if ($this->discount_type === self::DISCOUNT_TYPE_PERCENTAGE) {
-            $discount = ($orderAmount * $this->discount_value) / 100;
-        } else {
-            $discount = $this->discount_value;
+        switch ($this->discount_type) {
+            case self::DISCOUNT_TYPE_PERCENTAGE:
+                $discount = ($orderAmount * $this->discount_value) / 100;
+                break;
+            case self::DISCOUNT_TYPE_FIXED_AMOUNT:
+                $discount = $this->discount_value;
+                break;
+            case self::DISCOUNT_TYPE_FREE_SHIPPING:
+                // Implementar lógica para envío gratis
+                $discount = 0;
+                break;
+            case self::DISCOUNT_TYPE_BUY_ONE_GET_ONE:
+                // Implementar lógica para BOGO
+                $discount = 0;
+                break;
+            case self::DISCOUNT_TYPE_TIERED:
+                // Implementar lógica para descuentos por niveles
+                $discount = 0;
+                break;
         }
 
         // Aplicar límite máximo de descuento
-        if ($this->maximum_discount_amount) {
-            $discount = min($discount, $this->maximum_discount_amount);
+        if ($this->maximum_discount_amount && $discount > $this->maximum_discount_amount) {
+            $discount = $this->maximum_discount_amount;
         }
 
         return $discount;
     }
 
-    public function canApplyTo($entity): bool
+    public function canApplyTo($entity, $user = null): bool
     {
-        if ($this->applies_to_type === self::APPLIES_TO_TYPE_ALL) {
-            return true;
-        }
-
-        if (!$entity) {
+        if (!$this->isValid()) {
             return false;
         }
 
-        $entityClass = get_class($entity);
-        $expectedClass = match($this->applies_to_type) {
-            self::APPLIES_TO_TYPE_PRODUCT => Product::class,
-            self::APPLIES_TO_TYPE_PROVIDER => Provider::class,
-            self::APPLIES_TO_TYPE_CATEGORY => Category::class,
-            default => null,
-        };
-
-        if (!$expectedClass) {
+        // Verificar si es solo para nuevos clientes
+        if ($this->is_new_customer_only && $user && $user->orders()->count() > 0) {
             return false;
         }
 
-        return $entityClass === $expectedClass && $entity->id == $this->applies_to_id;
+        // Verificar productos aplicables
+        if ($this->applicable_products && !in_array($entity->id, $this->applicable_products)) {
+            return false;
+        }
+
+        // Verificar productos excluidos
+        if ($this->excluded_products && in_array($entity->id, $this->excluded_products)) {
+            return false;
+        }
+
+        // Verificar categorías aplicables
+        if ($this->applicable_categories && !in_array($entity->category_id, $this->applicable_categories)) {
+            return false;
+        }
+
+        // Verificar categorías excluidas
+        if ($this->excluded_categories && in_array($entity->category_id, $this->excluded_categories)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function incrementUsage(): void
     {
-        $this->current_usage++;
+        $this->usage_count++;
+        
+        // Verificar si se agotó
+        if ($this->usage_limit && $this->usage_count >= $this->usage_limit) {
+            $this->status = self::STATUS_DEPLETED;
+        }
+        
         $this->save();
     }
 
@@ -192,16 +327,91 @@ class DiscountCode extends Model
             return null; // Sin límite
         }
         
-        return max(0, $this->usage_limit - $this->current_usage);
+        return max(0, $this->usage_limit - $this->usage_count);
     }
 
-    public function getFormattedDiscount(): string
+    public function getUsagePercentage(): float
     {
-        if ($this->discount_type === self::DISCOUNT_TYPE_PERCENTAGE) {
-            return $this->discount_value . '%';
+        if (!$this->usage_limit) {
+            return 0;
         }
         
-        return '€' . number_format($this->discount_value, 2);
+        return ($this->usage_count / $this->usage_limit) * 100;
+    }
+
+    public function getDaysUntilExpiry(): int
+    {
+        if (!$this->end_date) {
+            return 0;
+        }
+        
+        return now()->diffInDays($this->end_date, false);
+    }
+
+    public function getDaysSinceStart(): int
+    {
+        if (!$this->start_date) {
+            return 0;
+        }
+        
+        return now()->diffInDays($this->start_date);
+    }
+
+    // Métodos de formato
+    public function getFormattedDiscount(): string
+    {
+        switch ($this->discount_type) {
+            case self::DISCOUNT_TYPE_PERCENTAGE:
+                return number_format($this->discount_value, 2) . '%';
+            case self::DISCOUNT_TYPE_FIXED_AMOUNT:
+                return '$' . number_format($this->discount_value, 2);
+            case self::DISCOUNT_TYPE_FREE_SHIPPING:
+                return 'Envío Gratis';
+            case self::DISCOUNT_TYPE_BUY_ONE_GET_ONE:
+                return 'Compra Uno Lleva Otro';
+            case self::DISCOUNT_TYPE_TIERED:
+                return 'Por Niveles';
+            default:
+                return 'Desconocido';
+        }
+    }
+
+    public function getFormattedMinimumPurchase(): string
+    {
+        if (!$this->minimum_purchase_amount) {
+            return 'Sin mínimo';
+        }
+        
+        return '$' . number_format($this->minimum_purchase_amount, 2);
+    }
+
+    public function getFormattedMaximumDiscount(): string
+    {
+        if (!$this->maximum_discount_amount) {
+            return 'Sin límite';
+        }
+        
+        return '$' . number_format($this->maximum_discount_amount, 2);
+    }
+
+    public function getFormattedStartDate(): string
+    {
+        return $this->start_date ? $this->start_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedEndDate(): string
+    {
+        return $this->end_date ? $this->end_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedDiscountType(): string
+    {
+        return self::getDiscountTypes()[$this->discount_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedStatus(): string
+    {
+        return self::getStatuses()[$this->status] ?? 'Desconocido';
     }
 
     public function getValidityStatus(): string
@@ -210,20 +420,42 @@ class DiscountCode extends Model
             return 'Inactivo';
         }
 
-        $now = now();
-        
-        if ($this->valid_from && $this->valid_from->isFuture()) {
-            return 'Pendiente de activación';
-        }
-
-        if ($this->valid_to && $this->valid_to->isPast()) {
+        if ($this->isExpired()) {
             return 'Expirado';
         }
 
-        if ($this->usage_limit && $this->current_usage >= $this->usage_limit) {
-            return 'Límite alcanzado';
+        if ($this->isDepleted()) {
+            return 'Agotado';
+        }
+
+        if ($this->start_date && $this->start_date->isFuture()) {
+            return 'Pendiente de activación';
         }
 
         return 'Válido';
+    }
+
+    // Clases de badges para Filament
+    public function getStatusBadgeClass(): string
+    {
+        return match ($this->status) {
+            self::STATUS_ACTIVE => 'success',
+            self::STATUS_INACTIVE => 'gray',
+            self::STATUS_EXPIRED => 'danger',
+            self::STATUS_DEPLETED => 'warning',
+            default => 'gray',
+        };
+    }
+
+    public function getDiscountTypeBadgeClass(): string
+    {
+        return match ($this->discount_type) {
+            self::DISCOUNT_TYPE_PERCENTAGE => 'primary',
+            self::DISCOUNT_TYPE_FIXED_AMOUNT => 'success',
+            self::DISCOUNT_TYPE_FREE_SHIPPING => 'info',
+            self::DISCOUNT_TYPE_BUY_ONE_GET_ONE => 'warning',
+            self::DISCOUNT_TYPE_TIERED => 'purple',
+            default => 'gray',
+        };
     }
 }
