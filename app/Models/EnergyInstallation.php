@@ -13,121 +13,170 @@ class EnergyInstallation extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'installation_number',
         'name',
-        'type',
-        'municipality_id',
-        'address',
-        'coordinates',
         'description',
-        'installed_power_kw',
-        'active',
-        'commissioning_date',
-        'decommissioning_date',
-        'cooperative_owned',
-        'organization_id',
+        'installation_type',
+        'status',
+        'priority',
         'energy_source_id',
+        'customer_id',
+        'project_id',
+        'installed_capacity_kw',
+        'operational_capacity_kw',
         'efficiency_rating',
-        'maintenance_schedule',
-        'last_maintenance_date',
-        'next_maintenance_date',
+        'annual_production_kwh',
+        'monthly_production_kwh',
+        'daily_production_kwh',
+        'location_address',
+        'latitude',
+        'longitude',
+        'installation_date',
+        'commissioning_date',
         'warranty_expiry_date',
-        'insurance_expiry_date',
-        'certification_status',
-        'grid_connection_type',
-        'battery_storage_capacity',
-        'monitoring_system',
-        'weather_station_id',
+        'installation_cost',
+        'operational_cost_per_kwh',
+        'maintenance_cost_per_kwh',
+        'technical_specifications',
+        'warranty_terms',
+        'maintenance_requirements',
+        'safety_features',
+        'equipment_details',
+        'maintenance_schedule',
+        'performance_metrics',
+        'warranty_documents',
+        'installation_photos',
+        'tags',
+        'installed_by',
+        'managed_by',
+        'created_by',
+        'approved_by',
+        'approved_at',
+        'notes',
     ];
 
     protected $casts = [
-        'coordinates' => 'array',
-        'installed_power_kw' => 'decimal:2',
-        'active' => 'boolean',
-        'cooperative_owned' => 'boolean',
-        'commissioning_date' => 'datetime',
-        'decommissioning_date' => 'datetime',
+        'installed_capacity_kw' => 'decimal:2',
+        'operational_capacity_kw' => 'decimal:2',
         'efficiency_rating' => 'decimal:2',
+        'annual_production_kwh' => 'decimal:2',
+        'monthly_production_kwh' => 'decimal:2',
+        'daily_production_kwh' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'installation_date' => 'date',
+        'commissioning_date' => 'date',
+        'warranty_expiry_date' => 'date',
+        'installation_cost' => 'decimal:2',
+        'operational_cost_per_kwh' => 'decimal:2',
+        'maintenance_cost_per_kwh' => 'decimal:2',
+        'approved_at' => 'datetime',
+        'equipment_details' => 'array',
         'maintenance_schedule' => 'array',
-        'last_maintenance_date' => 'datetime',
-        'next_maintenance_date' => 'datetime',
-        'warranty_expiry_date' => 'datetime',
-        'insurance_expiry_date' => 'datetime',
-        'battery_storage_capacity' => 'decimal:2',
-        'monitoring_system' => 'array',
+        'performance_metrics' => 'array',
+        'warranty_documents' => 'array',
+        'installation_photos' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const TYPE_PRODUCTION = 'production';
-    const TYPE_CONSUMPTION = 'consumption';
-    const TYPE_MIXED = 'mixed';
-    const TYPE_STORAGE = 'storage';
-    const TYPE_DISTRIBUTION = 'distribution';
+    const INSTALLATION_TYPE_RESIDENTIAL = 'residential';
+    const INSTALLATION_TYPE_COMMERCIAL = 'commercial';
+    const INSTALLATION_TYPE_INDUSTRIAL = 'industrial';
+    const INSTALLATION_TYPE_UTILITY_SCALE = 'utility_scale';
+    const INSTALLATION_TYPE_COMMUNITY = 'community';
+    const INSTALLATION_TYPE_MICROGRID = 'microgrid';
+    const INSTALLATION_TYPE_OFF_GRID = 'off_grid';
+    const INSTALLATION_TYPE_GRID_TIED = 'grid_tied';
 
-    const GRID_CONNECTION_GRID_TIED = 'grid_tied';
-    const GRID_CONNECTION_OFF_GRID = 'off_grid';
-    const GRID_CONNECTION_HYBRID = 'hybrid';
-    const GRID_CONNECTION_MICROGRID = 'microgrid';
+    const STATUS_PLANNED = 'planned';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_IN_PROGRESS = 'in_progress';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_OPERATIONAL = 'operational';
+    const STATUS_MAINTENANCE = 'maintenance';
+    const STATUS_DECOMMISSIONED = 'decommissioned';
+    const STATUS_CANCELLED = 'cancelled';
 
-    const CERTIFICATION_STATUS_PENDING = 'pending';
-    const CERTIFICATION_STATUS_CERTIFIED = 'certified';
-    const CERTIFICATION_STATUS_EXPIRED = 'expired';
-    const CERTIFICATION_STATUS_REVOKED = 'revoked';
+    const PRIORITY_LOW = 'low';
+    const PRIORITY_MEDIUM = 'medium';
+    const PRIORITY_HIGH = 'high';
+    const PRIORITY_URGENT = 'urgent';
+    const PRIORITY_CRITICAL = 'critical';
 
-    public static function getTypes(): array
+    public static function getInstallationTypes(): array
     {
         return [
-            self::TYPE_PRODUCTION => 'Producción',
-            self::TYPE_CONSUMPTION => 'Consumo',
-            self::TYPE_MIXED => 'Mixta',
-            self::TYPE_STORAGE => 'Almacenamiento',
-            self::TYPE_DISTRIBUTION => 'Distribución',
+            self::INSTALLATION_TYPE_RESIDENTIAL => 'Residencial',
+            self::INSTALLATION_TYPE_COMMERCIAL => 'Comercial',
+            self::INSTALLATION_TYPE_INDUSTRIAL => 'Industrial',
+            self::INSTALLATION_TYPE_UTILITY_SCALE => 'Escala de Utilidad',
+            self::INSTALLATION_TYPE_COMMUNITY => 'Comunitaria',
+            self::INSTALLATION_TYPE_MICROGRID => 'Microred',
+            self::INSTALLATION_TYPE_OFF_GRID => 'Fuera de la Red',
+            self::INSTALLATION_TYPE_GRID_TIED => 'Conectada a la Red',
         ];
     }
 
-    public static function getGridConnectionTypes(): array
+    public static function getStatuses(): array
     {
         return [
-            self::GRID_CONNECTION_GRID_TIED => 'Conectada a la Red',
-            self::GRID_CONNECTION_OFF_GRID => 'Fuera de la Red',
-            self::GRID_CONNECTION_HYBRID => 'Híbrida',
-            self::GRID_CONNECTION_MICROGRID => 'Microred',
+            self::STATUS_PLANNED => 'Planificada',
+            self::STATUS_APPROVED => 'Aprobada',
+            self::STATUS_IN_PROGRESS => 'En Progreso',
+            self::STATUS_COMPLETED => 'Completada',
+            self::STATUS_OPERATIONAL => 'Operativa',
+            self::STATUS_MAINTENANCE => 'Mantenimiento',
+            self::STATUS_DECOMMISSIONED => 'Desmantelada',
+            self::STATUS_CANCELLED => 'Cancelada',
         ];
     }
 
-    public static function getCertificationStatuses(): array
+    public static function getPriorities(): array
     {
         return [
-            self::CERTIFICATION_STATUS_PENDING => 'Pendiente',
-            self::CERTIFICATION_STATUS_CERTIFIED => 'Certificada',
-            self::CERTIFICATION_STATUS_EXPIRED => 'Expirada',
-            self::CERTIFICATION_STATUS_REVOKED => 'Revocada',
+            self::PRIORITY_LOW => 'Baja',
+            self::PRIORITY_MEDIUM => 'Media',
+            self::PRIORITY_HIGH => 'Alta',
+            self::PRIORITY_URGENT => 'Urgente',
+            self::PRIORITY_CRITICAL => 'Crítica',
         ];
     }
 
     // Relaciones
-    public function municipality(): BelongsTo
-    {
-        return $this->belongsTo(Municipality::class);
-    }
-
-    public function organization(): BelongsTo
-    {
-        return $this->belongsTo(Organization::class);
-    }
-
     public function energySource(): BelongsTo
     {
         return $this->belongsTo(EnergySource::class);
     }
 
-    public function productionProjects(): HasMany
+    public function customer(): BelongsTo
     {
-        return $this->hasMany(ProductionProject::class);
+        return $this->belongsTo(User::class, 'customer_id');
     }
 
-    public function consumptionPoints(): HasMany
+    public function project(): BelongsTo
     {
-        return $this->hasMany(ConsumptionPoint::class);
+        return $this->belongsTo(ProductionProject::class, 'project_id');
+    }
+
+    public function installedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'installed_by');
+    }
+
+    public function managedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'managed_by');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function meters(): HasMany
@@ -152,30 +201,25 @@ class EnergyInstallation extends Model
         return $this->hasMany(EnergyForecast::class);
     }
 
-    public function weatherStation(): BelongsTo
-    {
-        return $this->belongsTo(WeatherSnapshot::class, 'weather_station_id');
-    }
-
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('status', self::STATUS_OPERATIONAL);
     }
 
     public function scopeByType($query, $type)
     {
-        return $query->where('type', $type);
+        return $query->where('installation_type', $type);
     }
 
-    public function scopeByOrganization($query, $organizationId)
+    public function scopeByStatus($query, $status)
     {
-        return $query->where('organization_id', $organizationId);
+        return $query->where('status', $status);
     }
 
-    public function scopeByMunicipality($query, $municipalityId)
+    public function scopeByPriority($query, $priority)
     {
-        return $query->where('municipality_id', $municipalityId);
+        return $query->where('priority', $priority);
     }
 
     public function scopeByEnergySource($query, $energySourceId)
@@ -183,91 +227,201 @@ class EnergyInstallation extends Model
         return $query->where('energy_source_id', $energySourceId);
     }
 
-    public function scopeProduction($query)
+    public function scopeByCustomer($query, $customerId)
     {
-        return $query->whereIn('type', [self::TYPE_PRODUCTION, self::TYPE_MIXED]);
+        return $query->where('customer_id', $customerId);
     }
 
-    public function scopeConsumption($query)
+    public function scopeByProject($query, $projectId)
     {
-        return $query->whereIn('type', [self::TYPE_CONSUMPTION, self::TYPE_MIXED]);
+        return $query->where('project_id', $projectId);
     }
 
-    public function scopeStorage($query)
+    public function scopeOperational($query)
     {
-        return $query->where('type', self::TYPE_STORAGE);
+        return $query->where('status', self::STATUS_OPERATIONAL);
     }
 
-    public function scopeCooperativeOwned($query)
+    public function scopeMaintenance($query)
     {
-        return $query->where('cooperative_owned', true);
+        return $query->where('status', self::STATUS_MAINTENANCE);
     }
 
-    // Métodos
-    public function isProduction(): bool
+    public function scopeHighPriority($query)
     {
-        return in_array($this->type, [self::TYPE_PRODUCTION, self::TYPE_MIXED]);
+        return $query->whereIn('priority', [
+            self::PRIORITY_HIGH,
+            self::PRIORITY_URGENT,
+            self::PRIORITY_CRITICAL,
+        ]);
     }
 
-    public function isConsumption(): bool
+    public function scopeResidential($query)
     {
-        return in_array($this->type, [self::TYPE_CONSUMPTION, self::TYPE_MIXED]);
+        return $query->where('installation_type', self::INSTALLATION_TYPE_RESIDENTIAL);
     }
 
-    public function isStorage(): bool
+    public function scopeCommercial($query)
     {
-        return $this->type === self::TYPE_STORAGE;
+        return $query->where('installation_type', self::INSTALLATION_TYPE_COMMERCIAL);
     }
 
-    public function isGridTied(): bool
+    public function scopeIndustrial($query)
     {
-        return $this->grid_connection_type === self::GRID_CONNECTION_GRID_TIED;
+        return $query->where('installation_type', self::INSTALLATION_TYPE_INDUSTRIAL);
+    }
+
+    public function scopeUtilityScale($query)
+    {
+        return $query->where('installation_type', self::INSTALLATION_TYPE_UTILITY_SCALE);
+    }
+
+    public function scopeCommunity($query)
+    {
+        return $query->where('installation_type', self::INSTALLATION_TYPE_COMMUNITY);
+    }
+
+    public function scopeMicrogrid($query)
+    {
+        return $query->where('installation_type', self::INSTALLATION_TYPE_MICROGRID);
+    }
+
+    public function scopeOffGrid($query)
+    {
+        return $query->where('installation_type', self::INSTALLATION_TYPE_OFF_GRID);
+    }
+
+    public function scopeGridTied($query)
+    {
+        return $query->where('installation_type', self::INSTALLATION_TYPE_GRID_TIED);
+    }
+
+    // Métodos de validación
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_OPERATIONAL;
+    }
+
+    public function isPlanned(): bool
+    {
+        return $this->status === self::STATUS_PLANNED;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isInProgress(): bool
+    {
+        return $this->status === self::STATUS_IN_PROGRESS;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === self::STATUS_COMPLETED;
+    }
+
+    public function isOperational(): bool
+    {
+        return $this->status === self::STATUS_OPERATIONAL;
+    }
+
+    public function isMaintenance(): bool
+    {
+        return $this->status === self::STATUS_MAINTENANCE;
+    }
+
+    public function isDecommissioned(): bool
+    {
+        return $this->status === self::STATUS_DECOMMISSIONED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function isResidential(): bool
+    {
+        return $this->installation_type === self::INSTALLATION_TYPE_RESIDENTIAL;
+    }
+
+    public function isCommercial(): bool
+    {
+        return $this->installation_type === self::INSTALLATION_TYPE_COMMERCIAL;
+    }
+
+    public function isIndustrial(): bool
+    {
+        return $this->installation_type === self::INSTALLATION_TYPE_INDUSTRIAL;
+    }
+
+    public function isUtilityScale(): bool
+    {
+        return $this->installation_type === self::INSTALLATION_TYPE_UTILITY_SCALE;
+    }
+
+    public function isCommunity(): bool
+    {
+        return $this->installation_type === self::INSTALLATION_TYPE_COMMUNITY;
+    }
+
+    public function isMicrogrid(): bool
+    {
+        return $this->installation_type === self::INSTALLATION_TYPE_MICROGRID;
     }
 
     public function isOffGrid(): bool
     {
-        return $this->grid_connection_type === self::GRID_CONNECTION_OFF_GRID;
+        return $this->installation_type === self::INSTALLATION_TYPE_OFF_GRID;
     }
 
-    public function isCertified(): bool
+    public function isGridTied(): bool
     {
-        return $this->certification_status === self::CERTIFICATION_STATUS_CERTIFIED;
+        return $this->installation_type === self::INSTALLATION_TYPE_GRID_TIED;
     }
 
-    public function needsMaintenance(): bool
+    public function isHighPriority(): bool
     {
-        if (!$this->next_maintenance_date) {
-            return false;
+        return in_array($this->priority, [
+            self::PRIORITY_HIGH,
+            self::PRIORITY_URGENT,
+            self::PRIORITY_CRITICAL,
+        ]);
+    }
+
+    public function isApprovedByAdmin(): bool
+    {
+        return !is_null($this->approved_at);
+    }
+
+    // Métodos de cálculo
+    public function getUtilizationPercentage(): float
+    {
+        if ($this->installed_capacity_kw <= 0) {
+            return 0;
         }
         
-        return $this->next_maintenance_date->isPast();
-    }
-
-    public function isUnderWarranty(): bool
-    {
-        if (!$this->warranty_expiry_date) {
-            return false;
-        }
-        
-        return $this->warranty_expiry_date->isFuture();
-    }
-
-    public function isInsured(): bool
-    {
-        if (!$this->insurance_expiry_date) {
-            return false;
-        }
-        
-        return $this->insurance_expiry_date->isFuture();
+        return ($this->operational_capacity_kw / $this->installed_capacity_kw) * 100;
     }
 
     public function getAgeInYears(): int
     {
-        if (!$this->commissioning_date) {
+        if (!$this->installation_date) {
             return 0;
         }
         
-        return $this->commissioning_date->diffInYears(now());
+        return $this->installation_date->diffInYears(now());
+    }
+
+    public function getDaysUntilWarrantyExpiry(): int
+    {
+        if (!$this->warranty_expiry_date) {
+            return 0;
+        }
+        
+        return now()->diffInDays($this->warranty_expiry_date, false);
     }
 
     public function getTotalProduction(): float
@@ -325,6 +479,42 @@ class EnergyInstallation extends Model
         return $this->getTotalProduction() - $this->getTotalConsumption();
     }
 
+    public function getTotalAnnualCost(): float
+    {
+        $operationalCost = $this->annual_production_kwh * ($this->operational_cost_per_kwh ?? 0);
+        $maintenanceCost = $this->annual_production_kwh * ($this->maintenance_cost_per_kwh ?? 0);
+        
+        return $operationalCost + $maintenanceCost;
+    }
+
+    public function getCostPerKwh(): float
+    {
+        if ($this->annual_production_kwh <= 0) {
+            return 0;
+        }
+        
+        return $this->getTotalAnnualCost() / $this->annual_production_kwh;
+    }
+
+    public function needsMaintenance(): bool
+    {
+        if (!$this->maintenance_schedule) {
+            return false;
+        }
+        
+        // Implementar lógica basada en el cronograma de mantenimiento
+        return false; // Placeholder
+    }
+
+    public function isUnderWarranty(): bool
+    {
+        if (!$this->warranty_expiry_date) {
+            return false;
+        }
+        
+        return $this->warranty_expiry_date->isFuture();
+    }
+
     public function getEfficiencyClass(): string
     {
         if ($this->efficiency_rating >= 90) {
@@ -340,23 +530,85 @@ class EnergyInstallation extends Model
         }
     }
 
-    public function getFormattedPower(): string
+    // Métodos de formato
+    public function getFormattedInstallationType(): string
     {
-        return number_format($this->installed_power_kw, 2) . ' kW';
+        return self::getInstallationTypes()[$this->installation_type] ?? 'Desconocido';
     }
 
-    public function getFormattedEfficiency(): string
+    public function getFormattedStatus(): string
     {
-        return number_format($this->efficiency_rating, 1) . '%';
+        return self::getStatuses()[$this->status] ?? 'Desconocido';
     }
 
-    public function getFormattedStorageCapacity(): string
+    public function getFormattedPriority(): string
     {
-        if (!$this->battery_storage_capacity) {
-            return 'No aplica';
-        }
-        
-        return number_format($this->battery_storage_capacity, 2) . ' kWh';
+        return self::getPriorities()[$this->priority] ?? 'Desconocida';
+    }
+
+    public function getFormattedInstalledCapacity(): string
+    {
+        return number_format($this->installed_capacity_kw, 2) . ' kW';
+    }
+
+    public function getFormattedOperationalCapacity(): string
+    {
+        return number_format($this->operational_capacity_kw, 2) . ' kW';
+    }
+
+    public function getFormattedEfficiencyRating(): string
+    {
+        return number_format($this->efficiency_rating, 2) . '%';
+    }
+
+    public function getFormattedAnnualProduction(): string
+    {
+        return number_format($this->annual_production_kwh, 2) . ' kWh';
+    }
+
+    public function getFormattedMonthlyProduction(): string
+    {
+        return number_format($this->monthly_production_kwh, 2) . ' kWh';
+    }
+
+    public function getFormattedDailyProduction(): string
+    {
+        return number_format($this->daily_production_kwh, 2) . ' kWh';
+    }
+
+    public function getFormattedInstallationCost(): string
+    {
+        return '$' . number_format($this->installation_cost, 2);
+    }
+
+    public function getFormattedOperationalCost(): string
+    {
+        return $this->operational_cost_per_kwh ? '$' . number_format($this->operational_cost_per_kwh, 2) . '/kWh' : 'N/A';
+    }
+
+    public function getFormattedMaintenanceCost(): string
+    {
+        return $this->maintenance_cost_per_kwh ? '$' . number_format($this->maintenance_cost_per_kwh, 2) . '/kWh' : 'N/A';
+    }
+
+    public function getFormattedInstallationDate(): string
+    {
+        return $this->installation_date ? $this->installation_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedCommissioningDate(): string
+    {
+        return $this->commissioning_date ? $this->commissioning_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedWarrantyExpiryDate(): string
+    {
+        return $this->warranty_expiry_date ? $this->warranty_expiry_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedUtilizationPercentage(): string
+    {
+        return number_format($this->getUtilizationPercentage(), 1) . '%';
     }
 
     public function getFormattedTotalProduction(): string
@@ -374,21 +626,57 @@ class EnergyInstallation extends Model
         return number_format($this->getNetProduction(), 2) . ' kWh';
     }
 
+    public function getFormattedTotalAnnualCost(): string
+    {
+        return '$' . number_format($this->getTotalAnnualCost(), 2);
+    }
+
+    public function getFormattedCostPerKwh(): string
+    {
+        return '$' . number_format($this->getCostPerKwh(), 2) . '/kWh';
+    }
+
+    // Clases de badges para Filament
     public function getStatusBadgeClass(): string
     {
-        if (!$this->active) {
-            return 'bg-red-100 text-red-800';
-        }
-        
-        if ($this->needsMaintenance()) {
-            return 'bg-yellow-100 text-yellow-800';
-        }
-        
-        if ($this->isUnderWarranty()) {
-            return 'bg-green-100 text-green-800';
-        }
-        
-        return 'bg-blue-100 text-blue-800';
+        return match($this->status) {
+            self::STATUS_PLANNED => 'bg-blue-100 text-blue-800',
+            self::STATUS_APPROVED => 'bg-green-100 text-green-800',
+            self::STATUS_IN_PROGRESS => 'bg-yellow-100 text-yellow-800',
+            self::STATUS_COMPLETED => 'bg-blue-100 text-blue-800',
+            self::STATUS_OPERATIONAL => 'bg-green-100 text-green-800',
+            self::STATUS_MAINTENANCE => 'bg-orange-100 text-orange-800',
+            self::STATUS_DECOMMISSIONED => 'bg-red-100 text-red-800',
+            self::STATUS_CANCELLED => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getInstallationTypeBadgeClass(): string
+    {
+        return match($this->installation_type) {
+            self::INSTALLATION_TYPE_RESIDENTIAL => 'bg-blue-100 text-blue-800',
+            self::INSTALLATION_TYPE_COMMERCIAL => 'bg-green-100 text-green-800',
+            self::INSTALLATION_TYPE_INDUSTRIAL => 'bg-purple-100 text-purple-800',
+            self::INSTALLATION_TYPE_UTILITY_SCALE => 'bg-red-100 text-red-800',
+            self::INSTALLATION_TYPE_COMMUNITY => 'bg-indigo-100 text-indigo-800',
+            self::INSTALLATION_TYPE_MICROGRID => 'bg-pink-100 text-pink-800',
+            self::INSTALLATION_TYPE_OFF_GRID => 'bg-yellow-100 text-yellow-800',
+            self::INSTALLATION_TYPE_GRID_TIED => 'bg-cyan-100 text-cyan-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getPriorityBadgeClass(): string
+    {
+        return match($this->priority) {
+            self::PRIORITY_LOW => 'bg-gray-100 text-gray-800',
+            self::PRIORITY_MEDIUM => 'bg-blue-100 text-blue-800',
+            self::PRIORITY_HIGH => 'bg-yellow-100 text-yellow-800',
+            self::PRIORITY_URGENT => 'bg-orange-100 text-orange-800',
+            self::PRIORITY_CRITICAL => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
     }
 
     public function getEfficiencyBadgeClass(): string

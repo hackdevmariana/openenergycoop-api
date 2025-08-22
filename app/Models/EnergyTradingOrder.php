@@ -13,118 +13,210 @@ class EnergyTradingOrder extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
-        'type',
-        'quantity_kwh',
-        'price_per_kwh',
-        'expires_at',
-        'status',
-        'energy_source_id',
-        'delivery_date',
-        'delivery_location',
-        'delivery_type',
+        'order_number',
+        'order_type',
+        'order_status',
+        'order_side',
+        'trader_id',
+        'pool_id',
+        'counterparty_id',
+        'quantity_mwh',
+        'filled_quantity_mwh',
+        'remaining_quantity_mwh',
+        'price_per_mwh',
+        'total_value',
+        'filled_value',
+        'remaining_value',
+        'price_type',
+        'price_index',
+        'price_adjustment',
+        'valid_from',
+        'valid_until',
+        'execution_time',
+        'expiry_time',
+        'execution_type',
+        'priority',
+        'is_negotiable',
+        'negotiation_terms',
+        'special_conditions',
+        'delivery_requirements',
         'payment_terms',
-        'counter_offers_allowed',
-        'minimum_order_size',
-        'maximum_order_size',
-        'partial_fills_allowed',
-        'fill_or_kill',
-        'iceberg_order',
-        'iceberg_visible_quantity',
-        'stop_loss_price',
-        'take_profit_price',
-        'linked_orders',
+        'order_conditions',
+        'order_restrictions',
+        'order_metadata',
+        'tags',
+        'created_by',
+        'approved_by',
+        'approved_at',
+        'executed_by',
+        'executed_at',
         'notes',
-        'external_reference',
-        'matched_at',
-        'filled_at',
-        'cancelled_at',
-        'rejected_at',
-        'rejection_reason',
     ];
 
     protected $casts = [
-        'quantity_kwh' => 'decimal:4',
-        'price_per_kwh' => 'decimal:4',
-        'expires_at' => 'datetime',
-        'delivery_date' => 'datetime',
-        'delivery_location' => 'array',
-        'payment_terms' => 'array',
-        'counter_offers_allowed' => 'boolean',
-        'minimum_order_size' => 'decimal:4',
-        'maximum_order_size' => 'decimal:4',
-        'partial_fills_allowed' => 'boolean',
-        'fill_or_kill' => 'boolean',
-        'iceberg_order' => 'boolean',
-        'iceberg_visible_quantity' => 'decimal:4',
-        'stop_loss_price' => 'decimal:4',
-        'take_profit_price' => 'decimal:4',
-        'linked_orders' => 'array',
-        'matched_at' => 'datetime',
-        'filled_at' => 'datetime',
-        'cancelled_at' => 'datetime',
-        'rejected_at' => 'datetime',
+        'quantity_mwh' => 'decimal:2',
+        'filled_quantity_mwh' => 'decimal:2',
+        'remaining_quantity_mwh' => 'decimal:2',
+        'price_per_mwh' => 'decimal:2',
+        'total_value' => 'decimal:2',
+        'filled_value' => 'decimal:2',
+        'remaining_value' => 'decimal:2',
+        'price_adjustment' => 'decimal:2',
+        'valid_from' => 'datetime',
+        'valid_until' => 'datetime',
+        'execution_time' => 'datetime',
+        'expiry_time' => 'datetime',
+        'approved_at' => 'datetime',
+        'executed_at' => 'datetime',
+        'is_negotiable' => 'boolean',
+        'order_conditions' => 'array',
+        'order_restrictions' => 'array',
+        'order_metadata' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const TYPE_BUY = 'buy';
-    const TYPE_SELL = 'sell';
+    const ORDER_TYPE_BUY = 'buy';
+    const ORDER_TYPE_SELL = 'sell';
+    const ORDER_TYPE_BID = 'bid';
+    const ORDER_TYPE_ASK = 'ask';
+    const ORDER_TYPE_MARKET = 'market';
+    const ORDER_TYPE_LIMIT = 'limit';
+    const ORDER_TYPE_STOP = 'stop';
+    const ORDER_TYPE_STOP_LIMIT = 'stop_limit';
+    const ORDER_TYPE_OTHER = 'other';
 
-    const STATUS_PENDING = 'pending';
-    const STATUS_PARTIAL = 'partial';
-    const STATUS_FILLED = 'filled';
-    const STATUS_CANCELLED = 'cancelled';
-    const STATUS_REJECTED = 'rejected';
-    const STATUS_EXPIRED = 'expired';
-    const STATUS_MATCHED = 'matched';
+    const ORDER_STATUS_PENDING = 'pending';
+    const ORDER_STATUS_ACTIVE = 'active';
+    const ORDER_STATUS_FILLED = 'filled';
+    const ORDER_STATUS_PARTIALLY_FILLED = 'partially_filled';
+    const ORDER_STATUS_CANCELLED = 'cancelled';
+    const ORDER_STATUS_REJECTED = 'rejected';
+    const ORDER_STATUS_EXPIRED = 'expired';
+    const ORDER_STATUS_COMPLETED = 'completed';
 
-    const DELIVERY_TYPE_IMMEDIATE = 'immediate';
-    const DELIVERY_TYPE_FORWARD = 'forward';
-    const DELIVERY_TYPE_FLEXIBLE = 'flexible';
-    const DELIVERY_TYPE_PHYSICAL = 'physical';
-    const DELIVERY_TYPE_VIRTUAL = 'virtual';
+    const ORDER_SIDE_BUY = 'buy';
+    const ORDER_SIDE_SELL = 'sell';
 
-    public static function getTypes(): array
+    const PRICE_TYPE_FIXED = 'fixed';
+    const PRICE_TYPE_FLOATING = 'floating';
+    const PRICE_TYPE_INDEXED = 'indexed';
+    const PRICE_TYPE_FORMULA = 'formula';
+    const PRICE_TYPE_OTHER = 'other';
+
+    const EXECUTION_TYPE_IMMEDIATE = 'immediate';
+    const EXECUTION_TYPE_GOOD_TILL_CANCELLED = 'good_till_cancelled';
+    const EXECUTION_TYPE_GOOD_TILL_DATE = 'good_till_date';
+    const EXECUTION_TYPE_FILL_OR_KILL = 'fill_or_kill';
+    const EXECUTION_TYPE_ALL_OR_NOTHING = 'all_or_nothing';
+    const EXECUTION_TYPE_OTHER = 'other';
+
+    const PRIORITY_LOW = 'low';
+    const PRIORITY_NORMAL = 'normal';
+    const PRIORITY_HIGH = 'high';
+    const PRIORITY_URGENT = 'urgent';
+    const PRIORITY_CRITICAL = 'critical';
+
+    public static function getOrderTypes(): array
     {
         return [
-            self::TYPE_BUY => 'Compra',
-            self::TYPE_SELL => 'Venta',
+            self::ORDER_TYPE_BUY => 'Compra',
+            self::ORDER_TYPE_SELL => 'Venta',
+            self::ORDER_TYPE_BID => 'Oferta',
+            self::ORDER_TYPE_ASK => 'Demanda',
+            self::ORDER_TYPE_MARKET => 'Mercado',
+            self::ORDER_TYPE_LIMIT => 'Límite',
+            self::ORDER_TYPE_STOP => 'Stop',
+            self::ORDER_TYPE_STOP_LIMIT => 'Stop Límite',
+            self::ORDER_TYPE_OTHER => 'Otro',
         ];
     }
 
-    public static function getStatuses(): array
+    public static function getOrderStatuses(): array
     {
         return [
-            self::STATUS_PENDING => 'Pendiente',
-            self::STATUS_PARTIAL => 'Parcial',
-            self::STATUS_FILLED => 'Completada',
-            self::STATUS_CANCELLED => 'Cancelada',
-            self::STATUS_REJECTED => 'Rechazada',
-            self::STATUS_EXPIRED => 'Expirada',
-            self::STATUS_MATCHED => 'Emparejada',
+            self::ORDER_STATUS_PENDING => 'Pendiente',
+            self::ORDER_STATUS_ACTIVE => 'Activo',
+            self::ORDER_STATUS_FILLED => 'Completado',
+            self::ORDER_STATUS_PARTIALLY_FILLED => 'Parcialmente Completado',
+            self::ORDER_STATUS_CANCELLED => 'Cancelado',
+            self::ORDER_STATUS_REJECTED => 'Rechazado',
+            self::ORDER_STATUS_EXPIRED => 'Expirado',
+            self::ORDER_STATUS_COMPLETED => 'Completado',
         ];
     }
 
-    public static function getDeliveryTypes(): array
+    public static function getOrderSides(): array
     {
         return [
-            self::DELIVERY_TYPE_IMMEDIATE => 'Inmediata',
-            self::DELIVERY_TYPE_FORWARD => 'A Futuro',
-            self::DELIVERY_TYPE_FLEXIBLE => 'Flexible',
-            self::DELIVERY_TYPE_PHYSICAL => 'Física',
-            self::DELIVERY_TYPE_VIRTUAL => 'Virtual',
+            self::ORDER_SIDE_BUY => 'Compra',
+            self::ORDER_SIDE_SELL => 'Venta',
+        ];
+    }
+
+    public static function getPriceTypes(): array
+    {
+        return [
+            self::PRICE_TYPE_FIXED => 'Fijo',
+            self::PRICE_TYPE_FLOATING => 'Flotante',
+            self::PRICE_TYPE_INDEXED => 'Indexado',
+            self::PRICE_TYPE_FORMULA => 'Fórmula',
+            self::PRICE_TYPE_OTHER => 'Otro',
+        ];
+    }
+
+    public static function getExecutionTypes(): array
+    {
+        return [
+            self::EXECUTION_TYPE_IMMEDIATE => 'Inmediato',
+            self::EXECUTION_TYPE_GOOD_TILL_CANCELLED => 'Bueno hasta Cancelar',
+            self::EXECUTION_TYPE_GOOD_TILL_DATE => 'Bueno hasta Fecha',
+            self::EXECUTION_TYPE_FILL_OR_KILL => 'Llenar o Cancelar',
+            self::EXECUTION_TYPE_ALL_OR_NOTHING => 'Todo o Nada',
+            self::EXECUTION_TYPE_OTHER => 'Otro',
+        ];
+    }
+
+    public static function getPriorities(): array
+    {
+        return [
+            self::PRIORITY_LOW => 'Baja',
+            self::PRIORITY_NORMAL => 'Normal',
+            self::PRIORITY_HIGH => 'Alta',
+            self::PRIORITY_URGENT => 'Urgente',
+            self::PRIORITY_CRITICAL => 'Crítica',
         ];
     }
 
     // Relaciones
-    public function user(): BelongsTo
+    public function trader(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'trader_id');
     }
 
-    public function energySource(): BelongsTo
+    public function pool(): BelongsTo
     {
-        return $this->belongsTo(EnergySource::class);
+        return $this->belongsTo(EnergyPool::class);
+    }
+
+    public function counterparty(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'counterparty_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function executedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'executed_by');
     }
 
     public function matches(): HasMany
@@ -138,199 +230,461 @@ class EnergyTradingOrder extends Model
         return $this->hasMany(EnergyTradingTransaction::class);
     }
 
-    public function linkedOrders(): HasMany
-    {
-        return $this->hasMany(EnergyTradingOrder::class, 'linked_orders');
-    }
-
     // Scopes
-    public function scopeByType($query, $type)
+    public function scopeByOrderType($query, $orderType)
     {
-        return $query->where('type', $type);
+        return $query->where('order_type', $orderType);
     }
 
-    public function scopeByStatus($query, $status)
+    public function scopeByOrderStatus($query, $orderStatus)
     {
-        return $query->where('status', $status);
+        return $query->where('order_status', $orderStatus);
     }
 
-    public function scopeByUser($query, $userId)
+    public function scopeByOrderSide($query, $orderSide)
     {
-        return $query->where('user_id', $userId);
+        return $query->where('order_side', $orderSide);
     }
 
-    public function scopeByEnergySource($query, $energySourceId)
+    public function scopeByTrader($query, $traderId)
     {
-        return $query->where('energy_source_id', $energySourceId);
+        return $query->where('trader_id', $traderId);
+    }
+
+    public function scopeByPool($query, $poolId)
+    {
+        return $query->where('pool_id', $poolId);
+    }
+
+    public function scopeByCounterparty($query, $counterpartyId)
+    {
+        return $query->where('counterparty_id', $counterpartyId);
+    }
+
+    public function scopeByPriceType($query, $priceType)
+    {
+        return $query->where('price_type', $priceType);
+    }
+
+    public function scopeByExecutionType($query, $executionType)
+    {
+        return $query->where('execution_type', $executionType);
+    }
+
+    public function scopeByPriority($query, $priority)
+    {
+        return $query->where('priority', $priority);
     }
 
     public function scopeActive($query)
     {
-        return $query->whereIn('status', [
-            self::STATUS_PENDING,
-            self::STATUS_PARTIAL,
-            self::STATUS_MATCHED,
+        return $query->whereIn('order_status', [
+            self::ORDER_STATUS_PENDING,
+            self::ORDER_STATUS_ACTIVE,
+            self::ORDER_STATUS_PARTIALLY_FILLED,
         ]);
     }
 
     public function scopePending($query)
     {
-        return $query->where('status', self::STATUS_PENDING);
+        return $query->where('order_status', self::ORDER_STATUS_PENDING);
+    }
+
+    public function scopeActiveStatus($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_ACTIVE);
+    }
+
+    public function scopeFilled($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_FILLED);
+    }
+
+    public function scopePartiallyFilled($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_PARTIALLY_FILLED);
+    }
+
+    public function scopeCancelled($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_CANCELLED);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_REJECTED);
+    }
+
+    public function scopeExpiredStatus($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_EXPIRED);
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('order_status', self::ORDER_STATUS_COMPLETED);
     }
 
     public function scopeBuy($query)
     {
-        return $query->where('type', self::TYPE_BUY);
+        return $query->where('order_side', self::ORDER_SIDE_BUY);
     }
 
     public function scopeSell($query)
     {
-        return $query->where('type', self::TYPE_SELL);
+        return $query->where('order_side', self::ORDER_SIDE_SELL);
     }
 
-    public function scopeExpired($query)
+    public function scopeBid($query)
     {
-        return $query->where('expires_at', '<=', now());
+        return $query->where('order_type', self::ORDER_TYPE_BID);
     }
 
-    public function scopeNotExpired($query)
+    public function scopeAsk($query)
     {
-        return $query->where('expires_at', '>', now());
+        return $query->where('order_type', self::ORDER_TYPE_ASK);
+    }
+
+    public function scopeMarket($query)
+    {
+        return $query->where('order_type', self::ORDER_TYPE_MARKET);
+    }
+
+    public function scopeLimit($query)
+    {
+        return $query->where('order_type', self::ORDER_TYPE_LIMIT);
+    }
+
+    public function scopeStop($query)
+    {
+        return $query->where('order_type', self::ORDER_TYPE_STOP);
+    }
+
+    public function scopeStopLimit($query)
+    {
+        return $query->where('order_type', self::ORDER_TYPE_STOP_LIMIT);
+    }
+
+    public function scopeFixedPrice($query)
+    {
+        return $query->where('price_type', self::PRICE_TYPE_FIXED);
+    }
+
+    public function scopeFloatingPrice($query)
+    {
+        return $query->where('price_type', self::PRICE_TYPE_FLOATING);
+    }
+
+    public function scopeIndexedPrice($query)
+    {
+        return $query->where('price_type', self::PRICE_TYPE_INDEXED);
+    }
+
+    public function scopeFormulaPrice($query)
+    {
+        return $query->where('price_type', self::PRICE_TYPE_FORMULA);
+    }
+
+    public function scopeImmediateExecution($query)
+    {
+        return $query->where('execution_type', self::EXECUTION_TYPE_IMMEDIATE);
+    }
+
+    public function scopeGoodTillCancelled($query)
+    {
+        return $query->where('execution_type', self::EXECUTION_TYPE_GOOD_TILL_CANCELLED);
+    }
+
+    public function scopeGoodTillDate($query)
+    {
+        return $query->where('execution_type', self::EXECUTION_TYPE_GOOD_TILL_DATE);
+    }
+
+    public function scopeFillOrKill($query)
+    {
+        return $query->where('execution_type', self::EXECUTION_TYPE_FILL_OR_KILL);
+    }
+
+    public function scopeAllOrNothing($query)
+    {
+        return $query->where('execution_type', self::EXECUTION_TYPE_ALL_OR_NOTHING);
+    }
+
+    public function scopeHighPriority($query)
+    {
+        return $query->whereIn('priority', [
+            self::PRIORITY_HIGH,
+            self::PRIORITY_URGENT,
+            self::PRIORITY_CRITICAL,
+        ]);
+    }
+
+    public function scopeNegotiable($query)
+    {
+        return $query->where('is_negotiable', true);
     }
 
     public function scopeByPriceRange($query, $minPrice, $maxPrice)
     {
-        return $query->whereBetween('price_per_kwh', [$minPrice, $maxPrice]);
+        return $query->whereBetween('price_per_mwh', [$minPrice, $maxPrice]);
     }
 
     public function scopeByQuantityRange($query, $minQuantity, $maxQuantity)
     {
-        return $query->whereBetween('quantity_kwh', [$minQuantity, $maxQuantity]);
+        return $query->whereBetween('quantity_mwh', [$minQuantity, $maxQuantity]);
     }
 
-    public function scopeByDeliveryDate($query, $deliveryDate)
+    public function scopeByValidFrom($query, $date)
     {
-        return $query->whereDate('delivery_date', $deliveryDate);
+        return $query->whereDate('valid_from', $date);
     }
 
-    public function scopeByDeliveryType($query, $deliveryType)
+    public function scopeByValidUntil($query, $date)
     {
-        return $query->where('delivery_type', $deliveryType);
+        return $query->whereDate('valid_until', $date);
     }
 
-    // Métodos
+    public function scopeByExecutionTime($query, $date)
+    {
+        return $query->whereDate('execution_time', $date);
+    }
+
+    public function scopeByExpiryTime($query, $date)
+    {
+        return $query->whereDate('expiry_time', $date);
+    }
+
+    public function scopeExpired($query)
+    {
+        return $query->where('expiry_time', '<=', now());
+    }
+
+    public function scopeNotExpired($query)
+    {
+        return $query->where('expiry_time', '>', now());
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->whereNotNull('approved_at');
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->whereNull('approved_at');
+    }
+
+    public function scopeExecuted($query)
+    {
+        return $query->whereNotNull('executed_at');
+    }
+
+    public function scopeNotExecuted($query)
+    {
+        return $query->whereNull('executed_at');
+    }
+
+    // Métodos de validación
     public function isBuy(): bool
     {
-        return $this->type === self::TYPE_BUY;
+        return $this->order_side === self::ORDER_SIDE_BUY;
     }
 
     public function isSell(): bool
     {
-        return $this->type === self::TYPE_SELL;
+        return $this->order_side === self::ORDER_SIDE_SELL;
+    }
+
+    public function isBid(): bool
+    {
+        return $this->order_type === self::ORDER_TYPE_BID;
+    }
+
+    public function isAsk(): bool
+    {
+        return $this->order_type === self::ORDER_TYPE_ASK;
+    }
+
+    public function isMarket(): bool
+    {
+        return $this->order_type === self::ORDER_TYPE_MARKET;
+    }
+
+    public function isLimit(): bool
+    {
+        return $this->order_type === self::ORDER_TYPE_LIMIT;
+    }
+
+    public function isStop(): bool
+    {
+        return $this->order_type === self::ORDER_TYPE_STOP;
+    }
+
+    public function isStopLimit(): bool
+    {
+        return $this->order_type === self::ORDER_TYPE_STOP_LIMIT;
     }
 
     public function isPending(): bool
     {
-        return $this->status === self::STATUS_PENDING;
-    }
-
-    public function isPartial(): bool
-    {
-        return $this->status === self::STATUS_PARTIAL;
-    }
-
-    public function isFilled(): bool
-    {
-        return $this->status === self::STATUS_FILLED;
-    }
-
-    public function isCancelled(): bool
-    {
-        return $this->status === self::STATUS_CANCELLED;
-    }
-
-    public function isRejected(): bool
-    {
-        return $this->status === self::STATUS_REJECTED;
-    }
-
-    public function isExpired(): bool
-    {
-        return $this->status === self::STATUS_EXPIRED || 
-               ($this->expires_at && $this->expires_at->isPast());
-    }
-
-    public function isMatched(): bool
-    {
-        return $this->status === self::STATUS_MATCHED;
+        return $this->order_status === self::ORDER_STATUS_PENDING;
     }
 
     public function isActive(): bool
     {
-        return in_array($this->status, [
-            self::STATUS_PENDING,
-            self::STATUS_PARTIAL,
-            self::STATUS_MATCHED,
-        ]) && !$this->isExpired();
+        return $this->order_status === self::ORDER_STATUS_ACTIVE;
+    }
+
+    public function isFilled(): bool
+    {
+        return $this->order_status === self::ORDER_STATUS_FILLED;
+    }
+
+    public function isPartiallyFilled(): bool
+    {
+        return $this->order_status === self::ORDER_STATUS_PARTIALLY_FILLED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->order_status === self::ORDER_STATUS_CANCELLED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->order_status === self::ORDER_STATUS_REJECTED;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->order_status === self::ORDER_STATUS_EXPIRED || 
+               ($this->expiry_time && $this->expiry_time->isPast());
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->order_status === self::ORDER_STATUS_COMPLETED;
+    }
+
+    public function isFixedPrice(): bool
+    {
+        return $this->price_type === self::PRICE_TYPE_FIXED;
+    }
+
+    public function isFloatingPrice(): bool
+    {
+        return $this->price_type === self::PRICE_TYPE_FLOATING;
+    }
+
+    public function isIndexedPrice(): bool
+    {
+        return $this->price_type === self::PRICE_TYPE_INDEXED;
+    }
+
+    public function isFormulaPrice(): bool
+    {
+        return $this->price_type === self::PRICE_TYPE_FORMULA;
+    }
+
+    public function isImmediateExecution(): bool
+    {
+        return $this->execution_type === self::EXECUTION_TYPE_IMMEDIATE;
+    }
+
+    public function isGoodTillCancelled(): bool
+    {
+        return $this->execution_type === self::EXECUTION_TYPE_GOOD_TILL_CANCELLED;
+    }
+
+    public function isGoodTillDate(): bool
+    {
+        return $this->execution_type === self::EXECUTION_TYPE_GOOD_TILL_DATE;
+    }
+
+    public function isFillOrKill(): bool
+    {
+        return $this->execution_type === self::EXECUTION_TYPE_FILL_OR_KILL;
+    }
+
+    public function isAllOrNothing(): bool
+    {
+        return $this->execution_type === self::EXECUTION_TYPE_ALL_OR_NOTHING;
+    }
+
+    public function isHighPriority(): bool
+    {
+        return in_array($this->priority, [
+            self::PRIORITY_HIGH,
+            self::PRIORITY_URGENT,
+            self::PRIORITY_CRITICAL,
+        ]);
+    }
+
+    public function isLowPriority(): bool
+    {
+        return $this->priority === self::PRIORITY_LOW;
+    }
+
+    public function isNormalPriority(): bool
+    {
+        return $this->priority === self::PRIORITY_NORMAL;
+    }
+
+    public function isNegotiable(): bool
+    {
+        return $this->is_negotiable;
+    }
+
+    public function isApproved(): bool
+    {
+        return !is_null($this->approved_at);
+    }
+
+    public function isExecuted(): bool
+    {
+        return !is_null($this->executed_at);
     }
 
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, [
-            self::STATUS_PENDING,
-            self::STATUS_PARTIAL,
+        return in_array($this->order_status, [
+            self::ORDER_STATUS_PENDING,
+            self::ORDER_STATUS_ACTIVE,
+            self::ORDER_STATUS_PARTIALLY_FILLED,
         ]);
     }
 
     public function canBeModified(): bool
     {
-        return $this->status === self::STATUS_PENDING;
+        return $this->order_status === self::ORDER_STATUS_PENDING;
     }
 
-    public function getTotalValue(): float
+    public function isActiveStatus(): bool
     {
-        return $this->quantity_kwh * $this->price_per_kwh;
+        return in_array($this->order_status, [
+            self::ORDER_STATUS_PENDING,
+            self::ORDER_STATUS_ACTIVE,
+            self::ORDER_STATUS_PARTIALLY_FILLED,
+        ]) && !$this->isExpired();
     }
 
-    public function getFilledQuantity(): float
-    {
-        return $this->matches()->sum('quantity_kwh');
-    }
-
-    public function getRemainingQuantity(): float
-    {
-        return max(0, $this->quantity_kwh - $this->getFilledQuantity());
-    }
-
+    // Métodos de cálculo
     public function getFillPercentage(): float
     {
-        if ($this->quantity_kwh <= 0) {
+        if ($this->quantity_mwh <= 0) {
             return 0;
         }
         
-        return min(100, ($this->getFilledQuantity() / $this->quantity_kwh) * 100);
-    }
-
-    public function getAverageFillPrice(): float
-    {
-        $matches = $this->matches();
-        if ($matches->count() === 0) {
-            return $this->price_per_kwh;
-        }
-        
-        $totalValue = $matches->sum(\DB::raw('quantity_kwh * price_per_kwh'));
-        $totalQuantity = $matches->sum('quantity_kwh');
-        
-        return $totalQuantity > 0 ? $totalValue / $totalQuantity : 0;
+        return min(100, ($this->filled_quantity_mwh / $this->quantity_mwh) * 100);
     }
 
     public function getTimeToExpiry(): ?int
     {
-        if (!$this->expires_at) {
+        if (!$this->expiry_time) {
             return null;
         }
         
-        return now()->diffInSeconds($this->expires_at, false);
+        return now()->diffInSeconds($this->expiry_time, false);
     }
 
     public function isExpiringSoon(int $hours = 24): bool
@@ -346,16 +700,16 @@ class EnergyTradingOrder extends Model
     public function getProfitLoss(float $currentPrice): float
     {
         if ($this->isBuy()) {
-            return ($currentPrice - $this->price_per_kwh) * $this->getFilledQuantity();
+            return ($currentPrice - $this->price_per_mwh) * $this->filled_quantity_mwh;
         } else {
-            return ($this->price_per_kwh - $currentPrice) * $this->getFilledQuantity();
+            return ($this->price_per_mwh - $currentPrice) * $this->filled_quantity_mwh;
         }
     }
 
     public function getProfitLossPercentage(float $currentPrice): float
     {
         $profitLoss = $this->getProfitLoss($currentPrice);
-        $totalValue = $this->getTotalValue();
+        $totalValue = $this->total_value;
         
         if ($totalValue <= 0) {
             return 0;
@@ -364,55 +718,133 @@ class EnergyTradingOrder extends Model
         return ($profitLoss / $totalValue) * 100;
     }
 
-    public function isStopLossTriggered(float $currentPrice): bool
+    public function getAdjustedPrice(): float
     {
-        if (!$this->stop_loss_price) {
-            return false;
-        }
+        $basePrice = $this->price_per_mwh;
+        $adjustment = $this->price_adjustment ?? 0;
         
-        if ($this->isBuy()) {
-            return $currentPrice <= $this->stop_loss_price;
-        } else {
-            return $currentPrice >= $this->stop_loss_price;
-        }
+        return $basePrice + $adjustment;
     }
 
-    public function isTakeProfitTriggered(float $currentPrice): bool
+    public function getTotalAdjustedValue(): float
     {
-        if (!$this->take_profit_price) {
-            return false;
-        }
-        
-        if ($this->isBuy()) {
-            return $currentPrice >= $this->take_profit_price;
-        } else {
-            return $currentPrice <= $this->take_profit_price;
-        }
+        return $this->quantity_mwh * $this->getAdjustedPrice();
+    }
+
+    // Métodos de formato
+    public function getFormattedOrderType(): string
+    {
+        return self::getOrderTypes()[$this->order_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedOrderStatus(): string
+    {
+        return self::getOrderStatuses()[$this->order_status] ?? 'Desconocido';
+    }
+
+    public function getFormattedOrderSide(): string
+    {
+        return self::getOrderSides()[$this->order_side] ?? 'Desconocido';
+    }
+
+    public function getFormattedPriceType(): string
+    {
+        return self::getPriceTypes()[$this->price_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedExecutionType(): string
+    {
+        return self::getExecutionTypes()[$this->execution_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedPriority(): string
+    {
+        return self::getPriorities()[$this->priority] ?? 'Desconocida';
     }
 
     public function getFormattedQuantity(): string
     {
-        return number_format($this->quantity_kwh, 2) . ' kWh';
-    }
-
-    public function getFormattedPrice(): string
-    {
-        return '€' . number_format($this->price_per_kwh, 4) . '/kWh';
-    }
-
-    public function getFormattedTotalValue(): string
-    {
-        return '€' . number_format($this->getTotalValue(), 2);
+        return number_format($this->quantity_mwh, 2) . ' MWh';
     }
 
     public function getFormattedFilledQuantity(): string
     {
-        return number_format($this->getFilledQuantity(), 2) . ' kWh';
+        return number_format($this->filled_quantity_mwh, 2) . ' MWh';
     }
 
     public function getFormattedRemainingQuantity(): string
     {
-        return number_format($this->getRemainingQuantity(), 2) . ' kWh';
+        return number_format($this->remaining_quantity_mwh, 2) . ' MWh';
+    }
+
+    public function getFormattedPrice(): string
+    {
+        return '$' . number_format($this->price_per_mwh, 2) . '/MWh';
+    }
+
+    public function getFormattedAdjustedPrice(): string
+    {
+        return '$' . number_format($this->getAdjustedPrice(), 2) . '/MWh';
+    }
+
+    public function getFormattedTotalValue(): string
+    {
+        return '$' . number_format($this->total_value, 2);
+    }
+
+    public function getFormattedFilledValue(): string
+    {
+        return '$' . number_format($this->filled_value, 2);
+    }
+
+    public function getFormattedRemainingValue(): string
+    {
+        return '$' . number_format($this->remaining_value, 2);
+    }
+
+    public function getFormattedTotalAdjustedValue(): string
+    {
+        return '$' . number_format($this->getTotalAdjustedValue(), 2);
+    }
+
+    public function getFormattedPriceAdjustment(): string
+    {
+        if (!$this->price_adjustment) {
+            return 'N/A';
+        }
+        
+        $sign = $this->price_adjustment >= 0 ? '+' : '';
+        return $sign . '$' . number_format($this->price_adjustment, 2);
+    }
+
+    public function getFormattedValidFrom(): string
+    {
+        return $this->valid_from->format('d/m/Y H:i:s');
+    }
+
+    public function getFormattedValidUntil(): string
+    {
+        return $this->valid_until ? $this->valid_until->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedExecutionTime(): string
+    {
+        return $this->execution_time ? $this->execution_time->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedExpiryTime(): string
+    {
+        return $this->expiry_time ? $this->expiry_time->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedApprovedAt(): string
+    {
+        return $this->approved_at ? $this->approved_at->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedExecutedAt(): string
+    {
+        return $this->executed_at ? $this->executed_at->format('d/m/Y H:i:s') : 'N/A';
     }
 
     public function getFormattedFillPercentage(): string
@@ -420,75 +852,94 @@ class EnergyTradingOrder extends Model
         return number_format($this->getFillPercentage(), 1) . '%';
     }
 
-    public function getFormattedAverageFillPrice(): string
+    public function getFormattedProfitLoss(float $currentPrice): string
     {
-        return '€' . number_format($this->getAverageFillPrice(), 4) . '/kWh';
+        $profitLoss = $this->getProfitLoss($currentPrice);
+        $sign = $profitLoss >= 0 ? '+' : '';
+        return $sign . '$' . number_format($profitLoss, 2);
     }
 
-    public function getFormattedExpiresAt(): string
+    public function getFormattedProfitLossPercentage(float $currentPrice): string
     {
-        if (!$this->expires_at) {
-            return 'No expira';
-        }
-        
-        return $this->expires_at->format('d/m/Y H:i:s');
+        $percentage = $this->getProfitLossPercentage($currentPrice);
+        $sign = $percentage >= 0 ? '+' : '';
+        return $sign . number_format($percentage, 2) . '%';
     }
 
-    public function getFormattedDeliveryDate(): string
+    // Clases de badges para Filament
+    public function getOrderStatusBadgeClass(): string
     {
-        if (!$this->delivery_date) {
-            return 'No especificada';
-        }
-        
-        return $this->delivery_date->format('d/m/Y H:i:s');
-    }
-
-    public function getFormattedType(): string
-    {
-        return self::getTypes()[$this->type] ?? 'Desconocido';
-    }
-
-    public function getFormattedStatus(): string
-    {
-        return self::getStatuses()[$this->status] ?? 'Desconocido';
-    }
-
-    public function getFormattedDeliveryType(): string
-    {
-        return self::getDeliveryTypes()[$this->delivery_type] ?? 'Desconocido';
-    }
-
-    public function getStatusBadgeClass(): string
-    {
-        return match($this->status) {
-            self::STATUS_PENDING => 'bg-blue-100 text-blue-800',
-            self::STATUS_PARTIAL => 'bg-yellow-100 text-yellow-800',
-            self::STATUS_FILLED => 'bg-green-100 text-green-800',
-            self::STATUS_CANCELLED => 'bg-gray-100 text-gray-800',
-            self::STATUS_REJECTED => 'bg-red-100 text-red-800',
-            self::STATUS_EXPIRED => 'bg-orange-100 text-orange-800',
-            self::STATUS_MATCHED => 'bg-purple-100 text-purple-800',
+        return match($this->order_status) {
+            self::ORDER_STATUS_PENDING => 'bg-blue-100 text-blue-800',
+            self::ORDER_STATUS_ACTIVE => 'bg-green-100 text-green-800',
+            self::ORDER_STATUS_FILLED => 'bg-green-100 text-green-800',
+            self::ORDER_STATUS_PARTIALLY_FILLED => 'bg-yellow-100 text-yellow-800',
+            self::ORDER_STATUS_CANCELLED => 'bg-gray-100 text-gray-800',
+            self::ORDER_STATUS_REJECTED => 'bg-red-100 text-red-800',
+            self::ORDER_STATUS_EXPIRED => 'bg-orange-100 text-orange-800',
+            self::ORDER_STATUS_COMPLETED => 'bg-blue-100 text-blue-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
-    public function getTypeBadgeClass(): string
+    public function getOrderTypeBadgeClass(): string
     {
-        return match($this->type) {
-            self::TYPE_BUY => 'bg-green-100 text-green-800',
-            self::TYPE_SELL => 'bg-red-100 text-red-800',
+        return match($this->order_type) {
+            self::ORDER_TYPE_BUY => 'bg-green-100 text-green-800',
+            self::ORDER_TYPE_SELL => 'bg-red-100 text-red-800',
+            self::ORDER_TYPE_BID => 'bg-blue-100 text-blue-800',
+            self::ORDER_TYPE_ASK => 'bg-orange-100 text-orange-800',
+            self::ORDER_TYPE_MARKET => 'bg-purple-100 text-purple-800',
+            self::ORDER_TYPE_LIMIT => 'bg-indigo-100 text-indigo-800',
+            self::ORDER_TYPE_STOP => 'bg-yellow-100 text-yellow-800',
+            self::ORDER_TYPE_STOP_LIMIT => 'bg-pink-100 text-pink-800',
+            self::ORDER_TYPE_OTHER => 'bg-gray-100 text-gray-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
-    public function getDeliveryTypeBadgeClass(): string
+    public function getOrderSideBadgeClass(): string
     {
-        return match($this->delivery_type) {
-            self::DELIVERY_TYPE_IMMEDIATE => 'bg-blue-100 text-blue-800',
-            self::DELIVERY_TYPE_FORWARD => 'bg-purple-100 text-purple-800',
-            self::DELIVERY_TYPE_FLEXIBLE => 'bg-yellow-100 text-yellow-800',
-            self::DELIVERY_TYPE_PHYSICAL => 'bg-green-100 text-green-800',
-            self::DELIVERY_TYPE_VIRTUAL => 'bg-indigo-100 text-indigo-800',
+        return match($this->order_side) {
+            self::ORDER_SIDE_BUY => 'bg-green-100 text-green-800',
+            self::ORDER_SIDE_SELL => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getPriceTypeBadgeClass(): string
+    {
+        return match($this->price_type) {
+            self::PRICE_TYPE_FIXED => 'bg-blue-100 text-blue-800',
+            self::PRICE_TYPE_FLOATING => 'bg-yellow-100 text-yellow-800',
+            self::PRICE_TYPE_INDEXED => 'bg-green-100 text-green-800',
+            self::PRICE_TYPE_FORMULA => 'bg-purple-100 text-purple-800',
+            self::PRICE_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getExecutionTypeBadgeClass(): string
+    {
+        return match($this->execution_type) {
+            self::EXECUTION_TYPE_IMMEDIATE => 'bg-blue-100 text-blue-800',
+            self::EXECUTION_TYPE_GOOD_TILL_CANCELLED => 'bg-green-100 text-green-800',
+            self::EXECUTION_TYPE_GOOD_TILL_DATE => 'bg-yellow-100 text-yellow-800',
+            self::EXECUTION_TYPE_FILL_OR_KILL => 'bg-orange-100 text-orange-800',
+            self::EXECUTION_TYPE_ALL_OR_NOTHING => 'bg-purple-100 text-purple-800',
+            self::EXECUTION_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getPriorityBadgeClass(): string
+    {
+        return match($this->priority) {
+            self::PRIORITY_LOW => 'bg-gray-100 text-gray-800',
+            self::PRIORITY_NORMAL => 'bg-blue-100 text-blue-800',
+            self::PRIORITY_HIGH => 'bg-yellow-100 text-yellow-800',
+            self::PRIORITY_URGENT => 'bg-orange-100 text-orange-800',
+            self::PRIORITY_CRITICAL => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
@@ -508,5 +959,10 @@ class EnergyTradingOrder extends Model
         }
         
         return 'bg-green-100 text-green-800';
+    }
+
+    public function getNegotiableBadgeClass(): string
+    {
+        return $this->is_negotiable ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
     }
 }
