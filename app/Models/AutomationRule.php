@@ -32,11 +32,6 @@ class AutomationRule extends Model
         'success_count',
         'failure_count',
         'last_error_message',
-        'created_by',
-        'approved_by',
-        'approved_at',
-        'notes',
-        'tags',
         'schedule_cron',
         'timezone',
         'retry_on_failure',
@@ -45,6 +40,11 @@ class AutomationRule extends Model
         'notification_emails',
         'webhook_url',
         'webhook_headers',
+        'tags',
+        'notes',
+        'created_by',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -56,13 +56,15 @@ class AutomationRule extends Model
         'max_executions' => 'integer',
         'success_count' => 'integer',
         'failure_count' => 'integer',
+        'retry_on_failure' => 'boolean',
         'max_retries' => 'integer',
         'retry_delay_minutes' => 'integer',
         'last_executed_at' => 'datetime',
         'next_execution_at' => 'datetime',
         'approved_at' => 'datetime',
-        'tags' => 'array',
+        'notification_emails' => 'array',
         'webhook_headers' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
