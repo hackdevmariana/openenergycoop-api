@@ -65,6 +65,7 @@ use App\Http\Controllers\Api\V1\PerformanceIndicatorController;
 use App\Http\Controllers\Api\V1\EnergyBondController;
 use App\Http\Controllers\Api\V1\MaintenanceTaskController;
 use App\Http\Controllers\Api\V1\BondDonationController;
+use App\Http\Controllers\Api\V1\AffiliateController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -189,6 +190,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('bond-donations/{bondDonation}/make-private', [BondDonationController::class, 'makePrivate']);
     Route::post('bond-donations/{bondDonation}/send-thank-you', [BondDonationController::class, 'sendThankYou']);
     Route::post('bond-donations/{bondDonation}/duplicate', [BondDonationController::class, 'duplicate']);
+    
+    // Rutas para Affiliates
+    Route::get('affiliates/active', [AffiliateController::class, 'active']);
+    Route::get('affiliates/by-type/{type}', [AffiliateController::class, 'byType']);
+    Route::get('affiliates/top-performers', [AffiliateController::class, 'topPerformers']);
+    Route::get('affiliates/statistics', [AffiliateController::class, 'statistics']);
+    Route::apiResource('affiliates', AffiliateController::class);
+    Route::post('affiliates/{affiliate}/verify', [AffiliateController::class, 'verify']);
+    Route::post('affiliates/{affiliate}/update-performance-rating', [AffiliateController::class, 'updatePerformanceRating']);
+    Route::post('affiliates/{affiliate}/update-commission-rate', [AffiliateController::class, 'updateCommissionRate']);
+    Route::post('affiliates/{affiliate}/duplicate', [AffiliateController::class, 'duplicate']);
     
     // Rutas para Articles (CMS)
     Route::get('articles/featured', [ArticleController::class, 'featured']);
