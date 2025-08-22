@@ -66,6 +66,7 @@ use App\Http\Controllers\Api\V1\EnergyBondController;
 use App\Http\Controllers\Api\V1\MaintenanceTaskController;
 use App\Http\Controllers\Api\V1\BondDonationController;
 use App\Http\Controllers\Api\V1\AffiliateController;
+use App\Http\Controllers\Api\V1\DiscountCodeController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -201,6 +202,16 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('affiliates/{affiliate}/update-performance-rating', [AffiliateController::class, 'updatePerformanceRating']);
     Route::post('affiliates/{affiliate}/update-commission-rate', [AffiliateController::class, 'updateCommissionRate']);
     Route::post('affiliates/{affiliate}/duplicate', [AffiliateController::class, 'duplicate']);
+    
+    // Rutas para Discount Codes
+    Route::get('discount-codes/active', [DiscountCodeController::class, 'active']);
+    Route::get('discount-codes/by-type/{type}', [DiscountCodeController::class, 'byType']);
+    Route::post('discount-codes/validate', [DiscountCodeController::class, 'validate']);
+    Route::get('discount-codes/statistics', [DiscountCodeController::class, 'statistics']);
+    Route::apiResource('discount-codes', DiscountCodeController::class);
+    Route::post('discount-codes/{discountCode}/activate', [DiscountCodeController::class, 'activate']);
+    Route::post('discount-codes/{discountCode}/deactivate', [DiscountCodeController::class, 'deactivate']);
+    Route::post('discount-codes/{discountCode}/duplicate', [DiscountCodeController::class, 'duplicate']);
     
     // Rutas para Articles (CMS)
     Route::get('articles/featured', [ArticleController::class, 'featured']);
