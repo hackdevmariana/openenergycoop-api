@@ -31,9 +31,6 @@ class TaskTemplate extends Model
         'is_active',
         'is_standard',
         'version',
-        'created_by',
-        'approved_by',
-        'approved_at',
         'tags',
         'notes',
         'department',
@@ -47,6 +44,9 @@ class TaskTemplate extends Model
         'budget_code',
         'cost_center',
         'project_code',
+        'created_by',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -62,6 +62,8 @@ class TaskTemplate extends Model
         'work_instructions' => 'array',
         'is_active' => 'boolean',
         'is_standard' => 'boolean',
+        'training_required' => 'boolean',
+        'certification_required' => 'boolean',
         'approved_at' => 'datetime',
         'tags' => 'array',
         'compliance_requirements' => 'array',
@@ -73,13 +75,13 @@ class TaskTemplate extends Model
     const TEMPLATE_TYPE_MAINTENANCE = 'maintenance';
     const TEMPLATE_TYPE_INSPECTION = 'inspection';
     const TEMPLATE_TYPE_REPAIR = 'repair';
-    const TEMPLATE_TYPE_INSTALLATION = 'installation';
-    const TEMPLATE_TYPE_CLEANING = 'cleaning';
+    const TEMPLATE_TYPE_REPLACEMENT = 'replacement';
     const TEMPLATE_TYPE_CALIBRATION = 'calibration';
+    const TEMPLATE_TYPE_CLEANING = 'cleaning';
+    const TEMPLATE_TYPE_LUBRICATION = 'lubrication';
     const TEMPLATE_TYPE_TESTING = 'testing';
     const TEMPLATE_TYPE_UPGRADE = 'upgrade';
-    const TEMPLATE_TYPE_PREVENTIVE = 'preventive';
-    const TEMPLATE_TYPE_CORRECTIVE = 'corrective';
+    const TEMPLATE_TYPE_INSTALLATION = 'installation';
 
     const PRIORITY_LOW = 'low';
     const PRIORITY_MEDIUM = 'medium';
@@ -98,13 +100,13 @@ class TaskTemplate extends Model
             self::TEMPLATE_TYPE_MAINTENANCE => 'Mantenimiento',
             self::TEMPLATE_TYPE_INSPECTION => 'Inspección',
             self::TEMPLATE_TYPE_REPAIR => 'Reparación',
-            self::TEMPLATE_TYPE_INSTALLATION => 'Instalación',
-            self::TEMPLATE_TYPE_CLEANING => 'Limpieza',
+            self::TEMPLATE_TYPE_REPLACEMENT => 'Reemplazo',
             self::TEMPLATE_TYPE_CALIBRATION => 'Calibración',
+            self::TEMPLATE_TYPE_CLEANING => 'Limpieza',
+            self::TEMPLATE_TYPE_LUBRICATION => 'Lubricación',
             self::TEMPLATE_TYPE_TESTING => 'Pruebas',
             self::TEMPLATE_TYPE_UPGRADE => 'Actualización',
-            self::TEMPLATE_TYPE_PREVENTIVE => 'Preventivo',
-            self::TEMPLATE_TYPE_CORRECTIVE => 'Correctivo',
+            self::TEMPLATE_TYPE_INSTALLATION => 'Instalación',
         ];
     }
 
@@ -227,9 +229,14 @@ class TaskTemplate extends Model
         return $this->template_type === self::TEMPLATE_TYPE_REPAIR;
     }
 
-    public function isInstallation(): bool
+    public function isReplacement(): bool
     {
-        return $this->template_type === self::TEMPLATE_TYPE_INSTALLATION;
+        return $this->template_type === self::TEMPLATE_TYPE_REPLACEMENT;
+    }
+
+    public function isCalibration(): bool
+    {
+        return $this->template_type === self::TEMPLATE_TYPE_CALIBRATION;
     }
 
     public function isCleaning(): bool
@@ -237,9 +244,9 @@ class TaskTemplate extends Model
         return $this->template_type === self::TEMPLATE_TYPE_CLEANING;
     }
 
-    public function isCalibration(): bool
+    public function isLubrication(): bool
     {
-        return $this->template_type === self::TEMPLATE_TYPE_CALIBRATION;
+        return $this->template_type === self::TEMPLATE_TYPE_LUBRICATION;
     }
 
     public function isTesting(): bool
@@ -252,14 +259,9 @@ class TaskTemplate extends Model
         return $this->template_type === self::TEMPLATE_TYPE_UPGRADE;
     }
 
-    public function isPreventive(): bool
+    public function isInstallation(): bool
     {
-        return $this->template_type === self::TEMPLATE_TYPE_PREVENTIVE;
-    }
-
-    public function isCorrective(): bool
-    {
-        return $this->template_type === self::TEMPLATE_TYPE_CORRECTIVE;
+        return $this->template_type === self::TEMPLATE_TYPE_INSTALLATION;
     }
 
     public function isLowPriority(): bool
@@ -363,13 +365,13 @@ class TaskTemplate extends Model
             self::TEMPLATE_TYPE_MAINTENANCE => 'bg-blue-100 text-blue-800',
             self::TEMPLATE_TYPE_INSPECTION => 'bg-green-100 text-green-800',
             self::TEMPLATE_TYPE_REPAIR => 'bg-yellow-100 text-yellow-800',
-            self::TEMPLATE_TYPE_INSTALLATION => 'bg-purple-100 text-purple-800',
-            self::TEMPLATE_TYPE_CLEANING => 'bg-cyan-100 text-cyan-800',
+            self::TEMPLATE_TYPE_REPLACEMENT => 'bg-orange-100 text-orange-800',
             self::TEMPLATE_TYPE_CALIBRATION => 'bg-indigo-100 text-indigo-800',
+            self::TEMPLATE_TYPE_CLEANING => 'bg-cyan-100 text-cyan-800',
+            self::TEMPLATE_TYPE_LUBRICATION => 'bg-purple-100 text-purple-800',
             self::TEMPLATE_TYPE_TESTING => 'bg-pink-100 text-pink-800',
-            self::TEMPLATE_TYPE_UPGRADE => 'bg-orange-100 text-orange-800',
-            self::TEMPLATE_TYPE_PREVENTIVE => 'bg-teal-100 text-teal-800',
-            self::TEMPLATE_TYPE_CORRECTIVE => 'bg-red-100 text-red-800',
+            self::TEMPLATE_TYPE_UPGRADE => 'bg-teal-100 text-teal-800',
+            self::TEMPLATE_TYPE_INSTALLATION => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
