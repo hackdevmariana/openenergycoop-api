@@ -63,6 +63,7 @@ use App\Http\Controllers\Api\V1\EnergyReportController;
 use App\Http\Controllers\Api\V1\SustainabilityMetricController;
 use App\Http\Controllers\Api\V1\PerformanceIndicatorController;
 use App\Http\Controllers\Api\V1\EnergyBondController;
+use App\Http\Controllers\Api\V1\MaintenanceTaskController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -157,6 +158,21 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('consent-logs/gdpr-report', [ConsentLogController::class, 'gdprReport']);
     Route::post('consent-logs/{consentLog}/revoke', [ConsentLogController::class, 'revoke']);
     Route::apiResource('consent-logs', ConsentLogController::class)->except(['update', 'destroy']);
+    
+    // Rutas para Maintenance Tasks
+    Route::get('maintenance-tasks/overdue', [MaintenanceTaskController::class, 'overdueTasks']);
+    Route::get('maintenance-tasks/today', [MaintenanceTaskController::class, 'todayTasks']);
+    Route::get('maintenance-tasks/week', [MaintenanceTaskController::class, 'weekTasks']);
+    Route::get('maintenance-tasks/statistics', [MaintenanceTaskController::class, 'statistics']);
+    Route::apiResource('maintenance-tasks', MaintenanceTaskController::class);
+    Route::post('maintenance-tasks/{maintenanceTask}/start', [MaintenanceTaskController::class, 'startTask']);
+    Route::post('maintenance-tasks/{maintenanceTask}/complete', [MaintenanceTaskController::class, 'completeTask']);
+    Route::post('maintenance-tasks/{maintenanceTask}/pause', [MaintenanceTaskController::class, 'pauseTask']);
+    Route::post('maintenance-tasks/{maintenanceTask}/resume', [MaintenanceTaskController::class, 'resumeTask']);
+    Route::post('maintenance-tasks/{maintenanceTask}/cancel', [MaintenanceTaskController::class, 'cancelTask']);
+    Route::post('maintenance-tasks/{maintenanceTask}/reassign', [MaintenanceTaskController::class, 'reassignTask']);
+    Route::post('maintenance-tasks/{maintenanceTask}/update-progress', [MaintenanceTaskController::class, 'updateProgress']);
+    Route::post('maintenance-tasks/{maintenanceTask}/duplicate', [MaintenanceTaskController::class, 'duplicate']);
     
     // Rutas para Articles (CMS)
     Route::get('articles/featured', [ArticleController::class, 'featured']);
@@ -660,6 +676,53 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/{energyBond}/make-private', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'makePrivate'])
                 ->name('make-private');
             Route::post('/{energyBond}/duplicate', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'duplicate'])
+                ->name('duplicate');
+        });
+    });
+    
+    // Maintenance Tasks Routes
+    Route::prefix('maintenance-tasks')->name('maintenance-tasks.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/overdue', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'overdueTasks'])
+            ->name('overdue');
+        Route::get('/today', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'todayTasks'])
+            ->name('today');
+        Route::get('/week', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'weekTasks'])
+            ->name('week');
+        Route::get('/statistics', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'statistics'])
+            ->name('statistics');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'store'])
+                ->name('store');
+            Route::get('/{maintenanceTask}', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'show'])
+                ->name('show');
+            Route::put('/{maintenanceTask}', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'update'])
+                ->name('update');
+            Route::patch('/{maintenanceTask}', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'update'])
+                ->name('update');
+            Route::delete('/{maintenanceTask}', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{maintenanceTask}/start', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'startTask'])
+                ->name('start');
+            Route::post('/{maintenanceTask}/complete', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'completeTask'])
+                ->name('complete');
+            Route::post('/{maintenanceTask}/pause', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'pauseTask'])
+                ->name('pause');
+            Route::post('/{maintenanceTask}/resume', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'resumeTask'])
+                ->name('resume');
+            Route::post('/{maintenanceTask}/cancel', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'cancelTask'])
+                ->name('cancel');
+            Route::post('/{maintenanceTask}/reassign', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'reassignTask'])
+                ->name('reassign');
+            Route::post('/{maintenanceTask}/update-progress', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'updateProgress'])
+                ->name('update-progress');
+            Route::post('/{maintenanceTask}/duplicate', [App\Http\Controllers\Api\V1\MaintenanceTaskController::class, 'duplicate'])
                 ->name('duplicate');
         });
     });
