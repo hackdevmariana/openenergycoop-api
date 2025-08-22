@@ -13,122 +13,204 @@ class TaxCalculation extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'taxable_id',
-        'taxable_type',
+        'calculation_number',
+        'name',
+        'description',
         'tax_type',
-        'tax_rate',
-        'taxable_amount',
-        'tax_amount',
-        'tax_percentage',
-        'exempt_amount',
-        'exemption_reason',
-        'tax_year',
-        'tax_period',
+        'calculation_type',
+        'status',
+        'priority',
+        'entity_id',
+        'entity_type',
+        'transaction_id',
+        'transaction_type',
+        'tax_period_start',
+        'tax_period_end',
         'calculation_date',
         'due_date',
-        'paid_date',
-        'payment_method',
-        'payment_reference',
-        'status',
-        'notes',
-        'external_reference',
-        'created_by',
+        'payment_date',
+        'taxable_amount',
+        'tax_rate',
+        'tax_amount',
+        'tax_base_amount',
+        'exemption_amount',
+        'deduction_amount',
+        'credit_amount',
+        'net_tax_amount',
+        'penalty_amount',
+        'interest_amount',
+        'total_amount_due',
+        'amount_paid',
+        'amount_remaining',
+        'currency',
+        'exchange_rate',
+        'tax_jurisdiction',
+        'tax_authority',
+        'tax_registration_number',
+        'tax_filing_frequency',
+        'tax_filing_method',
+        'is_estimated',
+        'is_final',
+        'is_amended',
+        'amendment_reason',
+        'calculation_notes',
+        'review_notes',
+        'approval_notes',
+        'calculation_details',
+        'tax_breakdown',
+        'supporting_documents',
+        'audit_trail',
+        'tags',
+        'calculated_by',
+        'reviewed_by',
+        'reviewed_at',
         'approved_by',
         'approved_at',
-        'filing_date',
-        'filing_reference',
-        'audit_status',
-        'audit_notes',
+        'applied_by',
+        'applied_at',
+        'created_by',
+        'notes',
     ];
 
     protected $casts = [
-        'tax_rate' => 'decimal:4',
+        'tax_period_start' => 'date',
+        'tax_period_end' => 'date',
+        'calculation_date' => 'date',
+        'due_date' => 'date',
+        'payment_date' => 'date',
         'taxable_amount' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
-        'tax_percentage' => 'decimal:2',
-        'exempt_amount' => 'decimal:2',
-        'calculation_date' => 'datetime',
-        'due_date' => 'datetime',
-        'paid_date' => 'datetime',
+        'tax_base_amount' => 'decimal:2',
+        'exemption_amount' => 'decimal:2',
+        'deduction_amount' => 'decimal:2',
+        'credit_amount' => 'decimal:2',
+        'net_tax_amount' => 'decimal:2',
+        'penalty_amount' => 'decimal:2',
+        'interest_amount' => 'decimal:2',
+        'total_amount_due' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
+        'amount_remaining' => 'decimal:2',
+        'exchange_rate' => 'decimal:6',
+        'is_estimated' => 'boolean',
+        'is_final' => 'boolean',
+        'is_amended' => 'boolean',
+        'reviewed_at' => 'datetime',
         'approved_at' => 'datetime',
-        'filing_date' => 'datetime',
+        'applied_at' => 'datetime',
+        'calculation_details' => 'array',
+        'tax_breakdown' => 'array',
+        'supporting_documents' => 'array',
+        'audit_trail' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const TAX_TYPE_INCOME = 'income';
-    const TAX_TYPE_VAT = 'vat';
-    const TAX_TYPE_ENERGY = 'energy';
-    const TAX_TYPE_CARBON = 'carbon';
-    const TAX_TYPE_PROPERTY = 'property';
-    const TAX_TYPE_TRANSACTION = 'transaction';
-    const TAX_TYPE_IMPORT = 'import';
-    const TAX_TYPE_EXPORT = 'export';
+    const TAX_TYPE_INCOME_TAX = 'income_tax';
+    const TAX_TYPE_SALES_TAX = 'sales_tax';
+    const TAX_TYPE_VALUE_ADDED_TAX = 'value_added_tax';
+    const TAX_TYPE_PROPERTY_TAX = 'property_tax';
+    const TAX_TYPE_EXCISE_TAX = 'excise_tax';
+    const TAX_TYPE_CUSTOMS_DUTY = 'customs_duty';
+    const TAX_TYPE_ENERGY_TAX = 'energy_tax';
+    const TAX_TYPE_CARBON_TAX = 'carbon_tax';
+    const TAX_TYPE_ENVIRONMENTAL_TAX = 'environmental_tax';
+    const TAX_TYPE_OTHER = 'other';
 
-    const STATUS_PENDING = 'pending';
+    const CALCULATION_TYPE_AUTOMATIC = 'automatic';
+    const CALCULATION_TYPE_MANUAL = 'manual';
+    const CALCULATION_TYPE_SCHEDULED = 'scheduled';
+    const CALCULATION_TYPE_EVENT_TRIGGERED = 'event_triggered';
+    const CALCULATION_TYPE_BATCH = 'batch';
+    const CALCULATION_TYPE_REAL_TIME = 'real_time';
+    const CALCULATION_TYPE_OTHER = 'other';
+
+    const STATUS_DRAFT = 'draft';
     const STATUS_CALCULATED = 'calculated';
-    const STATUS_FILED = 'filed';
-    const STATUS_PAID = 'paid';
-    const STATUS_OVERDUE = 'overdue';
-    const STATUS_REFUNDED = 'refunded';
-    const STATUS_AUDITED = 'audited';
-    const STATUS_DISPUTED = 'disputed';
+    const STATUS_REVIEWED = 'reviewed';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_APPLIED = 'applied';
+    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_ERROR = 'error';
 
-    const AUDIT_STATUS_PENDING = 'pending';
-    const AUDIT_STATUS_IN_PROGRESS = 'in_progress';
-    const AUDIT_STATUS_COMPLETED = 'completed';
-    const AUDIT_STATUS_ISSUES_FOUND = 'issues_found';
-    const AUDIT_STATUS_APPROVED = 'approved';
-    const AUDIT_STATUS_REJECTED = 'rejected';
+    const PRIORITY_LOW = 'low';
+    const PRIORITY_NORMAL = 'normal';
+    const PRIORITY_HIGH = 'high';
+    const PRIORITY_URGENT = 'urgent';
+    const PRIORITY_CRITICAL = 'critical';
 
     public static function getTaxTypes(): array
     {
         return [
-            self::TAX_TYPE_INCOME => 'Impuesto sobre la Renta',
-            self::TAX_TYPE_VAT => 'IVA',
-            self::TAX_TYPE_ENERGY => 'Impuesto sobre la Energía',
-            self::TAX_TYPE_CARBON => 'Impuesto sobre el Carbono',
-            self::TAX_TYPE_PROPERTY => 'Impuesto sobre la Propiedad',
-            self::TAX_TYPE_TRANSACTION => 'Impuesto sobre Transacciones',
-            self::TAX_TYPE_IMPORT => 'Impuesto de Importación',
-            self::TAX_TYPE_EXPORT => 'Impuesto de Exportación',
+            self::TAX_TYPE_INCOME_TAX => 'Impuesto sobre la Renta',
+            self::TAX_TYPE_SALES_TAX => 'Impuesto sobre Ventas',
+            self::TAX_TYPE_VALUE_ADDED_TAX => 'IVA',
+            self::TAX_TYPE_PROPERTY_TAX => 'Impuesto sobre la Propiedad',
+            self::TAX_TYPE_EXCISE_TAX => 'Impuesto de Consumo',
+            self::TAX_TYPE_CUSTOMS_DUTY => 'Arancel de Aduanas',
+            self::TAX_TYPE_ENERGY_TAX => 'Impuesto sobre la Energía',
+            self::TAX_TYPE_CARBON_TAX => 'Impuesto sobre el Carbono',
+            self::TAX_TYPE_ENVIRONMENTAL_TAX => 'Impuesto Ambiental',
+            self::TAX_TYPE_OTHER => 'Otro',
+        ];
+    }
+
+    public static function getCalculationTypes(): array
+    {
+        return [
+            self::CALCULATION_TYPE_AUTOMATIC => 'Automático',
+            self::CALCULATION_TYPE_MANUAL => 'Manual',
+            self::CALCULATION_TYPE_SCHEDULED => 'Programado',
+            self::CALCULATION_TYPE_EVENT_TRIGGERED => 'Activado por Evento',
+            self::CALCULATION_TYPE_BATCH => 'Por Lotes',
+            self::CALCULATION_TYPE_REAL_TIME => 'Tiempo Real',
+            self::CALCULATION_TYPE_OTHER => 'Otro',
         ];
     }
 
     public static function getStatuses(): array
     {
         return [
-            self::STATUS_PENDING => 'Pendiente',
+            self::STATUS_DRAFT => 'Borrador',
             self::STATUS_CALCULATED => 'Calculado',
-            self::STATUS_FILED => 'Presentado',
-            self::STATUS_PAID => 'Pagado',
-            self::STATUS_OVERDUE => 'Vencido',
-            self::STATUS_REFUNDED => 'Reembolsado',
-            self::STATUS_AUDITED => 'Auditado',
-            self::STATUS_DISPUTED => 'Disputado',
+            self::STATUS_REVIEWED => 'Revisado',
+            self::STATUS_APPROVED => 'Aprobado',
+            self::STATUS_APPLIED => 'Aplicado',
+            self::STATUS_CANCELLED => 'Cancelado',
+            self::STATUS_ERROR => 'Error',
         ];
     }
 
-    public static function getAuditStatuses(): array
+    public static function getPriorities(): array
     {
         return [
-            self::AUDIT_STATUS_PENDING => 'Pendiente',
-            self::AUDIT_STATUS_IN_PROGRESS => 'En Progreso',
-            self::AUDIT_STATUS_COMPLETED => 'Completado',
-            self::AUDIT_STATUS_ISSUES_FOUND => 'Problemas Encontrados',
-            self::AUDIT_STATUS_APPROVED => 'Aprobado',
-            self::AUDIT_STATUS_REJECTED => 'Rechazado',
+            self::PRIORITY_LOW => 'Baja',
+            self::PRIORITY_NORMAL => 'Normal',
+            self::PRIORITY_HIGH => 'Alta',
+            self::PRIORITY_URGENT => 'Urgente',
+            self::PRIORITY_CRITICAL => 'Crítica',
         ];
     }
 
     // Relaciones
-    public function taxable(): MorphTo
+    public function entity(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function createdBy(): BelongsTo
+    public function transaction(): MorphTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->morphTo();
+    }
+
+    public function calculatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'calculated_by');
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function approvedBy(): BelongsTo
@@ -136,10 +218,25 @@ class TaxCalculation extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    // Scopes
-    public function scopeByType($query, $type)
+    public function appliedBy(): BelongsTo
     {
-        return $query->where('tax_type', $type);
+        return $this->belongsTo(User::class, 'applied_by');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    // Scopes
+    public function scopeByTaxType($query, $taxType)
+    {
+        return $query->where('tax_type', $taxType);
+    }
+
+    public function scopeByCalculationType($query, $calculationType)
+    {
+        return $query->where('calculation_type', $calculationType);
     }
 
     public function scopeByStatus($query, $status)
@@ -147,19 +244,38 @@ class TaxCalculation extends Model
         return $query->where('status', $status);
     }
 
-    public function scopeByTaxYear($query, $year)
+    public function scopeByPriority($query, $priority)
     {
-        return $query->where('tax_year', $year);
+        return $query->where('priority', $priority);
     }
 
-    public function scopeByTaxPeriod($query, $period)
+    public function scopeByEntity($query, $entityId, $entityType = null)
     {
-        return $query->where('tax_period', $period);
+        $query = $query->where('entity_id', $entityId);
+        if ($entityType) {
+            $query->where('entity_type', $entityType);
+        }
+        return $query;
     }
 
-    public function scopeByDateRange($query, $startDate, $endDate)
+    public function scopeByTransaction($query, $transactionId, $transactionType = null)
     {
-        return $query->whereBetween('calculation_date', [$startDate, $endDate]);
+        $query = $query->where('transaction_id', $transactionId);
+        if ($transactionType) {
+            $query->where('transaction_type', $transactionType);
+        }
+        return $query;
+    }
+
+    public function scopeByTaxPeriod($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('tax_period_start', [$startDate, $endDate])
+                    ->orWhereBetween('tax_period_end', [$startDate, $endDate]);
+    }
+
+    public function scopeByCalculationDate($query, $date)
+    {
+        return $query->whereDate('calculation_date', $date);
     }
 
     public function scopeByDueDate($query, $date)
@@ -167,93 +283,287 @@ class TaxCalculation extends Model
         return $query->whereDate('due_date', $date);
     }
 
+    public function scopeByPaymentDate($query, $date)
+    {
+        return $query->whereDate('payment_date', $date);
+    }
+
+    public function scopeByDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('calculation_date', [$startDate, $endDate]);
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', self::STATUS_DRAFT);
+    }
+
+    public function scopeCalculated($query)
+    {
+        return $query->where('status', self::STATUS_CALCULATED);
+    }
+
+    public function scopeReviewed($query)
+    {
+        return $query->where('status', self::STATUS_REVIEWED);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', self::STATUS_APPROVED);
+    }
+
+    public function scopeApplied($query)
+    {
+        return $query->where('status', self::STATUS_APPLIED);
+    }
+
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', self::STATUS_CANCELLED);
+    }
+
+    public function scopeError($query)
+    {
+        return $query->where('status', self::STATUS_ERROR);
+    }
+
+    public function scopeIncomeTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_INCOME_TAX);
+    }
+
+    public function scopeSalesTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_SALES_TAX);
+    }
+
+    public function scopeValueAddedTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_VALUE_ADDED_TAX);
+    }
+
+    public function scopePropertyTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_PROPERTY_TAX);
+    }
+
+    public function scopeExciseTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_EXCISE_TAX);
+    }
+
+    public function scopeCustomsDuty($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_CUSTOMS_DUTY);
+    }
+
+    public function scopeEnergyTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_ENERGY_TAX);
+    }
+
+    public function scopeCarbonTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_CARBON_TAX);
+    }
+
+    public function scopeEnvironmentalTax($query)
+    {
+        return $query->where('tax_type', self::TAX_TYPE_ENVIRONMENTAL_TAX);
+    }
+
+    public function scopeAutomatic($query)
+    {
+        return $query->where('calculation_type', self::CALCULATION_TYPE_AUTOMATIC);
+    }
+
+    public function scopeManual($query)
+    {
+        return $query->where('calculation_type', self::CALCULATION_TYPE_MANUAL);
+    }
+
+    public function scopeScheduled($query)
+    {
+        return $query->where('calculation_type', self::CALCULATION_TYPE_SCHEDULED);
+    }
+
+    public function scopeEventTriggered($query)
+    {
+        return $query->where('calculation_type', self::CALCULATION_TYPE_EVENT_TRIGGERED);
+    }
+
+    public function scopeBatch($query)
+    {
+        return $query->where('calculation_type', self::CALCULATION_TYPE_BATCH);
+    }
+
+    public function scopeRealTime($query)
+    {
+        return $query->where('calculation_type', self::CALCULATION_TYPE_REAL_TIME);
+    }
+
+    public function scopeHighPriority($query)
+    {
+        return $query->whereIn('priority', [
+            self::PRIORITY_HIGH,
+            self::PRIORITY_URGENT,
+            self::PRIORITY_CRITICAL,
+        ]);
+    }
+
+    public function scopeLowPriority($query)
+    {
+        return $query->where('priority', self::PRIORITY_LOW);
+    }
+
+    public function scopeNormalPriority($query)
+    {
+        return $query->where('priority', self::PRIORITY_NORMAL);
+    }
+
+    public function scopeEstimated($query)
+    {
+        return $query->where('is_estimated', true);
+    }
+
+    public function scopeFinal($query)
+    {
+        return $query->where('is_final', true);
+    }
+
+    public function scopeAmended($query)
+    {
+        return $query->where('is_amended', true);
+    }
+
     public function scopeOverdue($query)
     {
         return $query->where('due_date', '<', now())
-                    ->whereNotIn('status', [self::STATUS_PAID, self::STATUS_REFUNDED]);
+                    ->whereNotIn('status', [self::STATUS_APPLIED, self::STATUS_CANCELLED]);
     }
 
     public function scopeDueSoon($query, $days = 30)
     {
         $dueDate = now()->addDays($days);
         return $query->where('due_date', '<=', $dueDate)
-                    ->whereNotIn('status', [self::STATUS_PAID, self::STATUS_REFUNDED]);
+                    ->whereNotIn('status', [self::STATUS_APPLIED, self::STATUS_CANCELLED]);
     }
 
     public function scopePaid($query)
     {
-        return $query->where('status', self::STATUS_PAID);
+        return $query->where('status', self::STATUS_APPLIED);
     }
 
     public function scopeUnpaid($query)
     {
-        return $query->whereNotIn('status', [self::STATUS_PAID, self::STATUS_REFUNDED]);
+        return $query->whereNotIn('status', [self::STATUS_APPLIED, self::STATUS_CANCELLED]);
     }
 
-    public function scopeByAuditStatus($query, $auditStatus)
+    public function scopeByCurrency($query, $currency)
     {
-        return $query->where('audit_status', $auditStatus);
+        return $query->where('currency', $currency);
     }
 
-    public function scopePendingAudit($query)
+    public function scopeByTaxJurisdiction($query, $jurisdiction)
     {
-        return $query->where('audit_status', self::AUDIT_STATUS_PENDING);
+        return $query->where('tax_jurisdiction', $jurisdiction);
     }
 
-    public function scopeAuditInProgress($query)
+    public function scopeByTaxAuthority($query, $authority)
     {
-        return $query->where('audit_status', self::AUDIT_STATUS_IN_PROGRESS);
+        return $query->where('tax_authority', $authority);
     }
 
-    public function scopeAuditCompleted($query)
+    public function scopeByAmountRange($query, $minAmount, $maxAmount)
     {
-        return $query->where('audit_status', self::AUDIT_STATUS_COMPLETED);
+        return $query->whereBetween('total_amount_due', [$minAmount, $maxAmount]);
     }
 
-    public function scopeIncome($query)
+    public function scopeByTaxRateRange($query, $minRate, $maxRate)
     {
-        return $query->where('tax_type', self::TAX_TYPE_INCOME);
+        return $query->whereBetween('tax_rate', [$minRate, $maxRate]);
     }
 
-    public function scopeVAT($query)
+    // Métodos de validación
+    public function isIncomeTax(): bool
     {
-        return $query->where('tax_type', self::TAX_TYPE_VAT);
+        return $this->tax_type === self::TAX_TYPE_INCOME_TAX;
     }
 
-    public function scopeEnergy($query)
+    public function isSalesTax(): bool
     {
-        return $query->where('tax_type', self::TAX_TYPE_ENERGY);
+        return $this->tax_type === self::TAX_TYPE_SALES_TAX;
     }
 
-    public function scopeCarbon($query)
+    public function isValueAddedTax(): bool
     {
-        return $query->where('tax_type', self::TAX_TYPE_CARBON);
+        return $this->tax_type === self::TAX_TYPE_VALUE_ADDED_TAX;
     }
 
-    // Métodos
-    public function isIncome(): bool
+    public function isPropertyTax(): bool
     {
-        return $this->tax_type === self::TAX_TYPE_INCOME;
+        return $this->tax_type === self::TAX_TYPE_PROPERTY_TAX;
     }
 
-    public function isVAT(): bool
+    public function isExciseTax(): bool
     {
-        return $this->tax_type === self::TAX_TYPE_VAT;
+        return $this->tax_type === self::TAX_TYPE_EXCISE_TAX;
     }
 
-    public function isEnergy(): bool
+    public function isCustomsDuty(): bool
     {
-        return $this->tax_type === self::TAX_TYPE_ENERGY;
+        return $this->tax_type === self::TAX_TYPE_CUSTOMS_DUTY;
     }
 
-    public function isCarbon(): bool
+    public function isEnergyTax(): bool
     {
-        return $this->tax_type === self::TAX_TYPE_CARBON;
+        return $this->tax_type === self::TAX_TYPE_ENERGY_TAX;
     }
 
-    public function isPending(): bool
+    public function isCarbonTax(): bool
     {
-        return $this->status === self::STATUS_PENDING;
+        return $this->tax_type === self::TAX_TYPE_CARBON_TAX;
+    }
+
+    public function isEnvironmentalTax(): bool
+    {
+        return $this->tax_type === self::TAX_TYPE_ENVIRONMENTAL_TAX;
+    }
+
+    public function isAutomatic(): bool
+    {
+        return $this->calculation_type === self::CALCULATION_TYPE_AUTOMATIC;
+    }
+
+    public function isManual(): bool
+    {
+        return $this->calculation_type === self::CALCULATION_TYPE_MANUAL;
+    }
+
+    public function isScheduled(): bool
+    {
+        return $this->calculation_type === self::CALCULATION_TYPE_SCHEDULED;
+    }
+
+    public function isEventTriggered(): bool
+    {
+        return $this->calculation_type === self::CALCULATION_TYPE_EVENT_TRIGGERED;
+    }
+
+    public function isBatch(): bool
+    {
+        return $this->calculation_type === self::CALCULATION_TYPE_BATCH;
+    }
+
+    public function isRealTime(): bool
+    {
+        return $this->calculation_type === self::CALCULATION_TYPE_REAL_TIME;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === self::STATUS_DRAFT;
     }
 
     public function isCalculated(): bool
@@ -261,39 +571,74 @@ class TaxCalculation extends Model
         return $this->status === self::STATUS_CALCULATED;
     }
 
-    public function isFiled(): bool
+    public function isReviewed(): bool
     {
-        return $this->status === self::STATUS_FILED;
+        return $this->status === self::STATUS_REVIEWED;
     }
 
-    public function isPaid(): bool
+    public function isApproved(): bool
     {
-        return $this->status === self::STATUS_PAID;
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isApplied(): bool
+    {
+        return $this->status === self::STATUS_APPLIED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    public function isError(): bool
+    {
+        return $this->status === self::STATUS_ERROR;
+    }
+
+    public function isHighPriority(): bool
+    {
+        return in_array($this->priority, [
+            self::PRIORITY_HIGH,
+            self::PRIORITY_URGENT,
+            self::PRIORITY_CRITICAL,
+        ]);
+    }
+
+    public function isLowPriority(): bool
+    {
+        return $this->priority === self::PRIORITY_LOW;
+    }
+
+    public function isNormalPriority(): bool
+    {
+        return $this->priority === self::PRIORITY_NORMAL;
+    }
+
+    public function isEstimated(): bool
+    {
+        return $this->is_estimated;
+    }
+
+    public function isFinal(): bool
+    {
+        return $this->is_final;
+    }
+
+    public function isAmended(): bool
+    {
+        return $this->is_amended;
     }
 
     public function isOverdue(): bool
     {
-        return $this->status === self::STATUS_OVERDUE;
-    }
-
-    public function isRefunded(): bool
-    {
-        return $this->status === self::STATUS_REFUNDED;
-    }
-
-    public function isAudited(): bool
-    {
-        return $this->status === self::STATUS_AUDITED;
-    }
-
-    public function isDisputed(): bool
-    {
-        return $this->status === self::STATUS_DISPUTED;
+        return $this->due_date && $this->due_date->isPast() && 
+               !in_array($this->status, [self::STATUS_APPLIED, self::STATUS_CANCELLED]);
     }
 
     public function isDueSoon(int $days = 30): bool
     {
-        if ($this->isPaid() || $this->isRefunded()) {
+        if ($this->isApplied() || $this->isCancelled()) {
             return false;
         }
         
@@ -305,9 +650,20 @@ class TaxCalculation extends Model
         return $this->due_date->isBefore($dueSoonDate);
     }
 
+    public function isPaid(): bool
+    {
+        return $this->status === self::STATUS_APPLIED;
+    }
+
+    public function isUnpaid(): bool
+    {
+        return !in_array($this->status, [self::STATUS_APPLIED, self::STATUS_CANCELLED]);
+    }
+
+    // Métodos de cálculo
     public function getDaysOverdue(): int
     {
-        if (!$this->due_date || $this->isPaid() || $this->isRefunded()) {
+        if (!$this->due_date || $this->isPaid() || $this->isCancelled()) {
             return 0;
         }
         
@@ -332,143 +688,57 @@ class TaxCalculation extends Model
         return ($this->tax_amount / $this->taxable_amount) * 100;
     }
 
-    public function getNetAmount(): float
+    public function getNetTaxableAmount(): float
     {
-        return $this->taxable_amount - $this->exempt_amount;
+        return $this->taxable_amount - $this->exemption_amount - $this->deduction_amount;
     }
 
-    public function getTotalAmount(): float
+    public function getTotalAmountWithPenaltyAndInterest(): float
     {
-        return $this->taxable_amount + $this->tax_amount;
+        return $this->total_amount_due + $this->penalty_amount + $this->interest_amount;
     }
 
-    public function getExemptionPercentage(): float
+    public function getPaymentPercentage(): float
     {
-        if ($this->taxable_amount <= 0) {
+        if ($this->total_amount_due <= 0) {
             return 0;
         }
         
-        return ($this->exempt_amount / $this->taxable_amount) * 100;
+        return min(100, ($this->amount_paid / $this->total_amount_due) * 100);
     }
 
-    public function getTaxPercentage(): float
+    public function getRemainingPercentage(): float
     {
-        if ($this->taxable_amount <= 0) {
+        return 100 - $this->getPaymentPercentage();
+    }
+
+    public function getTaxPeriodDuration(): int
+    {
+        if (!$this->tax_period_start || !$this->tax_period_end) {
             return 0;
         }
         
-        return ($this->tax_amount / $this->taxable_amount) * 100;
+        return $this->tax_period_start->diffInDays($this->tax_period_end) + 1;
     }
 
-    public function getLatePaymentPenalty(): float
-    {
-        if (!$this->isOverdue()) {
-            return 0;
-        }
-        
-        $daysOverdue = $this->getDaysOverdue();
-        $penaltyRate = 0.05; // 5% por mes
-        
-        return $this->tax_amount * ($penaltyRate * ($daysOverdue / 30));
-    }
-
-    public function getTotalAmountWithPenalty(): float
-    {
-        return $this->getTotalAmount() + $this->getLatePaymentPenalty();
-    }
-
-    public function getAuditStatusClass(): string
-    {
-        return match($this->audit_status) {
-            self::AUDIT_STATUS_PENDING => 'Pendiente',
-            self::AUDIT_STATUS_IN_PROGRESS => 'En Progreso',
-            self::AUDIT_STATUS_COMPLETED => 'Completado',
-            self::AUDIT_STATUS_ISSUES_FOUND => 'Problemas Encontrados',
-            self::AUDIT_STATUS_APPROVED => 'Aprobado',
-            self::AUDIT_STATUS_REJECTED => 'Rechazado',
-            default => 'Desconocido',
-        };
-    }
-
-    public function getFormattedTaxRate(): string
-    {
-        return number_format($this->tax_rate, 2) . '%';
-    }
-
-    public function getFormattedTaxableAmount(): string
-    {
-        return '€' . number_format($this->taxable_amount, 2);
-    }
-
-    public function getFormattedTaxAmount(): string
-    {
-        return '€' . number_format($this->tax_amount, 2);
-    }
-
-    public function getFormattedExemptAmount(): string
-    {
-        return '€' . number_format($this->exempt_amount, 2);
-    }
-
-    public function getFormattedNetAmount(): string
-    {
-        return '€' . number_format($this->getNetAmount(), 2);
-    }
-
-    public function getFormattedTotalAmount(): string
-    {
-        return '€' . number_format($this->getTotalAmount(), 2);
-    }
-
-    public function getFormattedLatePaymentPenalty(): string
-    {
-        return '€' . number_format($this->getLatePaymentPenalty(), 2);
-    }
-
-    public function getFormattedTotalAmountWithPenalty(): string
-    {
-        return '€' . number_format($this->getTotalAmountWithPenalty(), 2);
-    }
-
-    public function getFormattedCalculationDate(): string
+    public function getCalculationAge(): int
     {
         if (!$this->calculation_date) {
-            return 'No especificada';
+            return 0;
         }
         
-        return $this->calculation_date->format('d/m/Y H:i:s');
+        return now()->diffInDays($this->calculation_date);
     }
 
-    public function getFormattedDueDate(): string
-    {
-        if (!$this->due_date) {
-            return 'No especificada';
-        }
-        
-        return $this->due_date->format('d/m/Y H:i:s');
-    }
-
-    public function getFormattedPaidDate(): string
-    {
-        if (!$this->paid_date) {
-            return 'No pagado';
-        }
-        
-        return $this->paid_date->format('d/m/Y H:i:s');
-    }
-
-    public function getFormattedFilingDate(): string
-    {
-        if (!$this->filing_date) {
-            return 'No presentado';
-        }
-        
-        return $this->filing_date->format('d/m/Y H:i:s');
-    }
-
+    // Métodos de formato
     public function getFormattedTaxType(): string
     {
         return self::getTaxTypes()[$this->tax_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedCalculationType(): string
+    {
+        return self::getCalculationTypes()[$this->calculation_type] ?? 'Desconocido';
     }
 
     public function getFormattedStatus(): string
@@ -476,22 +746,192 @@ class TaxCalculation extends Model
         return self::getStatuses()[$this->status] ?? 'Desconocido';
     }
 
-    public function getFormattedAuditStatus(): string
+    public function getFormattedPriority(): string
     {
-        return self::getAuditStatuses()[$this->audit_status] ?? 'Desconocido';
+        return self::getPriorities()[$this->priority] ?? 'Desconocida';
     }
 
+    public function getFormattedTaxPeriodStart(): string
+    {
+        return $this->tax_period_start->format('d/m/Y');
+    }
+
+    public function getFormattedTaxPeriodEnd(): string
+    {
+        return $this->tax_period_end->format('d/m/Y');
+    }
+
+    public function getFormattedCalculationDate(): string
+    {
+        return $this->calculation_date->format('d/m/Y');
+    }
+
+    public function getFormattedDueDate(): string
+    {
+        return $this->due_date ? $this->due_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedPaymentDate(): string
+    {
+        return $this->payment_date ? $this->payment_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedTaxableAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->taxable_amount, 2);
+    }
+
+    public function getFormattedTaxRate(): string
+    {
+        return number_format($this->tax_rate, 2) . '%';
+    }
+
+    public function getFormattedTaxAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->tax_amount, 2);
+    }
+
+    public function getFormattedTaxBaseAmount(): string
+    {
+        if (!$this->tax_base_amount) {
+            return 'N/A';
+        }
+        return $this->currency . ' ' . number_format($this->tax_base_amount, 2);
+    }
+
+    public function getFormattedExemptionAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->exemption_amount, 2);
+    }
+
+    public function getFormattedDeductionAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->deduction_amount, 2);
+    }
+
+    public function getFormattedCreditAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->credit_amount, 2);
+    }
+
+    public function getFormattedNetTaxAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->net_tax_amount, 2);
+    }
+
+    public function getFormattedPenaltyAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->penalty_amount, 2);
+    }
+
+    public function getFormattedInterestAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->interest_amount, 2);
+    }
+
+    public function getFormattedTotalAmountDue(): string
+    {
+        return $this->currency . ' ' . number_format($this->total_amount_due, 2);
+    }
+
+    public function getFormattedAmountPaid(): string
+    {
+        return $this->currency . ' ' . number_format($this->amount_paid, 2);
+    }
+
+    public function getFormattedAmountRemaining(): string
+    {
+        return $this->currency . ' ' . number_format($this->amount_remaining, 2);
+    }
+
+    public function getFormattedExchangeRate(): string
+    {
+        return number_format($this->exchange_rate, 6);
+    }
+
+    public function getFormattedNetTaxableAmount(): string
+    {
+        return $this->currency . ' ' . number_format($this->getNetTaxableAmount(), 2);
+    }
+
+    public function getFormattedTotalAmountWithPenaltyAndInterest(): string
+    {
+        return $this->currency . ' ' . number_format($this->getTotalAmountWithPenaltyAndInterest(), 2);
+    }
+
+    public function getFormattedPaymentPercentage(): string
+    {
+        return number_format($this->getPaymentPercentage(), 1) . '%';
+    }
+
+    public function getFormattedRemainingPercentage(): string
+    {
+        return number_format($this->getRemainingPercentage(), 1) . '%';
+    }
+
+    public function getFormattedTaxPeriodDuration(): string
+    {
+        $duration = $this->getTaxPeriodDuration();
+        if ($duration <= 0) {
+            return 'N/A';
+        }
+        
+        if ($duration < 30) {
+            return $duration . ' días';
+        } elseif ($duration < 365) {
+            return number_format($duration / 30, 1) . ' meses';
+        } else {
+            return number_format($duration / 365, 1) . ' años';
+        }
+    }
+
+    public function getFormattedCalculationAge(): string
+    {
+        $age = $this->getCalculationAge();
+        if ($age <= 0) {
+            return 'Hoy';
+        }
+        
+        if ($age < 30) {
+            return $age . ' días';
+        } elseif ($age < 365) {
+            return number_format($age / 30, 1) . ' meses';
+        } else {
+            return number_format($age / 365, 1) . ' años';
+        }
+    }
+
+    public function getFormattedDaysOverdue(): string
+    {
+        $days = $this->getDaysOverdue();
+        if ($days <= 0) {
+            return 'No vencido';
+        }
+        
+        return $days . ' días';
+    }
+
+    public function getFormattedDaysUntilDue(): string
+    {
+        $days = $this->getDaysUntilDue();
+        if ($days <= 0) {
+            return 'Vencido';
+        }
+        
+        return $days . ' días';
+    }
+
+    // Clases de badges para Filament
     public function getStatusBadgeClass(): string
     {
         return match($this->status) {
-            self::STATUS_PENDING => 'bg-gray-100 text-gray-800',
+            self::STATUS_DRAFT => 'bg-gray-100 text-gray-800',
             self::STATUS_CALCULATED => 'bg-blue-100 text-blue-800',
-            self::STATUS_FILED => 'bg-yellow-100 text-yellow-800',
-            self::STATUS_PAID => 'bg-green-100 text-green-800',
-            self::STATUS_OVERDUE => 'bg-red-100 text-red-800',
-            self::STATUS_REFUNDED => 'bg-purple-100 text-purple-800',
-            self::STATUS_AUDITED => 'bg-indigo-100 text-indigo-800',
-            self::STATUS_DISPUTED => 'bg-orange-100 text-orange-800',
+            self::STATUS_REVIEWED => 'bg-yellow-100 text-yellow-800',
+            self::STATUS_APPROVED => 'bg-green-100 text-green-800',
+            self::STATUS_APPLIED => 'bg-green-100 text-green-800',
+            self::STATUS_CANCELLED => 'bg-red-100 text-red-800',
+            self::STATUS_ERROR => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
@@ -499,34 +939,49 @@ class TaxCalculation extends Model
     public function getTaxTypeBadgeClass(): string
     {
         return match($this->tax_type) {
-            self::TAX_TYPE_INCOME => 'bg-blue-100 text-blue-800',
-            self::TAX_TYPE_VAT => 'bg-green-100 text-green-800',
-            self::TAX_TYPE_ENERGY => 'bg-yellow-100 text-yellow-800',
-            self::TAX_TYPE_CARBON => 'bg-red-100 text-red-800',
-            self::TAX_TYPE_PROPERTY => 'bg-purple-100 text-purple-800',
-            self::TAX_TYPE_TRANSACTION => 'bg-indigo-100 text-indigo-800',
-            self::TAX_TYPE_IMPORT => 'bg-orange-100 text-orange-800',
-            self::TAX_TYPE_EXPORT => 'bg-cyan-100 text-cyan-800',
+            self::TAX_TYPE_INCOME_TAX => 'bg-blue-100 text-blue-800',
+            self::TAX_TYPE_SALES_TAX => 'bg-green-100 text-green-800',
+            self::TAX_TYPE_VALUE_ADDED_TAX => 'bg-purple-100 text-purple-800',
+            self::TAX_TYPE_PROPERTY_TAX => 'bg-indigo-100 text-indigo-800',
+            self::TAX_TYPE_EXCISE_TAX => 'bg-yellow-100 text-yellow-800',
+            self::TAX_TYPE_CUSTOMS_DUTY => 'bg-orange-100 text-orange-800',
+            self::TAX_TYPE_ENERGY_TAX => 'bg-cyan-100 text-cyan-800',
+            self::TAX_TYPE_CARBON_TAX => 'bg-red-100 text-red-800',
+            self::TAX_TYPE_ENVIRONMENTAL_TAX => 'bg-teal-100 text-teal-800',
+            self::TAX_TYPE_OTHER => 'bg-gray-100 text-gray-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
-    public function getAuditStatusBadgeClass(): string
+    public function getCalculationTypeBadgeClass(): string
     {
-        return match($this->audit_status) {
-            self::AUDIT_STATUS_PENDING => 'bg-gray-100 text-gray-800',
-            self::AUDIT_STATUS_IN_PROGRESS => 'bg-blue-100 text-blue-800',
-            self::AUDIT_STATUS_COMPLETED => 'bg-green-100 text-green-800',
-            self::AUDIT_STATUS_ISSUES_FOUND => 'bg-yellow-100 text-yellow-800',
-            self::AUDIT_STATUS_APPROVED => 'bg-green-100 text-green-800',
-            self::AUDIT_STATUS_REJECTED => 'bg-red-100 text-red-800',
+        return match($this->calculation_type) {
+            self::CALCULATION_TYPE_AUTOMATIC => 'bg-green-100 text-green-800',
+            self::CALCULATION_TYPE_MANUAL => 'bg-blue-100 text-blue-800',
+            self::CALCULATION_TYPE_SCHEDULED => 'bg-yellow-100 text-yellow-800',
+            self::CALCULATION_TYPE_EVENT_TRIGGERED => 'bg-purple-100 text-purple-800',
+            self::CALCULATION_TYPE_BATCH => 'bg-indigo-100 text-indigo-800',
+            self::CALCULATION_TYPE_REAL_TIME => 'bg-cyan-100 text-cyan-800',
+            self::CALCULATION_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getPriorityBadgeClass(): string
+    {
+        return match($this->priority) {
+            self::PRIORITY_LOW => 'bg-gray-100 text-gray-800',
+            self::PRIORITY_NORMAL => 'bg-blue-100 text-blue-800',
+            self::PRIORITY_HIGH => 'bg-yellow-100 text-yellow-800',
+            self::PRIORITY_URGENT => 'bg-orange-100 text-orange-800',
+            self::PRIORITY_CRITICAL => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
     public function getDueDateBadgeClass(): string
     {
-        if ($this->isPaid() || $this->isRefunded()) {
+        if ($this->isPaid() || $this->isCancelled()) {
             return 'bg-green-100 text-green-800';
         }
         
@@ -543,5 +998,20 @@ class TaxCalculation extends Model
         }
         
         return 'bg-green-100 text-green-800';
+    }
+
+    public function getEstimatedBadgeClass(): string
+    {
+        return $this->is_estimated ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800';
+    }
+
+    public function getFinalBadgeClass(): string
+    {
+        return $this->is_final ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+    }
+
+    public function getAmendedBadgeClassClass(): string
+    {
+        return $this->is_amended ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800';
     }
 }
