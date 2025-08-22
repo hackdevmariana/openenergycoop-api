@@ -68,6 +68,7 @@ use App\Http\Controllers\Api\V1\BondDonationController;
 use App\Http\Controllers\Api\V1\AffiliateController;
 use App\Http\Controllers\Api\V1\DiscountCodeController;
 use App\Http\Controllers\Api\V1\SaleOrderController;
+use App\Http\Controllers\Api\V1\PreSaleOfferController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -225,6 +226,19 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('sale-orders/{saleOrder}/update-payment-status', [SaleOrderController::class, 'updatePaymentStatus']);
     Route::post('sale-orders/{saleOrder}/update-urgency', [SaleOrderController::class, 'updateUrgency']);
     Route::post('sale-orders/{saleOrder}/duplicate', [SaleOrderController::class, 'duplicate']);
+    
+    // Rutas para Pre Sale Offers
+    Route::get('pre-sale-offers/active', [PreSaleOfferController::class, 'active']);
+    Route::get('pre-sale-offers/featured', [PreSaleOfferController::class, 'featured']);
+    Route::get('pre-sale-offers/by-type/{type}', [PreSaleOfferController::class, 'byType']);
+    Route::get('pre-sale-offers/by-product', [PreSaleOfferController::class, 'byProduct']);
+    Route::get('pre-sale-offers/statistics', [PreSaleOfferController::class, 'statistics']);
+    Route::apiResource('pre-sale-offers', PreSaleOfferController::class);
+    Route::post('pre-sale-offers/{preSaleOffer}/activate', [PreSaleOfferController::class, 'activate']);
+    Route::post('pre-sale-offers/{preSaleOffer}/deactivate', [PreSaleOfferController::class, 'deactivate']);
+    Route::post('pre-sale-offers/{preSaleOffer}/toggle-featured', [PreSaleOfferController::class, 'toggleFeatured']);
+    Route::post('pre-sale-offers/{preSaleOffer}/duplicate', [PreSaleOfferController::class, 'duplicate']);
+    Route::post('pre-sale-offers/validate', [PreSaleOfferController::class, 'validate']);
     
     // Rutas para Articles (CMS)
     Route::get('articles/featured', [ArticleController::class, 'featured']);
