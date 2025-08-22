@@ -67,6 +67,7 @@ use App\Http\Controllers\Api\V1\MaintenanceTaskController;
 use App\Http\Controllers\Api\V1\BondDonationController;
 use App\Http\Controllers\Api\V1\AffiliateController;
 use App\Http\Controllers\Api\V1\DiscountCodeController;
+use App\Http\Controllers\Api\V1\SaleOrderController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -212,6 +213,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('discount-codes/{discountCode}/activate', [DiscountCodeController::class, 'activate']);
     Route::post('discount-codes/{discountCode}/deactivate', [DiscountCodeController::class, 'deactivate']);
     Route::post('discount-codes/{discountCode}/duplicate', [DiscountCodeController::class, 'duplicate']);
+    
+    // Rutas para Sale Orders
+    Route::get('sale-orders/pending', [SaleOrderController::class, 'pending']);
+    Route::get('sale-orders/urgent', [SaleOrderController::class, 'urgent']);
+    Route::get('sale-orders/by-status/{status}', [SaleOrderController::class, 'byStatus']);
+    Route::get('sale-orders/by-customer', [SaleOrderController::class, 'byCustomer']);
+    Route::get('sale-orders/statistics', [SaleOrderController::class, 'statistics']);
+    Route::apiResource('sale-orders', SaleOrderController::class);
+    Route::post('sale-orders/{saleOrder}/update-status', [SaleOrderController::class, 'updateStatus']);
+    Route::post('sale-orders/{saleOrder}/update-payment-status', [SaleOrderController::class, 'updatePaymentStatus']);
+    Route::post('sale-orders/{saleOrder}/update-urgency', [SaleOrderController::class, 'updateUrgency']);
+    Route::post('sale-orders/{saleOrder}/duplicate', [SaleOrderController::class, 'duplicate']);
     
     // Rutas para Articles (CMS)
     Route::get('articles/featured', [ArticleController::class, 'featured']);
