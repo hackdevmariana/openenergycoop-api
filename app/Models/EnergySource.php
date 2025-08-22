@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EnergySource extends Model
@@ -14,67 +14,146 @@ class EnergySource extends Model
 
     protected $fillable = [
         'name',
-        'slug',
-        'co2_per_kwh',
-        'icon',
         'description',
-        'is_active',
-        'color',
+        'source_type',
+        'status',
+        'energy_category',
+        'installed_capacity_mw',
+        'operational_capacity_mw',
         'efficiency_rating',
+        'availability_factor',
         'capacity_factor',
-        'installation_cost_per_kw',
-        'maintenance_cost_per_kw',
-        'lifespan_years',
-        'renewable_percentage',
-        'geographical_constraints',
-        'weather_dependency',
-        'storage_requirements',
+        'annual_production_mwh',
+        'monthly_production_mwh',
+        'daily_production_mwh',
+        'hourly_production_mwh',
+        'location_address',
+        'latitude',
+        'longitude',
+        'region',
+        'country',
+        'commissioning_date',
+        'decommissioning_date',
+        'expected_lifespan_years',
+        'construction_cost',
+        'operational_cost_per_mwh',
+        'maintenance_cost_per_mwh',
+        'technical_specifications',
+        'environmental_impact',
+        'regulatory_compliance',
+        'safety_features',
+        'equipment_details',
+        'maintenance_schedule',
+        'performance_metrics',
+        'environmental_data',
+        'regulatory_documents',
+        'tags',
+        'managed_by',
+        'created_by',
+        'approved_by',
+        'approved_at',
+        'notes',
     ];
 
     protected $casts = [
-        'co2_per_kwh' => 'decimal:4',
-        'is_active' => 'boolean',
+        'installed_capacity_mw' => 'decimal:2',
+        'operational_capacity_mw' => 'decimal:2',
         'efficiency_rating' => 'decimal:2',
+        'availability_factor' => 'decimal:2',
         'capacity_factor' => 'decimal:2',
-        'installation_cost_per_kw' => 'decimal:2',
-        'maintenance_cost_per_kw' => 'decimal:2',
-        'lifespan_years' => 'integer',
-        'renewable_percentage' => 'decimal:2',
-        'geographical_constraints' => 'array',
-        'weather_dependency' => 'array',
-        'storage_requirements' => 'array',
+        'annual_production_mwh' => 'decimal:2',
+        'monthly_production_mwh' => 'decimal:2',
+        'daily_production_mwh' => 'decimal:2',
+        'hourly_production_mwh' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'commissioning_date' => 'date',
+        'decommissioning_date' => 'date',
+        'expected_lifespan_years' => 'integer',
+        'construction_cost' => 'decimal:2',
+        'operational_cost_per_mwh' => 'decimal:2',
+        'maintenance_cost_per_mwh' => 'decimal:2',
+        'approved_at' => 'datetime',
+        'equipment_details' => 'array',
+        'maintenance_schedule' => 'array',
+        'performance_metrics' => 'array',
+        'environmental_data' => 'array',
+        'regulatory_documents' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const TYPE_SOLAR = 'solar';
-    const TYPE_WIND = 'wind';
-    const TYPE_HYDRO = 'hydro';
-    const TYPE_BIOMASS = 'biomass';
-    const TYPE_GEOTHERMAL = 'geothermal';
-    const TYPE_NUCLEAR = 'nuclear';
-    const TYPE_FOSSIL = 'fossil';
-    const TYPE_HYBRID = 'hybrid';
+    const SOURCE_TYPE_SOLAR = 'solar';
+    const SOURCE_TYPE_WIND = 'wind';
+    const SOURCE_TYPE_HYDROELECTRIC = 'hydroelectric';
+    const SOURCE_TYPE_BIOMASS = 'biomass';
+    const SOURCE_TYPE_GEOTHERMAL = 'geothermal';
+    const SOURCE_TYPE_NUCLEAR = 'nuclear';
+    const SOURCE_TYPE_FOSSIL_FUEL = 'fossil_fuel';
+    const SOURCE_TYPE_HYBRID = 'hybrid';
+    const SOURCE_TYPE_OTHER = 'other';
 
-    public static function getTypes(): array
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
+    const STATUS_MAINTENANCE = 'maintenance';
+    const STATUS_DECOMMISSIONED = 'decommissioned';
+    const STATUS_PLANNED = 'planned';
+    const STATUS_UNDER_CONSTRUCTION = 'under_construction';
+
+    const ENERGY_CATEGORY_RENEWABLE = 'renewable';
+    const ENERGY_CATEGORY_NON_RENEWABLE = 'non_renewable';
+    const ENERGY_CATEGORY_HYBRID = 'hybrid';
+
+    public static function getSourceTypes(): array
     {
         return [
-            self::TYPE_SOLAR => 'Solar',
-            self::TYPE_WIND => 'Eólica',
-            self::TYPE_HYDRO => 'Hidráulica',
-            self::TYPE_BIOMASS => 'Biomasa',
-            self::TYPE_GEOTHERMAL => 'Geotérmica',
-            self::TYPE_NUCLEAR => 'Nuclear',
-            self::TYPE_FOSSIL => 'Fósil',
-            self::TYPE_HYBRID => 'Híbrida',
+            self::SOURCE_TYPE_SOLAR => 'Solar',
+            self::SOURCE_TYPE_WIND => 'Eólica',
+            self::SOURCE_TYPE_HYDROELECTRIC => 'Hidroeléctrica',
+            self::SOURCE_TYPE_BIOMASS => 'Biomasa',
+            self::SOURCE_TYPE_GEOTHERMAL => 'Geotérmica',
+            self::SOURCE_TYPE_NUCLEAR => 'Nuclear',
+            self::SOURCE_TYPE_FOSSIL_FUEL => 'Combustible Fósil',
+            self::SOURCE_TYPE_HYBRID => 'Híbrida',
+            self::SOURCE_TYPE_OTHER => 'Otra',
+        ];
+    }
+
+    public static function getStatuses(): array
+    {
+        return [
+            self::STATUS_ACTIVE => 'Activa',
+            self::STATUS_INACTIVE => 'Inactiva',
+            self::STATUS_MAINTENANCE => 'Mantenimiento',
+            self::STATUS_DECOMMISSIONED => 'Desmantelada',
+            self::STATUS_PLANNED => 'Planificada',
+            self::STATUS_UNDER_CONSTRUCTION => 'En Construcción',
+        ];
+    }
+
+    public static function getEnergyCategories(): array
+    {
+        return [
+            self::ENERGY_CATEGORY_RENEWABLE => 'Renovable',
+            self::ENERGY_CATEGORY_NON_RENEWABLE => 'No Renovable',
+            self::ENERGY_CATEGORY_HYBRID => 'Híbrida',
         ];
     }
 
     // Relaciones
-    public function productionProjects(): BelongsToMany
+    public function managedBy(): BelongsTo
     {
-        return $this->belongsToMany(ProductionProject::class, 'production_project_energy_sources')
-                    ->withPivot('percentage')
-                    ->withTimestamps();
+        return $this->belongsTo(User::class, 'managed_by');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function installations(): HasMany
@@ -97,25 +176,45 @@ class EnergySource extends Model
         return $this->hasMany(EnergyForecast::class);
     }
 
+    public function productionProjects(): HasMany
+    {
+        return $this->hasMany(ProductionProject::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeRenewable($query)
-    {
-        return $query->where('renewable_percentage', '>', 0);
+        return $query->where('status', self::STATUS_ACTIVE);
     }
 
     public function scopeByType($query, $type)
     {
-        return $query->where('slug', $type);
+        return $query->where('source_type', $type);
     }
 
-    public function scopeLowCarbon($query, $maxCo2 = 0.1)
+    public function scopeByStatus($query, $status)
     {
-        return $query->where('co2_per_kwh', '<=', $maxCo2);
+        return $query->where('status', $status);
+    }
+
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('energy_category', $category);
+    }
+
+    public function scopeRenewable($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_RENEWABLE);
+    }
+
+    public function scopeNonRenewable($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_NON_RENEWABLE);
+    }
+
+    public function scopeHybrid($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_HYBRID);
     }
 
     public function scopeHighEfficiency($query, $minEfficiency = 80)
@@ -123,142 +222,323 @@ class EnergySource extends Model
         return $query->where('efficiency_rating', '>=', $minEfficiency);
     }
 
-    // Métodos
+    public function scopeHighCapacity($query, $minCapacity = 100)
+    {
+        return $query->where('operational_capacity_mw', '>=', $minCapacity);
+    }
+
+    public function scopeByRegion($query, $region)
+    {
+        return $query->where('region', $region);
+    }
+
+    public function scopeByCountry($query, $country)
+    {
+        return $query->where('country', $country);
+    }
+
+    public function scopeOperational($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    public function scopeUnderConstruction($query)
+    {
+        return $query->where('status', self::STATUS_UNDER_CONSTRUCTION);
+    }
+
+    public function scopeMaintenance($query)
+    {
+        return $query->where('status', self::STATUS_MAINTENANCE);
+    }
+
+    // Métodos de validación
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === self::STATUS_INACTIVE;
+    }
+
+    public function isMaintenance(): bool
+    {
+        return $this->status === self::STATUS_MAINTENANCE;
+    }
+
+    public function isDecommissioned(): bool
+    {
+        return $this->status === self::STATUS_DECOMMISSIONED;
+    }
+
+    public function isPlanned(): bool
+    {
+        return $this->status === self::STATUS_PLANNED;
+    }
+
+    public function isUnderConstruction(): bool
+    {
+        return $this->status === self::STATUS_UNDER_CONSTRUCTION;
+    }
+
     public function isRenewable(): bool
     {
-        return $this->renewable_percentage > 0;
+        return $this->energy_category === self::ENERGY_CATEGORY_RENEWABLE;
     }
 
-    public function isLowCarbon(): bool
+    public function isNonRenewable(): bool
     {
-        return $this->co2_per_kwh <= 0.1; // 100g CO2/kWh
+        return $this->energy_category === self::ENERGY_CATEGORY_NON_RENEWABLE;
     }
 
-    public function isHighEfficiency(): bool
+    public function isHybrid(): bool
     {
-        return $this->efficiency_rating >= 80;
+        return $this->energy_category === self::ENERGY_CATEGORY_HYBRID;
     }
 
-    public function getEnvironmentalImpact(): string
+    public function isOperational(): bool
     {
-        if ($this->co2_per_kwh <= 0.05) {
-            return 'Muy Bajo';
-        } elseif ($this->co2_per_kwh <= 0.1) {
-            return 'Bajo';
-        } elseif ($this->co2_per_kwh <= 0.3) {
-            return 'Medio';
-        } elseif ($this->co2_per_kwh <= 0.6) {
-            return 'Alto';
-        } else {
-            return 'Muy Alto';
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isApproved(): bool
+    {
+        return !is_null($this->approved_at);
+    }
+
+    // Métodos de cálculo
+    public function getUtilizationPercentage(): float
+    {
+        if ($this->installed_capacity_mw <= 0) {
+            return 0;
         }
+        
+        return ($this->operational_capacity_mw / $this->installed_capacity_mw) * 100;
     }
 
-    public function getEfficiencyClass(): string
+    public function getAnnualEfficiency(): float
     {
-        if ($this->efficiency_rating >= 90) {
-            return 'A+';
-        } elseif ($this->efficiency_rating >= 80) {
-            return 'A';
-        } elseif ($this->efficiency_rating >= 70) {
-            return 'B';
-        } elseif ($this->efficiency_rating >= 60) {
-            return 'C';
-        } else {
-            return 'D';
+        $hoursPerYear = 8760; // 24 * 365
+        $theoreticalProduction = $this->installed_capacity_mw * $hoursPerYear;
+        
+        if ($theoreticalProduction <= 0) {
+            return 0;
         }
+        
+        return ($this->annual_production_mwh / $theoreticalProduction) * 100;
     }
 
-    public function getFormattedCo2(): string
+    public function getMonthlyAverage(): float
     {
-        return number_format($this->co2_per_kwh, 3) . ' kg CO₂/kWh';
+        return $this->annual_production_mwh / 12;
     }
 
-    public function getFormattedEfficiency(): string
+    public function getDailyAverage(): float
     {
-        return number_format($this->efficiency_rating, 1) . '%';
+        return $this->annual_production_mwh / 365;
+    }
+
+    public function getHourlyAverage(): float
+    {
+        return $this->annual_production_mwh / 8760;
+    }
+
+    public function getRemainingLifespan(): int
+    {
+        if (!$this->commissioning_date || !$this->expected_lifespan_years) {
+            return 0;
+        }
+        
+        $yearsSinceCommissioning = $this->commissioning_date->diffInYears(now());
+        return max(0, $this->expected_lifespan_years - $yearsSinceCommissioning);
+    }
+
+    public function getAgeInYears(): int
+    {
+        if (!$this->commissioning_date) {
+            return 0;
+        }
+        
+        return $this->commissioning_date->diffInYears(now());
+    }
+
+    public function getTotalAnnualCost(): float
+    {
+        $operationalCost = $this->annual_production_mwh * ($this->operational_cost_per_mwh ?? 0);
+        $maintenanceCost = $this->annual_production_mwh * ($this->maintenance_cost_per_mwh ?? 0);
+        
+        return $operationalCost + $maintenanceCost;
+    }
+
+    public function getCostPerMwh(): float
+    {
+        if ($this->annual_production_mwh <= 0) {
+            return 0;
+        }
+        
+        return $this->getTotalAnnualCost() / $this->annual_production_mwh;
+    }
+
+    // Métodos de formato
+    public function getFormattedSourceType(): string
+    {
+        return self::getSourceTypes()[$this->source_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedStatus(): string
+    {
+        return self::getStatuses()[$this->status] ?? 'Desconocido';
+    }
+
+    public function getFormattedEnergyCategory(): string
+    {
+        return self::getEnergyCategories()[$this->energy_category] ?? 'Desconocida';
+    }
+
+    public function getFormattedInstalledCapacity(): string
+    {
+        return number_format($this->installed_capacity_mw, 2) . ' MW';
+    }
+
+    public function getFormattedOperationalCapacity(): string
+    {
+        return number_format($this->operational_capacity_mw, 2) . ' MW';
+    }
+
+    public function getFormattedEfficiencyRating(): string
+    {
+        return number_format($this->efficiency_rating, 2) . '%';
+    }
+
+    public function getFormattedAvailabilityFactor(): string
+    {
+        return number_format($this->availability_factor, 2) . '%';
     }
 
     public function getFormattedCapacityFactor(): string
     {
-        return number_format($this->capacity_factor * 100, 1) . '%';
+        return number_format($this->capacity_factor, 2) . '%';
     }
 
-    public function getFormattedInstallationCost(): string
+    public function getFormattedAnnualProduction(): string
     {
-        return '€' . number_format($this->installation_cost_per_kw, 2) . '/kW';
+        return number_format($this->annual_production_mwh, 2) . ' MWh';
+    }
+
+    public function getFormattedMonthlyProduction(): string
+    {
+        return number_format($this->monthly_production_mwh, 2) . ' MWh';
+    }
+
+    public function getFormattedDailyProduction(): string
+    {
+        return number_format($this->daily_production_mwh, 2) . ' MWh';
+    }
+
+    public function getFormattedHourlyProduction(): string
+    {
+        return number_format($this->hourly_production_mwh, 2) . ' MWh';
+    }
+
+    public function getFormattedConstructionCost(): string
+    {
+        return $this->construction_cost ? '$' . number_format($this->construction_cost, 2) : 'N/A';
+    }
+
+    public function getFormattedOperationalCost(): string
+    {
+        return $this->operational_cost_per_mwh ? '$' . number_format($this->operational_cost_per_mwh, 2) . '/MWh' : 'N/A';
     }
 
     public function getFormattedMaintenanceCost(): string
     {
-        return '€' . number_format($this->maintenance_cost_per_kw, 2) . '/kW/año';
+        return $this->maintenance_cost_per_mwh ? '$' . number_format($this->maintenance_cost_per_mwh, 2) . '/MWh' : 'N/A';
     }
 
-    public function getFormattedRenewablePercentage(): string
+    public function getFormattedCommissioningDate(): string
     {
-        return number_format($this->renewable_percentage, 1) . '%';
+        return $this->commissioning_date ? $this->commissioning_date->format('d/m/Y') : 'N/A';
     }
 
-    public function getEnvironmentalBadgeClass(): string
+    public function getFormattedDecommissioningDate(): string
     {
-        return match($this->getEnvironmentalImpact()) {
-            'Muy Bajo' => 'bg-green-100 text-green-800',
-            'Bajo' => 'bg-blue-100 text-blue-800',
-            'Medio' => 'bg-yellow-100 text-yellow-800',
-            'Alto' => 'bg-orange-100 text-orange-800',
-            'Muy Alto' => 'bg-red-100 text-red-800',
+        return $this->decommissioning_date ? $this->decommissioning_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedUtilizationPercentage(): string
+    {
+        return number_format($this->getUtilizationPercentage(), 1) . '%';
+    }
+
+    public function getFormattedAnnualEfficiency(): string
+    {
+        return number_format($this->getAnnualEfficiency(), 1) . '%';
+    }
+
+    public function getFormattedTotalAnnualCost(): string
+    {
+        return '$' . number_format($this->getTotalAnnualCost(), 2);
+    }
+
+    public function getFormattedCostPerMwh(): string
+    {
+        return '$' . number_format($this->getCostPerMwh(), 2) . '/MWh';
+    }
+
+    // Clases de badges para Filament
+    public function getStatusBadgeClass(): string
+    {
+        return match($this->status) {
+            self::STATUS_ACTIVE => 'bg-green-100 text-green-800',
+            self::STATUS_INACTIVE => 'bg-gray-100 text-gray-800',
+            self::STATUS_MAINTENANCE => 'bg-yellow-100 text-yellow-800',
+            self::STATUS_DECOMMISSIONED => 'bg-red-100 text-red-800',
+            self::STATUS_PLANNED => 'bg-blue-100 text-blue-800',
+            self::STATUS_UNDER_CONSTRUCTION => 'bg-orange-100 text-orange-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getSourceTypeBadgeClass(): string
+    {
+        return match($this->source_type) {
+            self::SOURCE_TYPE_SOLAR => 'bg-yellow-100 text-yellow-800',
+            self::SOURCE_TYPE_WIND => 'bg-blue-100 text-blue-800',
+            self::SOURCE_TYPE_HYDROELECTRIC => 'bg-cyan-100 text-cyan-800',
+            self::SOURCE_TYPE_BIOMASS => 'bg-green-100 text-green-800',
+            self::SOURCE_TYPE_GEOTHERMAL => 'bg-red-100 text-red-800',
+            self::SOURCE_TYPE_NUCLEAR => 'bg-purple-100 text-purple-800',
+            self::SOURCE_TYPE_FOSSIL_FUEL => 'bg-gray-100 text-gray-800',
+            self::SOURCE_TYPE_HYBRID => 'bg-indigo-100 text-indigo-800',
+            self::SOURCE_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getEnergyCategoryBadgeClass(): string
+    {
+        return match($this->energy_category) {
+            self::ENERGY_CATEGORY_RENEWABLE => 'bg-green-100 text-green-800',
+            self::ENERGY_CATEGORY_NON_RENEWABLE => 'bg-red-100 text-red-800',
+            self::ENERGY_CATEGORY_HYBRID => 'bg-blue-100 text-blue-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
     public function getEfficiencyBadgeClass(): string
     {
-        return match($this->getEfficiencyClass()) {
-            'A+' => 'bg-green-100 text-green-800',
-            'A' => 'bg-blue-100 text-blue-800',
-            'B' => 'bg-yellow-100 text-yellow-800',
-            'C' => 'bg-orange-100 text-orange-800',
-            'D' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-
-    public function getTotalInstalledCapacity(): float
-    {
-        return $this->installations()
-            ->where('active', true)
-            ->sum('installed_power_kw');
-    }
-
-    public function getTotalAnnualProduction(): float
-    {
-        $capacity = $this->getTotalInstalledCapacity();
-        $hoursPerYear = 8760; // 24 * 365
-        $capacityFactor = $this->capacity_factor;
-        
-        return $capacity * $hoursPerYear * $capacityFactor;
-    }
-
-    public function getTotalAnnualCo2Saved(): float
-    {
-        $annualProduction = $this->getTotalAnnualProduction();
-        $baselineCo2 = 0.5; // kg CO2/kWh para energía fósil
-        
-        return $annualProduction * ($baselineCo2 - $this->co2_per_kwh);
-    }
-
-    public function getFormattedTotalCapacity(): string
-    {
-        return number_format($this->getTotalInstalledCapacity(), 2) . ' kW';
-    }
-
-    public function getFormattedAnnualProduction(): string
-    {
-        return number_format($this->getTotalAnnualProduction(), 2) . ' kWh';
-    }
-
-    public function getFormattedAnnualCo2Saved(): string
-    {
-        return number_format($this->getTotalAnnualCo2Saved(), 2) . ' kg CO₂';
+        if ($this->efficiency_rating >= 90) {
+            return 'bg-green-100 text-green-800';
+        } elseif ($this->efficiency_rating >= 80) {
+            return 'bg-blue-100 text-blue-800';
+        } elseif ($this->efficiency_rating >= 70) {
+            return 'bg-yellow-100 text-yellow-800';
+        } elseif ($this->efficiency_rating >= 60) {
+            return 'bg-orange-100 text-orange-800';
+        } else {
+            return 'bg-red-100 text-red-800';
+        }
     }
 }

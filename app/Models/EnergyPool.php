@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class EnergyPool extends Model
@@ -13,139 +13,166 @@ class EnergyPool extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'pool_number',
         'name',
         'description',
-        'participants',
-        'shared_capacity',
-        'distribution_algorithm',
-        'is_active',
-        'organization_id',
-        'energy_source_id',
         'pool_type',
-        'min_participants',
-        'max_participants',
-        'entry_fee',
-        'monthly_fee',
-        'profit_sharing_percentage',
-        'risk_level',
-        'expected_return_rate',
-        'lock_in_period_months',
-        'auto_reinvest',
-        'pool_manager_id',
-        'pool_rules',
-        'performance_history',
+        'status',
+        'energy_category',
+        'total_capacity_mw',
+        'available_capacity_mw',
+        'reserved_capacity_mw',
+        'utilized_capacity_mw',
+        'efficiency_rating',
+        'availability_factor',
+        'capacity_factor',
+        'annual_production_mwh',
+        'monthly_production_mwh',
+        'daily_production_mwh',
+        'hourly_production_mwh',
+        'location_address',
+        'latitude',
+        'longitude',
+        'region',
+        'country',
+        'commissioning_date',
+        'decommissioning_date',
+        'expected_lifespan_years',
+        'construction_cost',
+        'operational_cost_per_mwh',
+        'maintenance_cost_per_mwh',
+        'technical_specifications',
+        'environmental_impact',
+        'regulatory_compliance',
+        'safety_features',
+        'pool_members',
+        'pool_operators',
+        'pool_governance',
+        'trading_rules',
+        'settlement_procedures',
+        'risk_management',
+        'performance_metrics',
+        'environmental_data',
+        'regulatory_documents',
+        'tags',
+        'managed_by',
         'created_by',
         'approved_by',
         'approved_at',
+        'notes',
     ];
 
     protected $casts = [
-        'participants' => 'array',
-        'shared_capacity' => 'decimal:4',
-        'is_active' => 'boolean',
-        'min_participants' => 'integer',
-        'max_participants' => 'integer',
-        'entry_fee' => 'decimal:2',
-        'monthly_fee' => 'decimal:2',
-        'profit_sharing_percentage' => 'decimal:2',
-        'expected_return_rate' => 'decimal:2',
-        'lock_in_period_months' => 'integer',
-        'auto_reinvest' => 'boolean',
-        'pool_rules' => 'array',
-        'performance_history' => 'array',
+        'total_capacity_mw' => 'decimal:2',
+        'available_capacity_mw' => 'decimal:2',
+        'reserved_capacity_mw' => 'decimal:2',
+        'utilized_capacity_mw' => 'decimal:2',
+        'efficiency_rating' => 'decimal:2',
+        'availability_factor' => 'decimal:2',
+        'capacity_factor' => 'decimal:2',
+        'annual_production_mwh' => 'decimal:2',
+        'monthly_production_mwh' => 'decimal:2',
+        'daily_production_mwh' => 'decimal:2',
+        'hourly_production_mwh' => 'decimal:2',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'expected_lifespan_years' => 'integer',
+        'construction_cost' => 'decimal:2',
+        'operational_cost_per_mwh' => 'decimal:2',
+        'maintenance_cost_per_mwh' => 'decimal:2',
+        'commissioning_date' => 'date',
+        'decommissioning_date' => 'date',
         'approved_at' => 'datetime',
+        'pool_members' => 'array',
+        'pool_operators' => 'array',
+        'pool_governance' => 'array',
+        'trading_rules' => 'array',
+        'settlement_procedures' => 'array',
+        'risk_management' => 'array',
+        'performance_metrics' => 'array',
+        'environmental_data' => 'array',
+        'regulatory_documents' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const DISTRIBUTION_ALGORITHM_EQUAL = 'equal';
-    const DISTRIBUTION_ALGORITHM_WEIGHTED = 'weighted';
-    const DISTRIBUTION_ALGORITHM_DEMAND_BASED = 'demand_based';
-    const DISTRIBUTION_ALGORITHM_PERFORMANCE_BASED = 'performance_based';
-    const DISTRIBUTION_ALGORITHM_TIME_BASED = 'time_based';
-
-    const POOL_TYPE_SOLAR = 'solar';
-    const POOL_TYPE_WIND = 'wind';
-    const POOL_TYPE_HYDRO = 'hydro';
-    const POOL_TYPE_BIOMASS = 'biomass';
-    const POOL_TYPE_HYBRID = 'hybrid';
-    const POOL_TYPE_STORAGE = 'storage';
     const POOL_TYPE_TRADING = 'trading';
+    const POOL_TYPE_RESERVE = 'reserve';
+    const POOL_TYPE_BALANCING = 'balancing';
+    const POOL_TYPE_ANCILLARY = 'ancillary';
+    const POOL_TYPE_CAPACITY = 'capacity';
+    const POOL_TYPE_DEMAND_RESPONSE = 'demand_response';
+    const POOL_TYPE_VIRTUAL = 'virtual';
+    const POOL_TYPE_HYBRID = 'hybrid';
+    const POOL_TYPE_OTHER = 'other';
 
-    const RISK_LEVEL_LOW = 'low';
-    const RISK_LEVEL_MEDIUM = 'medium';
-    const RISK_LEVEL_HIGH = 'high';
-    const RISK_LEVEL_VERY_HIGH = 'very_high';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
+    const STATUS_MAINTENANCE = 'maintenance';
+    const STATUS_SUSPENDED = 'suspended';
+    const STATUS_CLOSED = 'closed';
+    const STATUS_PLANNED = 'planned';
 
-    public static function getDistributionAlgorithms(): array
-    {
-        return [
-            self::DISTRIBUTION_ALGORITHM_EQUAL => 'Igual',
-            self::DISTRIBUTION_ALGORITHM_WEIGHTED => 'Ponderado',
-            self::DISTRIBUTION_ALGORITHM_DEMAND_BASED => 'Basado en Demanda',
-            self::DISTRIBUTION_ALGORITHM_PERFORMANCE_BASED => 'Basado en Rendimiento',
-            self::DISTRIBUTION_ALGORITHM_TIME_BASED => 'Basado en Tiempo',
-        ];
-    }
+    const ENERGY_CATEGORY_RENEWABLE = 'renewable';
+    const ENERGY_CATEGORY_NON_RENEWABLE = 'non_renewable';
+    const ENERGY_CATEGORY_HYBRID = 'hybrid';
+    const ENERGY_CATEGORY_STORAGE = 'storage';
+    const ENERGY_CATEGORY_DEMAND = 'demand';
+    const ENERGY_CATEGORY_OTHER = 'other';
 
     public static function getPoolTypes(): array
     {
         return [
-            self::POOL_TYPE_SOLAR => 'Solar',
-            self::POOL_TYPE_WIND => 'Eólica',
-            self::POOL_TYPE_HYDRO => 'Hidráulica',
-            self::POOL_TYPE_BIOMASS => 'Biomasa',
-            self::POOL_TYPE_HYBRID => 'Híbrida',
-            self::POOL_TYPE_STORAGE => 'Almacenamiento',
             self::POOL_TYPE_TRADING => 'Trading',
+            self::POOL_TYPE_RESERVE => 'Reserva',
+            self::POOL_TYPE_BALANCING => 'Balanceo',
+            self::POOL_TYPE_ANCILLARY => 'Auxiliar',
+            self::POOL_TYPE_CAPACITY => 'Capacidad',
+            self::POOL_TYPE_DEMAND_RESPONSE => 'Respuesta a la Demanda',
+            self::POOL_TYPE_VIRTUAL => 'Virtual',
+            self::POOL_TYPE_HYBRID => 'Híbrido',
+            self::POOL_TYPE_OTHER => 'Otro',
         ];
     }
 
-    public static function getRiskLevels(): array
+    public static function getStatuses(): array
     {
         return [
-            self::RISK_LEVEL_LOW => 'Bajo',
-            self::RISK_LEVEL_MEDIUM => 'Medio',
-            self::RISK_LEVEL_HIGH => 'Alto',
-            self::RISK_LEVEL_VERY_HIGH => 'Muy Alto',
+            self::STATUS_ACTIVE => 'Activo',
+            self::STATUS_INACTIVE => 'Inactivo',
+            self::STATUS_MAINTENANCE => 'Mantenimiento',
+            self::STATUS_SUSPENDED => 'Suspendido',
+            self::STATUS_CLOSED => 'Cerrado',
+            self::STATUS_PLANNED => 'Planificado',
+        ];
+    }
+
+    public static function getEnergyCategories(): array
+    {
+        return [
+            self::ENERGY_CATEGORY_RENEWABLE => 'Renovable',
+            self::ENERGY_CATEGORY_NON_RENEWABLE => 'No Renovable',
+            self::ENERGY_CATEGORY_HYBRID => 'Híbrido',
+            self::ENERGY_CATEGORY_STORAGE => 'Almacenamiento',
+            self::ENERGY_CATEGORY_DEMAND => 'Demanda',
+            self::ENERGY_CATEGORY_OTHER => 'Otro',
         ];
     }
 
     // Relaciones
-    public function organization()
+    public function managedBy(): BelongsTo
     {
-        return $this->belongsTo(Organization::class);
+        return $this->belongsTo(User::class, 'managed_by');
     }
 
-    public function energySource()
-    {
-        return $this->belongsTo(EnergySource::class);
-    }
-
-    public function poolManager()
-    {
-        return $this->belongsTo(User::class, 'pool_manager_id');
-    }
-
-    public function createdBy()
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function approvedBy()
+    public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
-    }
-
-    public function participants(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'energy_pool_participants')
-                    ->withPivot('investment_amount', 'percentage', 'joined_at', 'status')
-                    ->withTimestamps();
-    }
-
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(EnergyPoolTransaction::class);
     }
 
     public function forecasts(): HasMany
@@ -153,30 +180,50 @@ class EnergyPool extends Model
         return $this->hasMany(EnergyForecast::class);
     }
 
+    public function tradingOrders(): HasMany
+    {
+        return $this->hasMany(EnergyTradingOrder::class);
+    }
+
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(EnergyTransfer::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('status', self::STATUS_ACTIVE);
     }
 
-    public function scopeByType($query, $type)
+    public function scopeByStatus($query, $status)
     {
-        return $query->where('pool_type', $type);
+        return $query->where('status', $status);
     }
 
-    public function scopeByRiskLevel($query, $riskLevel)
+    public function scopeByPoolType($query, $poolType)
     {
-        return $query->where('risk_level', $riskLevel);
+        return $query->where('pool_type', $poolType);
     }
 
-    public function scopeByOrganization($query, $organizationId)
+    public function scopeByEnergyCategory($query, $energyCategory)
     {
-        return $query->where('organization_id', $organizationId);
+        return $query->where('energy_category', $energyCategory);
     }
 
-    public function scopeByEnergySource($query, $energySourceId)
+    public function scopeByRegion($query, $region)
     {
-        return $query->where('energy_source_id', $energySourceId);
+        return $query->where('region', $region);
+    }
+
+    public function scopeByCountry($query, $country)
+    {
+        return $query->where('country', $country);
+    }
+
+    public function scopeByManagedBy($query, $managedBy)
+    {
+        return $query->where('managed_by', $managedBy);
     }
 
     public function scopeApproved($query)
@@ -189,27 +236,190 @@ class EnergyPool extends Model
         return $query->whereNull('approved_at');
     }
 
-    public function scopeLowRisk($query)
+    public function scopeMaintenance($query)
     {
-        return $query->whereIn('risk_level', [self::RISK_LEVEL_LOW, self::RISK_LEVEL_MEDIUM]);
+        return $query->where('status', self::STATUS_MAINTENANCE);
     }
 
-    public function scopeHighRisk($query)
+    public function scopeSuspended($query)
     {
-        return $query->whereIn('risk_level', [self::RISK_LEVEL_HIGH, self::RISK_LEVEL_VERY_HIGH]);
+        return $query->where('status', self::STATUS_SUSPENDED);
     }
 
-    public function scopeOpenForParticipation($query)
+    public function scopeClosed($query)
     {
-        return $query->where('is_active', true)
-                    ->whereNotNull('approved_at')
-                    ->whereRaw('(SELECT COUNT(*) FROM energy_pool_participants WHERE energy_pool_id = energy_pools.id AND status = "active") < max_participants');
+        return $query->where('status', self::STATUS_CLOSED);
     }
 
-    // Métodos
+    public function scopePlanned($query)
+    {
+        return $query->where('status', self::STATUS_PLANNED);
+    }
+
+    public function scopeTrading($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_TRADING);
+    }
+
+    public function scopeReserve($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_RESERVE);
+    }
+
+    public function scopeBalancing($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_BALANCING);
+    }
+
+    public function scopeAncillary($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_ANCILLARY);
+    }
+
+    public function scopeCapacity($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_CAPACITY);
+    }
+
+    public function scopeDemandResponse($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_DEMAND_RESPONSE);
+    }
+
+    public function scopeVirtual($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_VIRTUAL);
+    }
+
+    public function scopeHybrid($query)
+    {
+        return $query->where('pool_type', self::POOL_TYPE_HYBRID);
+    }
+
+    public function scopeRenewable($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_RENEWABLE);
+    }
+
+    public function scopeNonRenewable($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_NON_RENEWABLE);
+    }
+
+    public function scopeStorage($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_STORAGE);
+    }
+
+    public function scopeDemand($query)
+    {
+        return $query->where('energy_category', self::ENERGY_CATEGORY_DEMAND);
+    }
+
+    public function scopeHighEfficiency($query, $minEfficiency = 80)
+    {
+        return $query->where('efficiency_rating', '>=', $minEfficiency);
+    }
+
+    public function scopeHighAvailability($query, $minAvailability = 90)
+    {
+        return $query->where('availability_factor', '>=', $minAvailability);
+    }
+
+    public function scopeHighCapacityFactor($query, $minCapacityFactor = 70)
+    {
+        return $query->where('capacity_factor', '>=', $minCapacityFactor);
+    }
+
+    // Métodos de validación
     public function isActive(): bool
     {
-        return $this->is_active;
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === self::STATUS_INACTIVE;
+    }
+
+    public function isMaintenance(): bool
+    {
+        return $this->status === self::STATUS_MAINTENANCE;
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === self::STATUS_SUSPENDED;
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->status === self::STATUS_CLOSED;
+    }
+
+    public function isPlanned(): bool
+    {
+        return $this->status === self::STATUS_PLANNED;
+    }
+
+    public function isTrading(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_TRADING;
+    }
+
+    public function isReserve(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_RESERVE;
+    }
+
+    public function isBalancing(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_BALANCING;
+    }
+
+    public function isAncillary(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_ANCILLARY;
+    }
+
+    public function isCapacity(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_CAPACITY;
+    }
+
+    public function isDemandResponse(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_DEMAND_RESPONSE;
+    }
+
+    public function isVirtual(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_VIRTUAL;
+    }
+
+    public function isHybrid(): bool
+    {
+        return $this->pool_type === self::POOL_TYPE_HYBRID;
+    }
+
+    public function isRenewable(): bool
+    {
+        return $this->energy_category === self::ENERGY_CATEGORY_RENEWABLE;
+    }
+
+    public function isNonRenewable(): bool
+    {
+        return $this->energy_category === self::ENERGY_CATEGORY_NON_RENEWABLE;
+    }
+
+    public function isStorage(): bool
+    {
+        return $this->energy_category === self::ENERGY_CATEGORY_STORAGE;
+    }
+
+    public function isDemand(): bool
+    {
+        return $this->energy_category === self::ENERGY_CATEGORY_DEMAND;
     }
 
     public function isApproved(): bool
@@ -217,196 +427,218 @@ class EnergyPool extends Model
         return !is_null($this->approved_at);
     }
 
-    public function isOpenForParticipation(): bool
+    public function isCommissioned(): bool
     {
-        if (!$this->isActive() || !$this->isApproved()) {
-            return false;
-        }
-
-        $currentParticipants = $this->getActiveParticipantsCount();
-        return $currentParticipants < $this->max_participants;
+        return !is_null($this->commissioning_date);
     }
 
-    public function isFull(): bool
+    public function isDecommissioned(): bool
     {
-        $currentParticipants = $this->getActiveParticipantsCount();
-        return $currentParticipants >= $this->max_participants;
+        return !is_null($this->decommissioning_date);
     }
 
-    public function isLowRisk(): bool
+    public function hasAvailableCapacity(): bool
     {
-        return in_array($this->risk_level, [self::RISK_LEVEL_LOW, self::RISK_LEVEL_MEDIUM]);
+        return $this->available_capacity_mw > 0;
     }
 
-    public function isHighRisk(): bool
+    public function isFullyUtilized(): bool
     {
-        return in_array($this->risk_level, [self::RISK_LEVEL_HIGH, self::RISK_LEVEL_VERY_HIGH]);
+        return $this->utilized_capacity_mw >= $this->total_capacity_mw;
     }
 
-    public function getActiveParticipantsCount(): int
+    public function isHighEfficiency(): bool
     {
-        return $this->participants()
-            ->wherePivot('status', 'active')
-            ->count();
+        return $this->efficiency_rating >= 80;
     }
 
-    public function getTotalInvestment(): float
+    public function isHighAvailability(): bool
     {
-        return $this->participants()
-            ->wherePivot('status', 'active')
-            ->sum('investment_amount');
+        return $this->availability_factor >= 90;
     }
 
-    public function getAvailableCapacity(): float
+    public function isHighCapacityFactor(): bool
     {
-        $usedCapacity = $this->getTotalInvestment();
-        return max(0, $this->shared_capacity - $usedCapacity);
+        return $this->capacity_factor >= 70;
     }
 
+    // Métodos de cálculo
     public function getUtilizationPercentage(): float
     {
-        if ($this->shared_capacity <= 0) {
+        if ($this->total_capacity_mw <= 0) {
             return 0;
         }
         
-        return min(100, ($this->getTotalInvestment() / $this->shared_capacity) * 100);
+        return min(100, ($this->utilized_capacity_mw / $this->total_capacity_mw) * 100);
     }
 
-    public function getParticipantPercentage(User $user): float
+    public function getReservationPercentage(): float
     {
-        $participant = $this->participants()
-            ->where('user_id', $user->id)
-            ->wherePivot('status', 'active')
-            ->first();
-
-        if (!$participant) {
+        if ($this->total_capacity_mw <= 0) {
             return 0;
         }
-
-        return $participant->pivot->percentage;
+        
+        return min(100, ($this->reserved_capacity_mw / $this->total_capacity_mw) * 100);
     }
 
-    public function getParticipantInvestment(User $user): float
+    public function getAvailablePercentage(): float
     {
-        $participant = $this->participants()
-            ->where('user_id', $user->id)
-            ->wherePivot('status', 'active')
-            ->first();
-
-        if (!$participant) {
+        if ($this->total_capacity_mw <= 0) {
             return 0;
         }
-
-        return $participant->pivot->investment_amount;
+        
+        return max(0, 100 - $this->getUtilizationPercentage() - $this->getReservationPercentage());
     }
 
-    public function canUserJoin(User $user): bool
+    public function getAgeInYears(): int
     {
-        // Verificar si el usuario ya es participante
-        if ($this->participants()->where('user_id', $user->id)->exists()) {
-            return false;
+        if (!$this->commissioning_date) {
+            return 0;
         }
+        
+        return $this->commissioning_date->diffInYears(now());
+    }
 
-        // Verificar si el pool está abierto para participación
-        if (!$this->isOpenForParticipation()) {
-            return false;
+    public function getRemainingLifespan(): int
+    {
+        if (!$this->expected_lifespan_years) {
+            return 0;
         }
-
-        // Verificar si el usuario cumple con los requisitos del pool
-        return $this->checkUserEligibility($user);
+        
+        return max(0, $this->expected_lifespan_years - $this->getAgeInYears());
     }
 
-    protected function checkUserEligibility(User $user): bool
+    public function getTotalAnnualCost(): float
     {
-        // Implementar lógica de elegibilidad según las reglas del pool
-        // Por ejemplo, verificar balance mínimo, historial crediticio, etc.
-        return true; // Placeholder
+        $operationalCost = $this->annual_production_mwh * ($this->operational_cost_per_mwh ?? 0);
+        $maintenanceCost = $this->annual_production_mwh * ($this->maintenance_cost_per_mwh ?? 0);
+        
+        return $operationalCost + $maintenanceCost;
     }
 
-    public function addParticipant(User $user, float $investmentAmount): bool
+    public function getCostPerMwh(): float
     {
-        if (!$this->canUserJoin($user)) {
-            return false;
+        if ($this->annual_production_mwh <= 0) {
+            return 0;
         }
-
-        $percentage = ($investmentAmount / $this->shared_capacity) * 100;
-
-        $this->participants()->attach($user->id, [
-            'investment_amount' => $investmentAmount,
-            'percentage' => $percentage,
-            'joined_at' => now(),
-            'status' => 'active',
-        ]);
-
-        return true;
+        
+        return $this->getTotalAnnualCost() / $this->annual_production_mwh;
     }
 
-    public function removeParticipant(User $user): bool
+    public function getDailyProduction(): float
     {
-        $participant = $this->participants()
-            ->where('user_id', $user->id)
-            ->wherePivot('status', 'active')
-            ->first();
-
-        if (!$participant) {
-            return false;
-        }
-
-        // Verificar si se puede salir del pool (lock-in period)
-        if ($this->isLockedIn($user)) {
-            return false;
-        }
-
-        $this->participants()->updateExistingPivot($user->id, [
-            'status' => 'inactive',
-            'left_at' => now(),
-        ]);
-
-        return true;
+        return $this->daily_production_mwh ?? 0;
     }
 
-    public function isLockedIn(User $user): bool
+    public function getMonthlyProduction(): float
     {
-        $participant = $this->participants()
-            ->where('user_id', $user->id)
-            ->wherePivot('status', 'active')
-            ->first();
-
-        if (!$participant || $this->lock_in_period_months <= 0) {
-            return false;
-        }
-
-        $joinedAt = $participant->pivot->joined_at;
-        $lockInEnd = $joinedAt->addMonths($this->lock_in_period_months);
-
-        return now()->isBefore($lockInEnd);
+        return $this->monthly_production_mwh ?? 0;
     }
 
-    public function getExpectedMonthlyReturn(): float
+    public function getAnnualProduction(): float
     {
-        $totalInvestment = $this->getTotalInvestment();
-        return ($totalInvestment * $this->expected_return_rate) / 12;
+        return $this->annual_production_mwh ?? 0;
     }
 
-    public function getExpectedAnnualReturn(): float
+    public function getHourlyProduction(): float
     {
-        $totalInvestment = $this->getTotalInvestment();
-        return $totalInvestment * $this->expected_return_rate;
+        return $this->hourly_production_mwh ?? 0;
     }
 
-    public function getFormattedSharedCapacity(): string
+    // Métodos de formato
+    public function getFormattedPoolType(): string
     {
-        return number_format($this->shared_capacity, 2) . ' kWh';
+        return self::getPoolTypes()[$this->pool_type] ?? 'Desconocido';
     }
 
-    public function getFormattedTotalInvestment(): string
+    public function getFormattedStatus(): string
     {
-        return '€' . number_format($this->getTotalInvestment(), 2);
+        return self::getStatuses()[$this->status] ?? 'Desconocido';
+    }
+
+    public function getFormattedEnergyCategory(): string
+    {
+        return self::getEnergyCategories()[$this->energy_category] ?? 'Desconocido';
+    }
+
+    public function getFormattedTotalCapacity(): string
+    {
+        return number_format($this->total_capacity_mw, 2) . ' MW';
     }
 
     public function getFormattedAvailableCapacity(): string
     {
-        return number_format($this->getAvailableCapacity(), 2) . ' kWh';
+        return number_format($this->available_capacity_mw, 2) . ' MW';
+    }
+
+    public function getFormattedReservedCapacity(): string
+    {
+        return number_format($this->reserved_capacity_mw, 2) . ' MW';
+    }
+
+    public function getFormattedUtilizedCapacity(): string
+    {
+        return number_format($this->utilized_capacity_mw, 2) . ' MW';
+    }
+
+    public function getFormattedEfficiencyRating(): string
+    {
+        return $this->efficiency_rating ? number_format($this->efficiency_rating, 2) . '%' : 'N/A';
+    }
+
+    public function getFormattedAvailabilityFactor(): string
+    {
+        return $this->availability_factor ? number_format($this->availability_factor, 2) . '%' : 'N/A';
+    }
+
+    public function getFormattedCapacityFactor(): string
+    {
+        return $this->capacity_factor ? number_format($this->capacity_factor, 2) . '%' : 'N/A';
+    }
+
+    public function getFormattedAnnualProduction(): string
+    {
+        return $this->annual_production_mwh ? number_format($this->annual_production_mwh, 2) . ' MWh' : 'N/A';
+    }
+
+    public function getFormattedMonthlyProduction(): string
+    {
+        return $this->monthly_production_mwh ? number_format($this->monthly_production_mwh, 2) . ' MWh' : 'N/A';
+    }
+
+    public function getFormattedDailyProduction(): string
+    {
+        return $this->daily_production_mwh ? number_format($this->daily_production_mwh, 2) . ' MWh' : 'N/A';
+    }
+
+    public function getFormattedHourlyProduction(): string
+    {
+        return $this->hourly_production_mwh ? number_format($this->hourly_production_mwh, 2) . ' MWh' : 'N/A';
+    }
+
+    public function getFormattedConstructionCost(): string
+    {
+        return $this->construction_cost ? '$' . number_format($this->construction_cost, 2) : 'N/A';
+    }
+
+    public function getFormattedOperationalCost(): string
+    {
+        return $this->operational_cost_per_mwh ? '$' . number_format($this->operational_cost_per_mwh, 2) . '/MWh' : 'N/A';
+    }
+
+    public function getFormattedMaintenanceCost(): string
+    {
+        return $this->maintenance_cost_per_mwh ? '$' . number_format($this->maintenance_cost_per_mwh, 2) . '/MWh' : 'N/A';
+    }
+
+    public function getFormattedCommissioningDate(): string
+    {
+        return $this->commissioning_date ? $this->commissioning_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedDecommissioningDate(): string
+    {
+        return $this->decommissioning_date ? $this->decommissioning_date->format('d/m/Y') : 'N/A';
     }
 
     public function getFormattedUtilizationPercentage(): string
@@ -414,94 +646,132 @@ class EnergyPool extends Model
         return number_format($this->getUtilizationPercentage(), 1) . '%';
     }
 
-    public function getFormattedEntryFee(): string
+    public function getFormattedReservationPercentage(): string
     {
-        return '€' . number_format($this->entry_fee, 2);
+        return number_format($this->getReservationPercentage(), 1) . '%';
     }
 
-    public function getFormattedMonthlyFee(): string
+    public function getFormattedAvailablePercentage(): string
     {
-        return '€' . number_format($this->monthly_fee, 2);
+        return number_format($this->getAvailablePercentage(), 1) . '%';
     }
 
-    public function getFormattedProfitSharingPercentage(): string
+    public function getFormattedAgeInYears(): string
     {
-        return number_format($this->profit_sharing_percentage, 1) . '%';
+        return $this->getAgeInYears() . ' años';
     }
 
-    public function getFormattedExpectedReturnRate(): string
+    public function getFormattedRemainingLifespan(): string
     {
-        return number_format($this->expected_return_rate * 100, 2) . '%';
+        $remaining = $this->getRemainingLifespan();
+        if ($remaining > 0) {
+            return $remaining . ' años';
+        } else {
+            return 'Vencido';
+        }
     }
 
-    public function getFormattedExpectedMonthlyReturn(): string
+    public function getFormattedTotalAnnualCost(): string
     {
-        return '€' . number_format($this->getExpectedMonthlyReturn(), 2);
+        return '$' . number_format($this->getTotalAnnualCost(), 2);
     }
 
-    public function getFormattedExpectedAnnualReturn(): string
+    public function getFormattedCostPerMwh(): string
     {
-        return '€' . number_format($this->getExpectedAnnualReturn(), 2);
+        return '$' . number_format($this->getCostPerMwh(), 2) . '/MWh';
     }
 
-    public function getFormattedPoolType(): string
-    {
-        return self::getPoolTypes()[$this->pool_type] ?? 'Desconocido';
-    }
-
-    public function getFormattedDistributionAlgorithm(): string
-    {
-        return self::getDistributionAlgorithms()[$this->distribution_algorithm] ?? 'Desconocido';
-    }
-
-    public function getFormattedRiskLevel(): string
-    {
-        return self::getRiskLevels()[$this->risk_level] ?? 'Desconocido';
-    }
-
+    // Clases de badges para Filament
     public function getStatusBadgeClass(): string
     {
-        if (!$this->is_active) {
-            return 'bg-red-100 text-red-800';
-        }
-        
-        if (!$this->isApproved()) {
-            return 'bg-yellow-100 text-yellow-800';
-        }
-        
-        if ($this->isFull()) {
+        return match($this->status) {
+            self::STATUS_ACTIVE => 'bg-green-100 text-green-800',
+            self::STATUS_INACTIVE => 'bg-gray-100 text-gray-800',
+            self::STATUS_MAINTENANCE => 'bg-yellow-100 text-yellow-800',
+            self::STATUS_SUSPENDED => 'bg-orange-100 text-orange-800',
+            self::STATUS_CLOSED => 'bg-red-100 text-red-800',
+            self::STATUS_PLANNED => 'bg-blue-100 text-blue-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getPoolTypeBadgeClass(): string
+    {
+        return match($this->pool_type) {
+            self::POOL_TYPE_TRADING => 'bg-blue-100 text-blue-800',
+            self::POOL_TYPE_RESERVE => 'bg-green-100 text-green-800',
+            self::POOL_TYPE_BALANCING => 'bg-yellow-100 text-yellow-800',
+            self::POOL_TYPE_ANCILLARY => 'bg-purple-100 text-purple-800',
+            self::POOL_TYPE_CAPACITY => 'bg-indigo-100 text-indigo-800',
+            self::POOL_TYPE_DEMAND_RESPONSE => 'bg-pink-100 text-pink-800',
+            self::POOL_TYPE_VIRTUAL => 'bg-cyan-100 text-cyan-800',
+            self::POOL_TYPE_HYBRID => 'bg-orange-100 text-orange-800',
+            self::POOL_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getEnergyCategoryBadgeClass(): string
+    {
+        return match($this->energy_category) {
+            self::ENERGY_CATEGORY_RENEWABLE => 'bg-green-100 text-green-800',
+            self::ENERGY_CATEGORY_NON_RENEWABLE => 'bg-red-100 text-red-800',
+            self::ENERGY_CATEGORY_HYBRID => 'bg-blue-100 text-blue-800',
+            self::ENERGY_CATEGORY_STORAGE => 'bg-purple-100 text-purple-800',
+            self::ENERGY_CATEGORY_DEMAND => 'bg-yellow-100 text-yellow-800',
+            self::ENERGY_CATEGORY_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getEfficiencyBadgeClass(): string
+    {
+        if (!$this->efficiency_rating) {
             return 'bg-gray-100 text-gray-800';
         }
         
-        if ($this->isOpenForParticipation()) {
+        if ($this->efficiency_rating >= 90) {
             return 'bg-green-100 text-green-800';
+        } elseif ($this->efficiency_rating >= 80) {
+            return 'bg-blue-100 text-blue-800';
+        } elseif ($this->efficiency_rating >= 70) {
+            return 'bg-yellow-100 text-yellow-800';
+        } else {
+            return 'bg-red-100 text-red-800';
+        }
+    }
+
+    public function getAvailabilityBadgeClass(): string
+    {
+        if (!$this->availability_factor) {
+            return 'bg-gray-100 text-gray-800';
         }
         
-        return 'bg-blue-100 text-blue-800';
+        if ($this->availability_factor >= 95) {
+            return 'bg-green-100 text-green-800';
+        } elseif ($this->availability_factor >= 90) {
+            return 'bg-blue-100 text-blue-800';
+        } elseif ($this->availability_factor >= 80) {
+            return 'bg-yellow-100 text-yellow-800';
+        } else {
+            return 'bg-red-100 text-red-800';
+        }
     }
 
-    public function getRiskBadgeClass(): string
+    public function getCapacityFactorBadgeClass(): string
     {
-        return match($this->risk_level) {
-            self::RISK_LEVEL_LOW => 'bg-green-100 text-green-800',
-            self::RISK_LEVEL_MEDIUM => 'bg-blue-100 text-blue-800',
-            self::RISK_LEVEL_HIGH => 'bg-yellow-100 text-yellow-800',
-            self::RISK_LEVEL_VERY_HIGH => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-
-    public function getTypeBadgeClass(): string
-    {
-        return match($this->pool_type) {
-            self::POOL_TYPE_SOLAR => 'bg-yellow-100 text-yellow-800',
-            self::POOL_TYPE_WIND => 'bg-blue-100 text-blue-800',
-            self::POOL_TYPE_HYDRO => 'bg-cyan-100 text-cyan-800',
-            self::POOL_TYPE_BIOMASS => 'bg-green-100 text-green-800',
-            self::POOL_TYPE_HYBRID => 'bg-purple-100 text-purple-800',
-            self::POOL_TYPE_STORAGE => 'bg-indigo-100 text-indigo-800',
-            self::POOL_TYPE_TRADING => 'bg-orange-100 text-orange-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
+        if (!$this->capacity_factor) {
+            return 'bg-gray-100 text-gray-800';
+        }
+        
+        if ($this->capacity_factor >= 80) {
+            return 'bg-green-100 text-green-800';
+        } elseif ($this->capacity_factor >= 70) {
+            return 'bg-blue-100 text-blue-800';
+        } elseif ($this->capacity_factor >= 60) {
+            return 'bg-yellow-100 text-yellow-800';
+        } else {
+            return 'bg-red-100 text-red-800';
+        }
     }
 }

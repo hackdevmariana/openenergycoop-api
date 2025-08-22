@@ -14,90 +14,155 @@ class EnergyMeter extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'installation_id',
-        'consumption_point_id',
-        'user_id',
-        'type',
-        'location',
-        'serial_number',
-        'active',
-        'delta_kwh',
-        'meterable_id',
-        'meterable_type',
+        'meter_number',
+        'name',
+        'description',
+        'meter_type',
+        'status',
+        'meter_category',
         'manufacturer',
         'model',
+        'serial_number',
         'firmware_version',
-        'calibration_date',
+        'hardware_version',
+        'installation_id',
+        'consumption_point_id',
+        'customer_id',
+        'location_address',
+        'latitude',
+        'longitude',
+        'installation_date',
+        'commissioning_date',
+        'last_calibration_date',
         'next_calibration_date',
+        'warranty_expiry_date',
+        'voltage_rating',
+        'voltage_unit',
+        'current_rating',
+        'current_unit',
+        'phase_type',
+        'connection_type',
         'accuracy_class',
-        'measurement_range',
+        'measurement_range_min',
+        'measurement_range_max',
+        'measurement_unit',
+        'pulse_constant',
+        'pulse_unit',
+        'is_smart_meter',
+        'has_remote_reading',
+        'has_two_way_communication',
         'communication_protocol',
-        'last_communication',
-        'battery_level',
-        'signal_strength',
-        'maintenance_required',
+        'communication_frequency',
+        'data_logging_interval',
+        'data_retention_days',
+        'technical_specifications',
+        'calibration_requirements',
+        'maintenance_requirements',
+        'safety_features',
+        'meter_features',
+        'communication_settings',
+        'alarm_settings',
+        'data_formats',
+        'tags',
+        'installed_by',
+        'managed_by',
+        'created_by',
+        'approved_by',
+        'approved_at',
         'notes',
     ];
 
     protected $casts = [
-        'active' => 'boolean',
-        'delta_kwh' => 'decimal:4',
-        'calibration_date' => 'datetime',
-        'next_calibration_date' => 'datetime',
-        'last_communication' => 'datetime',
-        'battery_level' => 'decimal:2',
-        'signal_strength' => 'decimal:2',
-        'maintenance_required' => 'boolean',
-        'measurement_range' => 'array',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'installation_date' => 'date',
+        'commissioning_date' => 'date',
+        'last_calibration_date' => 'date',
+        'next_calibration_date' => 'date',
+        'warranty_expiry_date' => 'date',
+        'voltage_rating' => 'decimal:2',
+        'current_rating' => 'decimal:2',
+        'accuracy_class' => 'decimal:2',
+        'measurement_range_min' => 'decimal:2',
+        'measurement_range_max' => 'decimal:2',
+        'pulse_constant' => 'decimal:2',
+        'is_smart_meter' => 'boolean',
+        'has_remote_reading' => 'boolean',
+        'has_two_way_communication' => 'boolean',
+        'data_retention_days' => 'integer',
+        'approved_at' => 'datetime',
+        'meter_features' => 'array',
+        'communication_settings' => 'array',
+        'alarm_settings' => 'array',
+        'data_formats' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const TYPE_CONSUMPTION = 'consumption';
-    const TYPE_PRODUCTION = 'production';
-    const TYPE_STORAGE = 'storage';
-    const TYPE_DISTRIBUTION = 'distribution';
+    const METER_TYPE_SMART_METER = 'smart_meter';
+    const METER_TYPE_DIGITAL_METER = 'digital_meter';
+    const METER_TYPE_ANALOG_METER = 'analog_meter';
+    const METER_TYPE_PREPAID_METER = 'prepaid_meter';
+    const METER_TYPE_POSTPAID_METER = 'postpaid_meter';
+    const METER_TYPE_BI_DIRECTIONAL = 'bi_directional';
+    const METER_TYPE_NET_METER = 'net_meter';
+    const METER_TYPE_SUB_METER = 'sub_meter';
+    const METER_TYPE_OTHER = 'other';
 
-    const ACCURACY_CLASS_A = 'A';
-    const ACCURACY_CLASS_B = 'B';
-    const ACCURACY_CLASS_C = 'C';
-    const ACCURACY_CLASS_D = 'D';
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
+    const STATUS_MAINTENANCE = 'maintenance';
+    const STATUS_FAULTY = 'faulty';
+    const STATUS_REPLACED = 'replaced';
+    const STATUS_DECOMMISSIONED = 'decommissioned';
+    const STATUS_CALIBRATING = 'calibrating';
 
-    const COMMUNICATION_PROTOCOL_MODBUS = 'modbus';
-    const COMMUNICATION_PROTOCOL_DLMS = 'dlms';
-    const COMMUNICATION_PROTOCOL_MQTT = 'mqtt';
-    const COMMUNICATION_PROTOCOL_HTTP = 'http';
-    const COMMUNICATION_PROTOCOL_4G = '4g';
-    const COMMUNICATION_PROTOCOL_LORA = 'lora';
+    const METER_CATEGORY_ELECTRICITY = 'electricity';
+    const METER_CATEGORY_WATER = 'water';
+    const METER_CATEGORY_GAS = 'gas';
+    const METER_CATEGORY_HEAT = 'heat';
+    const METER_CATEGORY_STEAM = 'steam';
+    const METER_CATEGORY_COMPRESSED_AIR = 'compressed_air';
+    const METER_CATEGORY_OTHER = 'other';
 
-    public static function getTypes(): array
+    public static function getMeterTypes(): array
     {
         return [
-            self::TYPE_CONSUMPTION => 'Consumo',
-            self::TYPE_PRODUCTION => 'Producción',
-            self::TYPE_STORAGE => 'Almacenamiento',
-            self::TYPE_DISTRIBUTION => 'Distribución',
+            self::METER_TYPE_SMART_METER => 'Medidor Inteligente',
+            self::METER_TYPE_DIGITAL_METER => 'Medidor Digital',
+            self::METER_TYPE_ANALOG_METER => 'Medidor Analógico',
+            self::METER_TYPE_PREPAID_METER => 'Medidor Prepago',
+            self::METER_TYPE_POSTPAID_METER => 'Medidor Postpago',
+            self::METER_TYPE_BI_DIRECTIONAL => 'Medidor Bidireccional',
+            self::METER_TYPE_NET_METER => 'Medidor Neto',
+            self::METER_TYPE_SUB_METER => 'Submedidor',
+            self::METER_TYPE_OTHER => 'Otro',
         ];
     }
 
-    public static function getAccuracyClasses(): array
+    public static function getStatuses(): array
     {
         return [
-            self::ACCURACY_CLASS_A => 'Clase A (0.5%)',
-            self::ACCURACY_CLASS_B => 'Clase B (1.0%)',
-            self::ACCURACY_CLASS_C => 'Clase C (2.0%)',
-            self::ACCURACY_CLASS_D => 'Clase D (5.0%)',
+            self::STATUS_ACTIVE => 'Activo',
+            self::STATUS_INACTIVE => 'Inactivo',
+            self::STATUS_MAINTENANCE => 'Mantenimiento',
+            self::STATUS_FAULTY => 'Defectuoso',
+            self::STATUS_REPLACED => 'Reemplazado',
+            self::STATUS_DECOMMISSIONED => 'Desmantelado',
+            self::STATUS_CALIBRATING => 'Calibrando',
         ];
     }
 
-    public static function getCommunicationProtocols(): array
+    public static function getMeterCategories(): array
     {
         return [
-            self::COMMUNICATION_PROTOCOL_MODBUS => 'Modbus',
-            self::COMMUNICATION_PROTOCOL_DLMS => 'DLMS',
-            self::COMMUNICATION_PROTOCOL_MQTT => 'MQTT',
-            self::COMMUNICATION_PROTOCOL_HTTP => 'HTTP',
-            self::COMMUNICATION_PROTOCOL_4G => '4G',
-            self::COMMUNICATION_PROTOCOL_LORA => 'LoRa',
+            self::METER_CATEGORY_ELECTRICITY => 'Electricidad',
+            self::METER_CATEGORY_WATER => 'Agua',
+            self::METER_CATEGORY_GAS => 'Gas',
+            self::METER_CATEGORY_HEAT => 'Calor',
+            self::METER_CATEGORY_STEAM => 'Vapor',
+            self::METER_CATEGORY_COMPRESSED_AIR => 'Aire Comprimido',
+            self::METER_CATEGORY_OTHER => 'Otro',
         ];
     }
 
@@ -112,9 +177,29 @@ class EnergyMeter extends Model
         return $this->belongsTo(ConsumptionPoint::class);
     }
 
-    public function user(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    public function installedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'installed_by');
+    }
+
+    public function managedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'managed_by');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function meterable(): MorphTo
@@ -135,17 +220,47 @@ class EnergyMeter extends Model
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('status', self::STATUS_ACTIVE);
     }
 
-    public function scopeByType($query, $type)
+    public function scopeByStatus($query, $status)
     {
-        return $query->where('type', $type);
+        return $query->where('status', $status);
     }
 
-    public function scopeByUser($query, $userId)
+    public function scopeByMeterType($query, $meterType)
     {
-        return $query->where('user_id', $userId);
+        return $query->where('meter_type', $meterType);
+    }
+
+    public function scopeByMeterCategory($query, $meterCategory)
+    {
+        return $query->where('meter_category', $meterCategory);
+    }
+
+    public function scopeByManufacturer($query, $manufacturer)
+    {
+        return $query->where('manufacturer', $manufacturer);
+    }
+
+    public function scopeByModel($query, $model)
+    {
+        return $query->where('model', $model);
+    }
+
+    public function scopeBySerialNumber($query, $serialNumber)
+    {
+        return $query->where('serial_number', $serialNumber);
+    }
+
+    public function scopeByMeterNumber($query, $meterNumber)
+    {
+        return $query->where('meter_number', $meterNumber);
+    }
+
+    public function scopeByCustomer($query, $customerId)
+    {
+        return $query->where('customer_id', $customerId);
     }
 
     public function scopeByInstallation($query, $installationId)
@@ -158,14 +273,19 @@ class EnergyMeter extends Model
         return $query->where('consumption_point_id', $consumptionPointId);
     }
 
-    public function scopeByAccuracyClass($query, $accuracyClass)
+    public function scopeSmartMeters($query)
     {
-        return $query->where('accuracy_class', $accuracyClass);
+        return $query->where('is_smart_meter', true);
     }
 
-    public function scopeByCommunicationProtocol($query, $protocol)
+    public function scopeRemoteReading($query)
     {
-        return $query->where('communication_protocol', $protocol);
+        return $query->where('has_remote_reading', true);
+    }
+
+    public function scopeTwoWayCommunication($query)
+    {
+        return $query->where('has_two_way_communication', true);
     }
 
     public function scopeNeedsCalibration($query)
@@ -173,40 +293,135 @@ class EnergyMeter extends Model
         return $query->where('next_calibration_date', '<=', now());
     }
 
-    public function scopeMaintenanceRequired($query)
+    public function scopeMaintenance($query)
     {
-        return $query->where('maintenance_required', true);
+        return $query->where('status', self::STATUS_MAINTENANCE);
     }
 
-    public function scopeLowBattery($query, $threshold = 20)
+    public function scopeFaulty($query)
     {
-        return $query->where('battery_level', '<=', $threshold);
+        return $query->where('status', self::STATUS_FAULTY);
     }
 
-    public function scopeWeakSignal($query, $threshold = 30)
+    public function scopeCalibrating($query)
     {
-        return $query->where('signal_strength', '<=', $threshold);
+        return $query->where('status', self::STATUS_CALIBRATING);
     }
 
-    // Métodos
-    public function isConsumption(): bool
+    public function scopeElectricity($query)
     {
-        return $this->type === self::TYPE_CONSUMPTION;
+        return $query->where('meter_category', self::METER_CATEGORY_ELECTRICITY);
     }
 
-    public function isProduction(): bool
+    public function scopeWater($query)
     {
-        return $this->type === self::TYPE_PRODUCTION;
+        return $query->where('meter_category', self::METER_CATEGORY_WATER);
     }
 
-    public function isStorage(): bool
+    public function scopeGas($query)
     {
-        return $this->type === self::TYPE_STORAGE;
+        return $query->where('meter_category', self::METER_CATEGORY_GAS);
     }
 
-    public function isDistribution(): bool
+    public function scopeHeat($query)
     {
-        return $this->type === self::TYPE_DISTRIBUTION;
+        return $query->where('meter_category', self::METER_CATEGORY_HEAT);
+    }
+
+    public function scopeSteam($query)
+    {
+        return $query->where('meter_category', self::METER_CATEGORY_STEAM);
+    }
+
+    public function scopeCompressedAir($query)
+    {
+        return $query->where('meter_category', self::METER_CATEGORY_COMPRESSED_AIR);
+    }
+
+    // Métodos de validación
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function isInactive(): bool
+    {
+        return $this->status === self::STATUS_INACTIVE;
+    }
+
+    public function isMaintenance(): bool
+    {
+        return $this->status === self::STATUS_MAINTENANCE;
+    }
+
+    public function isFaulty(): bool
+    {
+        return $this->status === self::STATUS_FAULTY;
+    }
+
+    public function isReplaced(): bool
+    {
+        return $this->status === self::STATUS_REPLACED;
+    }
+
+    public function isDecommissioned(): bool
+    {
+        return $this->status === self::STATUS_DECOMMISSIONED;
+    }
+
+    public function isCalibrating(): bool
+    {
+        return $this->status === self::STATUS_CALIBRATING;
+    }
+
+    public function isSmartMeter(): bool
+    {
+        return $this->is_smart_meter;
+    }
+
+    public function hasRemoteReading(): bool
+    {
+        return $this->has_remote_reading;
+    }
+
+    public function hasTwoWayCommunication(): bool
+    {
+        return $this->has_two_way_communication;
+    }
+
+    public function isElectricity(): bool
+    {
+        return $this->meter_category === self::METER_CATEGORY_ELECTRICITY;
+    }
+
+    public function isWater(): bool
+    {
+        return $this->meter_category === self::METER_CATEGORY_WATER;
+    }
+
+    public function isGas(): bool
+    {
+        return $this->meter_category === self::METER_CATEGORY_GAS;
+    }
+
+    public function isHeat(): bool
+    {
+        return $this->meter_category === self::METER_CATEGORY_HEAT;
+    }
+
+    public function isSteam(): bool
+    {
+        return $this->meter_category === self::METER_CATEGORY_STEAM;
+    }
+
+    public function isCompressedAir(): bool
+    {
+        return $this->meter_category === self::METER_CATEGORY_COMPRESSED_AIR;
+    }
+
+    public function isApproved(): bool
+    {
+        return !is_null($this->approved_at);
     }
 
     public function needsCalibration(): bool
@@ -218,26 +433,21 @@ class EnergyMeter extends Model
         return $this->next_calibration_date->isPast();
     }
 
-    public function isLowBattery(): bool
+    public function isUnderWarranty(): bool
     {
-        return $this->battery_level <= 20;
-    }
-
-    public function hasWeakSignal(): bool
-    {
-        return $this->signal_strength <= 30;
-    }
-
-    public function isCommunicating(): bool
-    {
-        if (!$this->last_communication) {
+        if (!$this->warranty_expiry_date) {
             return false;
         }
         
-        // Considerar que no se ha comunicado en las últimas 24 horas
-        return $this->last_communication->diffInHours(now()) <= 24;
+        return $this->warranty_expiry_date->isFuture();
     }
 
+    public function isCommissioned(): bool
+    {
+        return !is_null($this->commissioning_date);
+    }
+
+    // Métodos de cálculo
     public function getTotalReadings(): int
     {
         return $this->readings()->count();
@@ -292,7 +502,7 @@ class EnergyMeter extends Model
     public function getAverageDailyEnergy(): float
     {
         $totalEnergy = $this->getTotalEnergy();
-        $daysSinceInstallation = $this->created_at->diffInDays(now());
+        $daysSinceInstallation = $this->installation_date ? $this->installation_date->diffInDays(now()) : 0;
         
         if ($daysSinceInstallation <= 0) {
             return 0;
@@ -315,20 +525,111 @@ class EnergyMeter extends Model
 
     public function getEfficiencyRating(): float
     {
-        // Calcular eficiencia basada en la precisión y comunicación
-        $accuracyScore = match($this->accuracy_class) {
-            self::ACCURACY_CLASS_A => 100,
-            self::ACCURACY_CLASS_B => 90,
-            self::ACCURACY_CLASS_C => 80,
-            self::ACCURACY_CLASS_D => 70,
-            default => 60,
-        };
+        // Calcular eficiencia basada en la precisión y características
+        $accuracyScore = $this->accuracy_class ? (100 - ($this->accuracy_class * 10)) : 60;
+        $smartMeterScore = $this->is_smart_meter ? 100 : 70;
+        $remoteReadingScore = $this->has_remote_reading ? 100 : 70;
+        $twoWayScore = $this->has_two_way_communication ? 100 : 70;
 
-        $communicationScore = $this->isCommunicating() ? 100 : 50;
-        $batteryScore = $this->battery_level;
-        $signalScore = $this->signal_strength;
+        return ($accuracyScore + $smartMeterScore + $remoteReadingScore + $twoWayScore) / 4;
+    }
 
-        return ($accuracyScore + $communicationScore + $batteryScore + $signalScore) / 4;
+    public function getAgeInYears(): int
+    {
+        if (!$this->installation_date) {
+            return 0;
+        }
+        
+        return $this->installation_date->diffInYears(now());
+    }
+
+    public function getDaysUntilCalibration(): int
+    {
+        if (!$this->next_calibration_date) {
+            return 0;
+        }
+        
+        return now()->diffInDays($this->next_calibration_date, false);
+    }
+
+    public function getDaysUntilWarrantyExpiry(): int
+    {
+        if (!$this->warranty_expiry_date) {
+            return 0;
+        }
+        
+        return now()->diffInDays($this->warranty_expiry_date, false);
+    }
+
+    public function getMeasurementRange(): string
+    {
+        if ($this->measurement_range_min && $this->measurement_range_max) {
+            $unit = $this->measurement_unit ?? '';
+            return number_format($this->measurement_range_min, 2) . ' - ' . number_format($this->measurement_range_max, 2) . ' ' . $unit;
+        }
+        
+        return 'N/A';
+    }
+
+    // Métodos de formato
+    public function getFormattedMeterType(): string
+    {
+        return self::getMeterTypes()[$this->meter_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedStatus(): string
+    {
+        return self::getStatuses()[$this->status] ?? 'Desconocido';
+    }
+
+    public function getFormattedMeterCategory(): string
+    {
+        return self::getMeterCategories()[$this->meter_category] ?? 'Desconocido';
+    }
+
+    public function getFormattedVoltageRating(): string
+    {
+        return $this->voltage_rating ? number_format($this->voltage_rating, 2) . ' ' . ($this->voltage_unit ?? 'V') : 'N/A';
+    }
+
+    public function getFormattedCurrentRating(): string
+    {
+        return $this->current_rating ? number_format($this->current_rating, 2) . ' ' . ($this->current_unit ?? 'A') : 'N/A';
+    }
+
+    public function getFormattedAccuracyClass(): string
+    {
+        return $this->accuracy_class ? number_format($this->accuracy_class, 2) . '%' : 'N/A';
+    }
+
+    public function getFormattedPulseConstant(): string
+    {
+        return $this->pulse_constant ? number_format($this->pulse_constant, 2) . ' ' . ($this->pulse_unit ?? '') : 'N/A';
+    }
+
+    public function getFormattedInstallationDate(): string
+    {
+        return $this->installation_date ? $this->installation_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedCommissioningDate(): string
+    {
+        return $this->commissioning_date ? $this->commissioning_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedLastCalibrationDate(): string
+    {
+        return $this->last_calibration_date ? $this->last_calibration_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedNextCalibrationDate(): string
+    {
+        return $this->next_calibration_date ? $this->next_calibration_date->format('d/m/Y') : 'N/A';
+    }
+
+    public function getFormattedWarrantyExpiryDate(): string
+    {
+        return $this->warranty_expiry_date ? $this->warranty_expiry_date->format('d/m/Y') : 'N/A';
     }
 
     public function getFormattedTotalEnergy(): string
@@ -356,99 +657,114 @@ class EnergyMeter extends Model
         return number_format($this->getAverageDailyEnergy(), 2) . ' kWh';
     }
 
-    public function getFormattedBatteryLevel(): string
-    {
-        return number_format($this->battery_level, 1) . '%';
-    }
-
-    public function getFormattedSignalStrength(): string
-    {
-        return number_format($this->signal_strength, 1) . '%';
-    }
-
     public function getFormattedEfficiencyRating(): string
     {
         return number_format($this->getEfficiencyRating(), 1) . '%';
     }
 
-    public function getFormattedType(): string
+    public function getFormattedAgeInYears(): string
     {
-        return self::getTypes()[$this->type] ?? 'Desconocido';
+        return $this->getAgeInYears() . ' años';
     }
 
-    public function getFormattedAccuracyClass(): string
+    public function getFormattedDaysUntilCalibration(): string
     {
-        return self::getAccuracyClasses()[$this->accuracy_class] ?? 'Desconocido';
+        $days = $this->getDaysUntilCalibration();
+        if ($days > 0) {
+            return $days . ' días';
+        } elseif ($days < 0) {
+            return 'Vencido hace ' . abs($days) . ' días';
+        } else {
+            return 'Hoy';
+        }
     }
 
-    public function getFormattedCommunicationProtocol(): string
+    public function getFormattedDaysUntilWarrantyExpiry(): string
     {
-        return self::getCommunicationProtocols()[$this->communication_protocol] ?? 'Desconocido';
+        $days = $this->getDaysUntilWarrantyExpiry();
+        if ($days > 0) {
+            return $days . ' días';
+        } elseif ($days < 0) {
+            return 'Vencida hace ' . abs($days) . ' días';
+        } else {
+            return 'Hoy';
+        }
     }
 
+    // Clases de badges para Filament
     public function getStatusBadgeClass(): string
     {
-        if (!$this->active) {
-            return 'bg-red-100 text-red-800';
-        }
-        
-        if ($this->needsCalibration()) {
-            return 'bg-yellow-100 text-yellow-800';
-        }
-        
-        if ($this->maintenance_required) {
-            return 'bg-orange-100 text-orange-800';
-        }
-        
-        if ($this->isLowBattery()) {
-            return 'bg-red-100 text-red-800';
-        }
-        
-        if ($this->hasWeakSignal()) {
-            return 'bg-yellow-100 text-yellow-800';
-        }
-        
-        if (!$this->isCommunicating()) {
-            return 'bg-gray-100 text-gray-800';
-        }
-        
-        return 'bg-green-100 text-green-800';
-    }
-
-    public function getAccuracyBadgeClass(): string
-    {
-        return match($this->accuracy_class) {
-            self::ACCURACY_CLASS_A => 'bg-green-100 text-green-800',
-            self::ACCURACY_CLASS_B => 'bg-blue-100 text-blue-800',
-            self::ACCURACY_CLASS_C => 'bg-yellow-100 text-yellow-800',
-            self::ACCURACY_CLASS_D => 'bg-orange-100 text-orange-800',
+        return match($this->status) {
+            self::STATUS_ACTIVE => 'bg-green-100 text-green-800',
+            self::STATUS_INACTIVE => 'bg-gray-100 text-gray-800',
+            self::STATUS_MAINTENANCE => 'bg-yellow-100 text-yellow-800',
+            self::STATUS_FAULTY => 'bg-red-100 text-red-800',
+            self::STATUS_REPLACED => 'bg-blue-100 text-blue-800',
+            self::STATUS_DECOMMISSIONED => 'bg-gray-100 text-gray-800',
+            self::STATUS_CALIBRATING => 'bg-purple-100 text-purple-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
-    public function getBatteryBadgeClass(): string
+    public function getMeterTypeBadgeClass(): string
     {
-        if ($this->battery_level > 80) {
+        return match($this->meter_type) {
+            self::METER_TYPE_SMART_METER => 'bg-blue-100 text-blue-800',
+            self::METER_TYPE_DIGITAL_METER => 'bg-green-100 text-green-800',
+            self::METER_TYPE_ANALOG_METER => 'bg-gray-100 text-gray-800',
+            self::METER_TYPE_PREPAID_METER => 'bg-orange-100 text-orange-800',
+            self::METER_TYPE_POSTPAID_METER => 'bg-purple-100 text-purple-800',
+            self::METER_TYPE_BI_DIRECTIONAL => 'bg-indigo-100 text-indigo-800',
+            self::METER_TYPE_NET_METER => 'bg-pink-100 text-pink-800',
+            self::METER_TYPE_SUB_METER => 'bg-cyan-100 text-cyan-800',
+            self::METER_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getMeterCategoryBadgeClass(): string
+    {
+        return match($this->meter_category) {
+            self::METER_CATEGORY_ELECTRICITY => 'bg-yellow-100 text-yellow-800',
+            self::METER_CATEGORY_WATER => 'bg-blue-100 text-blue-800',
+            self::METER_CATEGORY_GAS => 'bg-orange-100 text-orange-800',
+            self::METER_CATEGORY_HEAT => 'bg-red-100 text-red-800',
+            self::METER_CATEGORY_STEAM => 'bg-gray-100 text-gray-800',
+            self::METER_CATEGORY_COMPRESSED_AIR => 'bg-cyan-100 text-cyan-800',
+            self::METER_CATEGORY_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getAccuracyBadgeClass(): string
+    {
+        if (!$this->accuracy_class) {
+            return 'bg-gray-100 text-gray-800';
+        }
+        
+        if ($this->accuracy_class <= 0.5) {
             return 'bg-green-100 text-green-800';
-        } elseif ($this->battery_level > 50) {
+        } elseif ($this->accuracy_class <= 1.0) {
             return 'bg-blue-100 text-blue-800';
-        } elseif ($this->battery_level > 20) {
+        } elseif ($this->accuracy_class <= 2.0) {
             return 'bg-yellow-100 text-yellow-800';
         } else {
             return 'bg-red-100 text-red-800';
         }
     }
 
-    public function getSignalBadgeClass(): string
+    public function getSmartMeterBadgeClass(): string
     {
-        if ($this->signal_strength > 80) {
-            return 'bg-green-100 text-green-800';
-        } elseif ($this->signal_strength > 50) {
-            return 'bg-blue-100 text-blue-800';
-        } elseif ($this->signal_strength > 30) {
-            return 'bg-yellow-100 text-yellow-800';
-        } else {
-            return 'bg-red-100 text-red-800';
-        }
+        return $this->is_smart_meter ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+    }
+
+    public function getRemoteReadingBadgeClass(): string
+    {
+        return $this->has_remote_reading ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
+    }
+
+    public function getTwoWayCommunicationBadgeClass(): string
+    {
+        return $this->has_two_way_communication ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
     }
 }

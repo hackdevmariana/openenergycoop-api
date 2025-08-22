@@ -13,94 +13,201 @@ class EnergyForecast extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'forecastable_id',
-        'forecastable_type',
+        'forecast_number',
+        'name',
+        'description',
         'forecast_type',
-        'horizon_hours',
-        'target_date',
-        'generated_at',
+        'forecast_horizon',
+        'forecast_method',
+        'forecast_status',
+        'accuracy_level',
+        'accuracy_score',
+        'confidence_interval_lower',
+        'confidence_interval_upper',
         'confidence_level',
-        'weather_conditions',
-        'seasonal_factors',
-        'historical_patterns',
-        'market_conditions',
-        'algorithm_version',
-        'input_data_sources',
-        'forecasted_values',
-        'actual_values',
-        'accuracy_metrics',
-        'notes',
-        'is_active',
-        'expires_at',
+        'source_id',
+        'source_type',
+        'target_id',
+        'target_type',
+        'forecast_start_time',
+        'forecast_end_time',
+        'generation_time',
+        'valid_from',
+        'valid_until',
+        'expiry_time',
+        'time_zone',
+        'time_resolution',
+        'forecast_periods',
+        'total_forecasted_value',
+        'forecast_unit',
+        'baseline_value',
+        'trend_value',
+        'seasonal_value',
+        'cyclical_value',
+        'irregular_value',
+        'forecast_data',
+        'baseline_data',
+        'trend_data',
+        'seasonal_data',
+        'cyclical_data',
+        'irregular_data',
+        'weather_data',
+        'input_variables',
+        'model_parameters',
+        'validation_metrics',
+        'performance_history',
+        'tags',
         'created_by',
         'approved_by',
         'approved_at',
+        'validated_by',
+        'validated_at',
+        'notes',
     ];
 
     protected $casts = [
-        'target_date' => 'datetime',
-        'generated_at' => 'datetime',
+        'accuracy_score' => 'decimal:2',
+        'confidence_interval_lower' => 'decimal:2',
+        'confidence_interval_upper' => 'decimal:2',
         'confidence_level' => 'decimal:2',
-        'weather_conditions' => 'array',
-        'seasonal_factors' => 'array',
-        'historical_patterns' => 'array',
-        'market_conditions' => 'array',
-        'forecasted_values' => 'array',
-        'actual_values' => 'array',
-        'accuracy_metrics' => 'array',
-        'input_data_sources' => 'array',
-        'is_active' => 'boolean',
-        'expires_at' => 'datetime',
+        'forecast_start_time' => 'datetime',
+        'forecast_end_time' => 'datetime',
+        'generation_time' => 'datetime',
+        'valid_from' => 'datetime',
+        'valid_until' => 'datetime',
+        'expiry_time' => 'datetime',
+        'forecast_periods' => 'integer',
+        'total_forecasted_value' => 'decimal:2',
+        'baseline_value' => 'decimal:2',
+        'trend_value' => 'decimal:2',
+        'seasonal_value' => 'decimal:2',
+        'cyclical_value' => 'decimal:2',
+        'irregular_value' => 'decimal:2',
         'approved_at' => 'datetime',
+        'validated_at' => 'datetime',
+        'forecast_data' => 'array',
+        'baseline_data' => 'array',
+        'trend_data' => 'array',
+        'seasonal_data' => 'array',
+        'cyclical_data' => 'array',
+        'irregular_data' => 'array',
+        'weather_data' => 'array',
+        'input_variables' => 'array',
+        'model_parameters' => 'array',
+        'validation_metrics' => 'array',
+        'performance_history' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
-    const FORECAST_TYPE_PRODUCTION = 'production';
-    const FORECAST_TYPE_CONSUMPTION = 'consumption';
     const FORECAST_TYPE_DEMAND = 'demand';
+    const FORECAST_TYPE_GENERATION = 'generation';
+    const FORECAST_TYPE_CONSUMPTION = 'consumption';
     const FORECAST_TYPE_PRICE = 'price';
     const FORECAST_TYPE_WEATHER = 'weather';
-    const FORECAST_TYPE_AVAILABILITY = 'availability';
-    const FORECAST_TYPE_MAINTENANCE = 'maintenance';
+    const FORECAST_TYPE_LOAD = 'load';
+    const FORECAST_TYPE_RENEWABLE = 'renewable';
+    const FORECAST_TYPE_STORAGE = 'storage';
+    const FORECAST_TYPE_TRANSMISSION = 'transmission';
+    const FORECAST_TYPE_OTHER = 'other';
 
-    const HORIZON_1_HOUR = 1;
-    const HORIZON_6_HOURS = 6;
-    const HORIZON_12_HOURS = 12;
-    const HORIZON_24_HOURS = 24;
-    const HORIZON_48_HOURS = 48;
-    const HORIZON_72_HOURS = 72;
-    const HORIZON_1_WEEK = 168;
-    const HORIZON_1_MONTH = 720;
+    const FORECAST_HORIZON_HOURLY = 'hourly';
+    const FORECAST_HORIZON_DAILY = 'daily';
+    const FORECAST_HORIZON_WEEKLY = 'weekly';
+    const FORECAST_HORIZON_MONTHLY = 'monthly';
+    const FORECAST_HORIZON_QUARTERLY = 'quarterly';
+    const FORECAST_HORIZON_YEARLY = 'yearly';
+    const FORECAST_HORIZON_LONG_TERM = 'long_term';
+
+    const FORECAST_METHOD_STATISTICAL = 'statistical';
+    const FORECAST_METHOD_MACHINE_LEARNING = 'machine_learning';
+    const FORECAST_METHOD_PHYSICAL_MODEL = 'physical_model';
+    const FORECAST_METHOD_HYBRID = 'hybrid';
+    const FORECAST_METHOD_EXPERT_JUDGMENT = 'expert_judgment';
+    const FORECAST_METHOD_OTHER = 'other';
+
+    const FORECAST_STATUS_DRAFT = 'draft';
+    const FORECAST_STATUS_ACTIVE = 'active';
+    const FORECAST_STATUS_VALIDATED = 'validated';
+    const FORECAST_STATUS_EXPIRED = 'expired';
+    const FORECAST_STATUS_SUPERSEDED = 'superseded';
+    const FORECAST_STATUS_ARCHIVED = 'archived';
+
+    const ACCURACY_LEVEL_LOW = 'low';
+    const ACCURACY_LEVEL_MEDIUM = 'medium';
+    const ACCURACY_LEVEL_HIGH = 'high';
+    const ACCURACY_LEVEL_VERY_HIGH = 'very_high';
 
     public static function getForecastTypes(): array
     {
         return [
-            self::FORECAST_TYPE_PRODUCTION => 'Producción',
-            self::FORECAST_TYPE_CONSUMPTION => 'Consumo',
             self::FORECAST_TYPE_DEMAND => 'Demanda',
+            self::FORECAST_TYPE_GENERATION => 'Generación',
+            self::FORECAST_TYPE_CONSUMPTION => 'Consumo',
             self::FORECAST_TYPE_PRICE => 'Precio',
             self::FORECAST_TYPE_WEATHER => 'Clima',
-            self::FORECAST_TYPE_AVAILABILITY => 'Disponibilidad',
-            self::FORECAST_TYPE_MAINTENANCE => 'Mantenimiento',
+            self::FORECAST_TYPE_LOAD => 'Carga',
+            self::FORECAST_TYPE_RENEWABLE => 'Renovable',
+            self::FORECAST_TYPE_STORAGE => 'Almacenamiento',
+            self::FORECAST_TYPE_TRANSMISSION => 'Transmisión',
+            self::FORECAST_TYPE_OTHER => 'Otro',
         ];
     }
 
-    public static function getHorizons(): array
+    public static function getForecastHorizons(): array
     {
         return [
-            self::HORIZON_1_HOUR => '1 Hora',
-            self::HORIZON_6_HOURS => '6 Horas',
-            self::HORIZON_12_HOURS => '12 Horas',
-            self::HORIZON_24_HOURS => '24 Horas',
-            self::HORIZON_48_HOURS => '48 Horas',
-            self::HORIZON_72_HOURS => '72 Horas',
-            self::HORIZON_1_WEEK => '1 Semana',
-            self::HORIZON_1_MONTH => '1 Mes',
+            self::FORECAST_HORIZON_HOURLY => 'Por Hora',
+            self::FORECAST_HORIZON_DAILY => 'Diario',
+            self::FORECAST_HORIZON_WEEKLY => 'Semanal',
+            self::FORECAST_HORIZON_MONTHLY => 'Mensual',
+            self::FORECAST_HORIZON_QUARTERLY => 'Trimestral',
+            self::FORECAST_HORIZON_YEARLY => 'Anual',
+            self::FORECAST_HORIZON_LONG_TERM => 'Largo Plazo',
+        ];
+    }
+
+    public static function getForecastMethods(): array
+    {
+        return [
+            self::FORECAST_METHOD_STATISTICAL => 'Estadístico',
+            self::FORECAST_METHOD_MACHINE_LEARNING => 'Machine Learning',
+            self::FORECAST_METHOD_PHYSICAL_MODEL => 'Modelo Físico',
+            self::FORECAST_METHOD_HYBRID => 'Híbrido',
+            self::FORECAST_METHOD_EXPERT_JUDGMENT => 'Juicio Experto',
+            self::FORECAST_METHOD_OTHER => 'Otro',
+        ];
+    }
+
+    public static function getForecastStatuses(): array
+    {
+        return [
+            self::FORECAST_STATUS_DRAFT => 'Borrador',
+            self::FORECAST_STATUS_ACTIVE => 'Activo',
+            self::FORECAST_STATUS_VALIDATED => 'Validado',
+            self::FORECAST_STATUS_EXPIRED => 'Expirado',
+            self::FORECAST_STATUS_SUPERSEDED => 'Reemplazado',
+            self::FORECAST_STATUS_ARCHIVED => 'Archivado',
+        ];
+    }
+
+    public static function getAccuracyLevels(): array
+    {
+        return [
+            self::ACCURACY_LEVEL_LOW => 'Baja',
+            self::ACCURACY_LEVEL_MEDIUM => 'Media',
+            self::ACCURACY_LEVEL_HIGH => 'Alta',
+            self::ACCURACY_LEVEL_VERY_HIGH => 'Muy Alta',
         ];
     }
 
     // Relaciones
-    public function forecastable(): MorphTo
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(EnergySource::class, 'source_id');
+    }
+
+    public function target(): MorphTo
     {
         return $this->morphTo();
     }
@@ -115,75 +222,119 @@ class EnergyForecast extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function validatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
+    }
+
     // Scopes
-    public function scopeActive($query)
+    public function scopeByForecastType($query, $forecastType)
     {
-        return $query->where('is_active', true);
+        return $query->where('forecast_type', $forecastType);
     }
 
-    public function scopeByType($query, $type)
+    public function scopeByForecastHorizon($query, $forecastHorizon)
     {
-        return $query->where('forecast_type', $type);
+        return $query->where('forecast_horizon', $forecastHorizon);
     }
 
-    public function scopeByHorizon($query, $horizon)
+    public function scopeByForecastMethod($query, $forecastMethod)
     {
-        return $query->where('horizon_hours', $horizon);
+        return $query->where('forecast_method', $forecastMethod);
     }
 
-    public function scopeByTargetDate($query, $date)
+    public function scopeByForecastStatus($query, $forecastStatus)
     {
-        return $query->whereDate('target_date', $date);
+        return $query->where('forecast_status', $forecastStatus);
+    }
+
+    public function scopeByAccuracyLevel($query, $accuracyLevel)
+    {
+        return $query->where('accuracy_level', $accuracyLevel);
+    }
+
+    public function scopeBySource($query, $sourceId)
+    {
+        return $query->where('source_id', $sourceId);
+    }
+
+    public function scopeByTarget($query, $targetId, $targetType = null)
+    {
+        $query = $query->where('target_id', $targetId);
+        if ($targetType) {
+            $query->where('target_type', $targetType);
+        }
+        return $query;
     }
 
     public function scopeByDateRange($query, $startDate, $endDate)
     {
-        return $query->whereBetween('target_date', [$startDate, $endDate]);
+        return $query->whereBetween('forecast_start_time', [$startDate, $endDate]);
     }
 
-    public function scopeExpired($query)
+    public function scopeByGenerationTime($query, $date)
     {
-        return $query->where('expires_at', '<=', now());
+        return $query->whereDate('generation_time', $date);
     }
 
-    public function scopeNotExpired($query)
+    public function scopeByValidFrom($query, $date)
     {
-        return $query->where('expires_at', '>', now());
+        return $query->whereDate('valid_from', $date);
     }
 
-    public function scopeApproved($query)
+    public function scopeByValidUntil($query, $date)
     {
-        return $query->whereNotNull('approved_at');
+        return $query->whereDate('valid_until', $date);
     }
 
-    public function scopePendingApproval($query)
+    public function scopeByExpiryTime($query, $date)
     {
-        return $query->whereNull('approved_at');
+        return $query->whereDate('expiry_time', $date);
     }
 
-    public function scopeHighConfidence($query, $minConfidence = 80)
+    public function scopeDraft($query)
     {
-        return $query->where('confidence_level', '>=', $minConfidence);
+        return $query->where('forecast_status', self::FORECAST_STATUS_DRAFT);
     }
 
-    public function scopeLowConfidence($query, $maxConfidence = 50)
+    public function scopeActive($query)
     {
-        return $query->where('confidence_level', '<=', $maxConfidence);
+        return $query->where('forecast_status', self::FORECAST_STATUS_ACTIVE);
     }
 
-    public function scopeProduction($query)
+    public function scopeValidatedStatus($query)
     {
-        return $query->where('forecast_type', self::FORECAST_TYPE_PRODUCTION);
+        return $query->where('forecast_status', self::FORECAST_STATUS_VALIDATED);
     }
 
-    public function scopeConsumption($query)
+    public function scopeExpiredStatus($query)
     {
-        return $query->where('forecast_type', self::FORECAST_TYPE_CONSUMPTION);
+        return $query->where('forecast_status', self::FORECAST_STATUS_EXPIRED);
+    }
+
+    public function scopeSuperseded($query)
+    {
+        return $query->where('forecast_status', self::FORECAST_STATUS_SUPERSEDED);
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->where('forecast_status', self::FORECAST_STATUS_ARCHIVED);
     }
 
     public function scopeDemand($query)
     {
         return $query->where('forecast_type', self::FORECAST_TYPE_DEMAND);
+    }
+
+    public function scopeGeneration($query)
+    {
+        return $query->where('forecast_type', self::FORECAST_TYPE_GENERATION);
+    }
+
+    public function scopeConsumption($query)
+    {
+        return $query->where('forecast_type', self::FORECAST_TYPE_CONSUMPTION);
     }
 
     public function scopePrice($query)
@@ -196,53 +347,188 @@ class EnergyForecast extends Model
         return $query->where('forecast_type', self::FORECAST_TYPE_WEATHER);
     }
 
-    public function scopeShortTerm($query)
+    public function scopeLoad($query)
     {
-        return $query->where('horizon_hours', '<=', self::HORIZON_24_HOURS);
+        return $query->where('forecast_type', self::FORECAST_TYPE_LOAD);
     }
 
-    public function scopeMediumTerm($query)
+    public function scopeRenewable($query)
     {
-        return $query->whereBetween('horizon_hours', [
-            self::HORIZON_24_HOURS + 1,
-            self::HORIZON_1_WEEK
-        ]);
+        return $query->where('forecast_type', self::FORECAST_TYPE_RENEWABLE);
+    }
+
+    public function scopeStorage($query)
+    {
+        return $query->where('forecast_type', self::FORECAST_TYPE_STORAGE);
+    }
+
+    public function scopeTransmission($query)
+    {
+        return $query->where('forecast_type', self::FORECAST_TYPE_TRANSMISSION);
+    }
+
+    public function scopeHourly($query)
+    {
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_HOURLY);
+    }
+
+    public function scopeDaily($query)
+    {
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_DAILY);
+    }
+
+    public function scopeWeekly($query)
+    {
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_WEEKLY);
+    }
+
+    public function scopeMonthly($query)
+    {
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_MONTHLY);
+    }
+
+    public function scopeQuarterly($query)
+    {
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_QUARTERLY);
+    }
+
+    public function scopeYearly($query)
+    {
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_YEARLY);
     }
 
     public function scopeLongTerm($query)
     {
-        return $query->where('horizon_hours', '>', self::HORIZON_1_WEEK);
+        return $query->where('forecast_horizon', self::FORECAST_HORIZON_LONG_TERM);
     }
 
-    // Métodos
+    public function scopeStatistical($query)
+    {
+        return $query->where('forecast_method', self::FORECAST_METHOD_STATISTICAL);
+    }
+
+    public function scopeMachineLearning($query)
+    {
+        return $query->where('forecast_method', self::FORECAST_METHOD_MACHINE_LEARNING);
+    }
+
+    public function scopePhysicalModel($query)
+    {
+        return $query->where('forecast_method', self::FORECAST_METHOD_PHYSICAL_MODEL);
+    }
+
+    public function scopeHybrid($query)
+    {
+        return $query->where('forecast_method', self::FORECAST_METHOD_HYBRID);
+    }
+
+    public function scopeExpertJudgment($query)
+    {
+        return $query->where('forecast_method', self::FORECAST_METHOD_EXPERT_JUDGMENT);
+    }
+
+    public function scopeHighAccuracy($query)
+    {
+        return $query->whereIn('accuracy_level', [
+            self::ACCURACY_LEVEL_HIGH,
+            self::ACCURACY_LEVEL_VERY_HIGH,
+        ]);
+    }
+
+    public function scopeMediumAccuracy($query)
+    {
+        return $query->where('accuracy_level', self::ACCURACY_LEVEL_MEDIUM);
+    }
+
+    public function scopeLowAccuracy($query)
+    {
+        return $query->where('accuracy_level', self::ACCURACY_LEVEL_LOW);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->whereNotNull('approved_at');
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->whereNull('approved_at');
+    }
+
+    public function scopeValidated($query)
+    {
+        return $query->whereNotNull('validated_at');
+    }
+
+    public function scopePendingValidation($query)
+    {
+        return $query->whereNull('validated_at');
+    }
+
+    public function scopeExpired($query)
+    {
+        return $query->where('expiry_time', '<=', now());
+    }
+
+    public function scopeNotExpired($query)
+    {
+        return $query->where('expiry_time', '>', now());
+    }
+
+    public function scopeByAccuracyScore($query, $minScore)
+    {
+        return $query->where('accuracy_score', '>=', $minScore);
+    }
+
+    public function scopeByConfidenceLevel($query, $minConfidence)
+    {
+        return $query->where('confidence_level', '>=', $minConfidence);
+    }
+
+    // Métodos de validación
+    public function isDraft(): bool
+    {
+        return $this->forecast_status === self::FORECAST_STATUS_DRAFT;
+    }
+
     public function isActive(): bool
     {
-        return $this->is_active;
+        return $this->forecast_status === self::FORECAST_STATUS_ACTIVE;
     }
 
-    public function isApproved(): bool
+    public function isValidatedStatus(): bool
     {
-        return !is_null($this->approved_at);
+        return $this->forecast_status === self::FORECAST_STATUS_VALIDATED;
     }
 
     public function isExpired(): bool
     {
-        return $this->expires_at && $this->expires_at->isPast();
+        return $this->forecast_status === self::FORECAST_STATUS_EXPIRED;
     }
 
-    public function isProduction(): bool
+    public function isSuperseded(): bool
     {
-        return $this->forecast_type === self::FORECAST_TYPE_PRODUCTION;
+        return $this->forecast_status === self::FORECAST_STATUS_SUPERSEDED;
     }
 
-    public function isConsumption(): bool
+    public function isArchived(): bool
     {
-        return $this->forecast_type === self::FORECAST_TYPE_CONSUMPTION;
+        return $this->forecast_status === self::FORECAST_STATUS_ARCHIVED;
     }
 
     public function isDemand(): bool
     {
         return $this->forecast_type === self::FORECAST_TYPE_DEMAND;
+    }
+
+    public function isGeneration(): bool
+    {
+        return $this->forecast_type === self::FORECAST_TYPE_GENERATION;
+    }
+
+    public function isConsumption(): bool
+    {
+        return $this->forecast_type === self::FORECAST_TYPE_CONSUMPTION;
     }
 
     public function isPrice(): bool
@@ -255,363 +541,604 @@ class EnergyForecast extends Model
         return $this->forecast_type === self::FORECAST_TYPE_WEATHER;
     }
 
-    public function isShortTerm(): bool
+    public function isLoad(): bool
     {
-        return $this->horizon_hours <= self::HORIZON_24_HOURS;
+        return $this->forecast_type === self::FORECAST_TYPE_LOAD;
     }
 
-    public function isMediumTerm(): bool
+    public function isRenewable(): bool
     {
-        return $this->horizon_hours > self::HORIZON_24_HOURS && 
-               $this->horizon_hours <= self::HORIZON_1_WEEK;
+        return $this->forecast_type === self::FORECAST_TYPE_RENEWABLE;
+    }
+
+    public function isStorage(): bool
+    {
+        return $this->forecast_type === self::FORECAST_TYPE_STORAGE;
+    }
+
+    public function isTransmission(): bool
+    {
+        return $this->forecast_type === self::FORECAST_TYPE_TRANSMISSION;
+    }
+
+    public function isHourly(): bool
+    {
+        return $this->forecast_horizon === self::FORECAST_HORIZON_HOURLY;
+    }
+
+    public function isDaily(): bool
+    {
+        return $this->forecast_horizon === self::FORECAST_HORIZON_DAILY;
+    }
+
+    public function isWeekly(): bool
+    {
+        return $this->forecast_horizon === self::FORECAST_HORIZON_WEEKLY;
+    }
+
+    public function isMonthly(): bool
+    {
+        return $this->forecast_horizon === self::FORECAST_HORIZON_MONTHLY;
+    }
+
+    public function isQuarterly(): bool
+    {
+        return $this->forecast_horizon === self::FORECAST_HORIZON_QUARTERLY;
+    }
+
+    public function isYearly(): bool
+    {
+        return $this->forecast_horizon === self::FORECAST_HORIZON_YEARLY;
     }
 
     public function isLongTerm(): bool
     {
-        return $this->horizon_hours > self::HORIZON_1_WEEK;
+        return $this->forecast_horizon === self::FORECAST_HORIZON_LONG_TERM;
     }
 
-    public function isHighConfidence(): bool
+    public function isStatistical(): bool
     {
-        return $this->confidence_level >= 80;
+        return $this->forecast_method === self::FORECAST_METHOD_STATISTICAL;
     }
 
-    public function isLowConfidence(): bool
+    public function isMachineLearning(): bool
     {
-        return $this->confidence_level <= 50;
+        return $this->forecast_method === self::FORECAST_METHOD_MACHINE_LEARNING;
     }
 
-    public function getTimeToTarget(): ?int
+    public function isPhysicalModel(): bool
     {
-        if (!$this->target_date) {
+        return $this->forecast_method === self::FORECAST_METHOD_PHYSICAL_MODEL;
+    }
+
+    public function isHybrid(): bool
+    {
+        return $this->forecast_method === self::FORECAST_METHOD_HYBRID;
+    }
+
+    public function isExpertJudgment(): bool
+    {
+        return $this->forecast_method === self::FORECAST_METHOD_EXPERT_JUDGMENT;
+    }
+
+    public function isHighAccuracy(): bool
+    {
+        return in_array($this->accuracy_level, [
+            self::ACCURACY_LEVEL_HIGH,
+            self::ACCURACY_LEVEL_VERY_HIGH,
+        ]);
+    }
+
+    public function isMediumAccuracy(): bool
+    {
+        return $this->accuracy_level === self::ACCURACY_LEVEL_MEDIUM;
+    }
+
+    public function isLowAccuracy(): bool
+    {
+        return $this->accuracy_level === self::ACCURACY_LEVEL_LOW;
+    }
+
+    public function isApproved(): bool
+    {
+        return !is_null($this->approved_at);
+    }
+
+    public function isValidated(): bool
+    {
+        return !is_null($this->validated_at);
+    }
+
+    public function isExpiredTime(): bool
+    {
+        return $this->expiry_time && $this->expiry_time->isPast();
+    }
+
+    public function isShortTerm(): bool
+    {
+        return in_array($this->forecast_horizon, [
+            self::FORECAST_HORIZON_HOURLY,
+            self::FORECAST_HORIZON_DAILY,
+        ]);
+    }
+
+    public function isMediumTerm(): bool
+    {
+        return in_array($this->forecast_horizon, [
+            self::FORECAST_HORIZON_WEEKLY,
+            self::FORECAST_HORIZON_MONTHLY,
+        ]);
+    }
+
+    public function isLongTermHorizon(): bool
+    {
+        return in_array($this->forecast_horizon, [
+            self::FORECAST_HORIZON_QUARTERLY,
+            self::FORECAST_HORIZON_YEARLY,
+            self::FORECAST_HORIZON_LONG_TERM,
+        ]);
+    }
+
+    // Métodos de cálculo
+    public function getForecastDuration(): int
+    {
+        if (!$this->forecast_start_time || !$this->forecast_end_time) {
+            return 0;
+        }
+        
+        return $this->forecast_start_time->diffInHours($this->forecast_end_time);
+    }
+
+    public function getTimeToExpiry(): ?int
+    {
+        if (!$this->expiry_time) {
             return null;
         }
         
-        return now()->diffInSeconds($this->target_date, false);
+        return now()->diffInSeconds($this->expiry_time, false);
     }
 
-    public function isTargetDatePast(): bool
+    public function isExpiringSoon(int $hours = 24): bool
     {
-        return $this->target_date && $this->target_date->isPast();
+        $timeToExpiry = $this->getTimeToExpiry();
+        if ($timeToExpiry === null) {
+            return false;
+        }
+        
+        return $timeToExpiry <= ($hours * 3600);
     }
 
-    public function isTargetDateToday(): bool
+    public function getConfidenceInterval(): array
     {
-        return $this->target_date && $this->target_date->isToday();
+        return [
+            'lower' => $this->confidence_interval_lower,
+            'upper' => $this->confidence_interval_upper,
+        ];
     }
 
-    public function isTargetDateFuture(): bool
+    public function getConfidenceRange(): float
     {
-        return $this->target_date && $this->target_date->isFuture();
+        if (!$this->confidence_interval_lower || !$this->confidence_interval_upper) {
+            return 0;
+        }
+        
+        return $this->confidence_interval_upper - $this->confidence_interval_lower;
     }
 
-    public function getForecastedValueForHour(int $hour): ?float
+    public function getForecastDataForPeriod(int $period): ?array
     {
-        if (!isset($this->forecasted_values[$hour])) {
+        if (!isset($this->forecast_data[$period])) {
             return null;
         }
         
-        return $this->forecasted_values[$hour];
+        return $this->forecast_data[$period];
     }
 
-    public function getActualValueForHour(int $hour): ?float
+    public function getBaselineDataForPeriod(int $period): ?array
     {
-        if (!isset($this->actual_values[$hour])) {
+        if (!isset($this->baseline_data[$period])) {
             return null;
         }
         
-        return $this->actual_values[$hour];
+        return $this->baseline_data[$period];
+    }
+
+    public function getTrendDataForPeriod(int $period): ?array
+    {
+        if (!isset($this->trend_data[$period])) {
+            return null;
+        }
+        
+        return $this->trend_data[$period];
+    }
+
+    public function getSeasonalDataForPeriod(int $period): ?array
+    {
+        if (!isset($this->seasonal_data[$period])) {
+            return null;
+        }
+        
+        return $this->seasonal_data[$period];
+    }
+
+    public function getCyclicalDataForPeriod(int $period): ?array
+    {
+        if (!isset($this->cyclical_data[$period])) {
+            return null;
+        }
+        
+        return $this->cyclical_data[$period];
+    }
+
+    public function getIrregularDataForPeriod(int $period): ?array
+    {
+        if (!isset($this->irregular_data[$period])) {
+            return null;
+        }
+        
+        return $this->irregular_data[$period];
+    }
+
+    public function getWeatherDataForPeriod(int $period): ?array
+    {
+        if (!isset($this->weather_data[$period])) {
+            return null;
+        }
+        
+        return $this->weather_data[$period];
     }
 
     public function getTotalForecastedValue(): float
     {
-        if (!is_array($this->forecasted_values)) {
-            return 0;
-        }
-        
-        return array_sum($this->forecasted_values);
+        return $this->total_forecasted_value ?? 0;
     }
 
-    public function getTotalActualValue(): float
+    public function getBaselineValue(): float
     {
-        if (!is_array($this->actual_values)) {
-            return 0;
-        }
-        
-        return array_sum($this->actual_values);
+        return $this->baseline_value ?? 0;
     }
 
-    public function getAverageForecastedValue(): float
+    public function getTrendValue(): float
     {
-        $total = $this->getTotalForecastedValue();
-        $count = count($this->forecasted_values);
-        
-        return $count > 0 ? $total / $count : 0;
+        return $this->trend_value ?? 0;
     }
 
-    public function getAverageActualValue(): float
+    public function getSeasonalValue(): float
     {
-        $total = $this->getTotalActualValue();
-        $count = count($this->actual_values);
-        
-        return $count > 0 ? $total / $count : 0;
+        return $this->seasonal_value ?? 0;
     }
 
-    public function getPeakForecastedValue(): float
+    public function getCyclicalValue(): float
     {
-        if (!is_array($this->forecasted_values) || empty($this->forecasted_values)) {
-            return 0;
-        }
-        
-        return max($this->forecasted_values);
+        return $this->cyclical_value ?? 0;
     }
 
-    public function getPeakActualValue(): float
+    public function getIrregularValue(): float
     {
-        if (!is_array($this->actual_values) || empty($this->actual_values)) {
-            return 0;
-        }
-        
-        return max($this->actual_values);
-    }
-
-    public function getPeakHour(): ?int
-    {
-        if (!is_array($this->forecasted_values) || empty($this->forecasted_values)) {
-            return null;
-        }
-        
-        return array_search(max($this->forecasted_values), $this->forecasted_values);
-    }
-
-    public function getValleyHour(): ?int
-    {
-        if (!is_array($this->forecasted_values) || empty($this->forecasted_values)) {
-            return null;
-        }
-        
-        return array_search(min($this->forecasted_values), $this->forecasted_values);
+        return $this->irregular_value ?? 0;
     }
 
     public function getAccuracyScore(): float
     {
-        if (!isset($this->accuracy_metrics['overall_score'])) {
-            return 0;
-        }
-        
-        return $this->accuracy_metrics['overall_score'];
+        return $this->accuracy_score ?? 0;
     }
 
-    public function getMeanAbsoluteError(): float
+    public function getConfidenceLevel(): float
     {
-        if (!isset($this->accuracy_metrics['mae'])) {
-            return 0;
-        }
-        
-        return $this->accuracy_metrics['mae'];
+        return $this->confidence_level ?? 0;
     }
 
-    public function getRootMeanSquareError(): float
-    {
-        if (!isset($this->accuracy_metrics['rmse'])) {
-            return 0;
-        }
-        
-        return $this->accuracy_metrics['rmse'];
-    }
-
-    public function getMeanAbsolutePercentageError(): float
-    {
-        if (!isset($this->accuracy_metrics['mape'])) {
-            return 0;
-        }
-        
-        return $this->accuracy_metrics['mape'];
-    }
-
-    public function getAccuracyClass(): string
-    {
-        $score = $this->getAccuracyScore();
-        
-        if ($score >= 90) {
-            return 'A+';
-        } elseif ($score >= 80) {
-            return 'A';
-        } elseif ($score >= 70) {
-            return 'B';
-        } elseif ($score >= 60) {
-            return 'C';
-        } else {
-            return 'D';
-        }
-    }
-
-    public function getConfidenceClass(): string
-    {
-        if ($this->confidence_level >= 90) {
-            return 'Muy Alta';
-        } elseif ($this->confidence_level >= 80) {
-            return 'Alta';
-        } elseif ($this->confidence_level >= 70) {
-            return 'Media';
-        } elseif ($this->confidence_level >= 60) {
-            return 'Baja';
-        } else {
-            return 'Muy Baja';
-        }
-    }
-
-    public function getFormattedTargetDate(): string
-    {
-        if (!$this->target_date) {
-            return 'No especificada';
-        }
-        
-        return $this->target_date->format('d/m/Y H:i:s');
-    }
-
-    public function getFormattedGeneratedAt(): string
-    {
-        if (!$this->generated_at) {
-            return 'No especificada';
-        }
-        
-        return $this->generated_at->format('d/m/Y H:i:s');
-    }
-
-    public function getFormattedExpiresAt(): string
-    {
-        if (!$this->expires_at) {
-            return 'No expira';
-        }
-        
-        return $this->expires_at->format('d/m/Y H:i:s');
-    }
-
-    public function getFormattedHorizon(): string
-    {
-        return self::getHorizons()[$this->horizon_hours] ?? 'Desconocido';
-    }
-
+    // Métodos de formato
     public function getFormattedForecastType(): string
     {
         return self::getForecastTypes()[$this->forecast_type] ?? 'Desconocido';
     }
 
-    public function getFormattedConfidenceLevel(): string
+    public function getFormattedForecastHorizon(): string
     {
-        return number_format($this->confidence_level, 1) . '%';
+        return self::getForecastHorizons()[$this->forecast_horizon] ?? 'Desconocido';
+    }
+
+    public function getFormattedForecastMethod(): string
+    {
+        return self::getForecastMethods()[$this->forecast_type] ?? 'Desconocido';
+    }
+
+    public function getFormattedForecastStatus(): string
+    {
+        return self::getForecastStatuses()[$this->forecast_status] ?? 'Desconocido';
+    }
+
+    public function getFormattedAccuracyLevel(): string
+    {
+        return self::getAccuracyLevels()[$this->accuracy_level] ?? 'Desconocido';
+    }
+
+    public function getFormattedForecastStartTime(): string
+    {
+        return $this->forecast_start_time->format('d/m/Y H:i:s');
+    }
+
+    public function getFormattedForecastEndTime(): string
+    {
+        return $this->forecast_end_time->format('d/m/Y H:i:s');
+    }
+
+    public function getFormattedGenerationTime(): string
+    {
+        return $this->generation_time->format('d/m/Y H:i:s');
+    }
+
+    public function getFormattedValidFrom(): string
+    {
+        return $this->valid_from->format('d/m/Y H:i:s');
+    }
+
+    public function getFormattedValidUntil(): string
+    {
+        return $this->valid_until ? $this->valid_until->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedExpiryTime(): string
+    {
+        return $this->expiry_time ? $this->expiry_time->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedApprovedAt(): string
+    {
+        return $this->approved_at ? $this->approved_at->format('d/m/Y H:i:s') : 'N/A';
+    }
+
+    public function getFormattedValidatedAt(): string
+    {
+        return $this->validated_at ? $this->validated_at->format('d/m/Y H:i:s') : 'N/A';
     }
 
     public function getFormattedTotalForecastedValue(): string
     {
-        return number_format($this->getTotalForecastedValue(), 2) . ' kWh';
+        if (!$this->total_forecasted_value) {
+            return 'N/A';
+        }
+        
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->total_forecasted_value, 2) . ' ' . $unit;
     }
 
-    public function getFormattedTotalActualValue(): string
+    public function getFormattedBaselineValue(): string
     {
-        return number_format($this->getTotalActualValue(), 2) . ' kWh';
+        if (!$this->baseline_value) {
+            return 'N/A';
+        }
+        
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->baseline_value, 2) . ' ' . $unit;
     }
 
-    public function getFormattedPeakForecastedValue(): string
+    public function getFormattedTrendValue(): string
     {
-        return number_format($this->getPeakForecastedValue(), 2) . ' kWh';
+        if (!$this->trend_value) {
+            return 'N/A';
+        }
+        
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->trend_value, 2) . ' ' . $unit;
     }
 
-    public function getFormattedPeakActualValue(): string
+    public function getFormattedSeasonalValue(): string
     {
-        return number_format($this->getPeakActualValue(), 2) . ' kWh';
+        if (!$this->seasonal_value) {
+            return 'N/A';
+        }
+        
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->seasonal_value, 2) . ' ' . $unit;
+    }
+
+    public function getFormattedCyclicalValue(): string
+    {
+        if (!$this->cyclical_value) {
+            return 'N/A';
+        }
+        
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->cyclical_value, 2) . ' ' . $unit;
+    }
+
+    public function getFormattedIrregularValue(): string
+    {
+        if (!$this->irregular_value) {
+            return 'N/A';
+        }
+        
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->irregular_value, 2) . ' ' . $unit;
     }
 
     public function getFormattedAccuracyScore(): string
     {
-        return number_format($this->getAccuracyScore(), 1) . '%';
+        return $this->accuracy_score ? number_format($this->accuracy_score, 2) . '%' : 'N/A';
     }
 
-    public function getFormattedMeanAbsoluteError(): string
+    public function getFormattedConfidenceLevel(): string
     {
-        return number_format($this->getMeanAbsoluteError(), 4);
+        return $this->confidence_level ? number_format($this->confidence_level, 2) . '%' : 'N/A';
     }
 
-    public function getFormattedRootMeanSquareError(): string
+    public function getFormattedConfidenceInterval(): string
     {
-        return number_format($this->getRootMeanSquareError(), 4);
-    }
-
-    public function getFormattedMeanAbsolutePercentageError(): string
-    {
-        return number_format($this->getMeanAbsolutePercentageError(), 2) . '%';
-    }
-
-    public function getStatusBadgeClass(): string
-    {
-        if (!$this->is_active) {
-            return 'bg-red-100 text-red-800';
+        if (!$this->confidence_interval_lower || !$this->confidence_interval_upper) {
+            return 'N/A';
         }
         
-        if (!$this->isApproved()) {
-            return 'bg-yellow-100 text-yellow-800';
+        $unit = $this->forecast_unit ?? 'kWh';
+        return number_format($this->confidence_interval_lower, 2) . ' - ' . 
+               number_format($this->confidence_interval_upper, 2) . ' ' . $unit;
+    }
+
+    public function getFormattedConfidenceRange(): string
+    {
+        $range = $this->getConfidenceRange();
+        if ($range <= 0) {
+            return 'N/A';
         }
         
-        if ($this->isExpired()) {
+        $unit = $this->forecast_unit ?? 'kWh';
+        return '±' . number_format($range / 2, 2) . ' ' . $unit;
+    }
+
+    public function getFormattedForecastDuration(): string
+    {
+        $duration = $this->getForecastDuration();
+        if ($duration <= 0) {
+            return 'N/A';
+        }
+        
+        if ($duration < 24) {
+            return $duration . ' horas';
+        } elseif ($duration < 168) {
+            return number_format($duration / 24, 1) . ' días';
+        } else {
+            return number_format($duration / 168, 1) . ' semanas';
+        }
+    }
+
+    public function getFormattedTimeToExpiry(): string
+    {
+        $timeToExpiry = $this->getTimeToExpiry();
+        if ($timeToExpiry === null) {
+            return 'No expira';
+        }
+        
+        if ($timeToExpiry <= 0) {
+            return 'Expirado';
+        }
+        
+        if ($timeToExpiry < 3600) {
+            return number_format($timeToExpiry / 60, 0) . ' minutos';
+        } elseif ($timeToExpiry < 86400) {
+            return number_format($timeToExpiry / 3600, 1) . ' horas';
+        } else {
+            return number_format($timeToExpiry / 86400, 1) . ' días';
+        }
+    }
+
+    // Clases de badges para Filament
+    public function getForecastStatusBadgeClass(): string
+    {
+        return match($this->forecast_status) {
+            self::FORECAST_STATUS_DRAFT => 'bg-gray-100 text-gray-800',
+            self::FORECAST_STATUS_ACTIVE => 'bg-green-100 text-green-800',
+            self::FORECAST_STATUS_VALIDATED => 'bg-blue-100 text-blue-800',
+            self::FORECAST_STATUS_EXPIRED => 'bg-red-100 text-red-800',
+            self::FORECAST_STATUS_SUPERSEDED => 'bg-orange-100 text-orange-800',
+            self::FORECAST_STATUS_ARCHIVED => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getForecastTypeBadgeClass(): string
+    {
+        return match($this->forecast_type) {
+            self::FORECAST_TYPE_DEMAND => 'bg-blue-100 text-blue-800',
+            self::FORECAST_TYPE_GENERATION => 'bg-green-100 text-green-800',
+            self::FORECAST_TYPE_CONSUMPTION => 'bg-red-100 text-red-800',
+            self::FORECAST_TYPE_PRICE => 'bg-yellow-100 text-yellow-800',
+            self::FORECAST_TYPE_WEATHER => 'bg-cyan-100 text-cyan-800',
+            self::FORECAST_TYPE_LOAD => 'bg-purple-100 text-purple-800',
+            self::FORECAST_TYPE_RENEWABLE => 'bg-green-100 text-green-800',
+            self::FORECAST_TYPE_STORAGE => 'bg-indigo-100 text-indigo-800',
+            self::FORECAST_TYPE_TRANSMISSION => 'bg-orange-100 text-orange-800',
+            self::FORECAST_TYPE_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getForecastHorizonBadgeClass(): string
+    {
+        return match($this->forecast_horizon) {
+            self::FORECAST_HORIZON_HOURLY => 'bg-green-100 text-green-800',
+            self::FORECAST_HORIZON_DAILY => 'bg-blue-100 text-blue-800',
+            self::FORECAST_HORIZON_WEEKLY => 'bg-yellow-100 text-yellow-800',
+            self::FORECAST_HORIZON_MONTHLY => 'bg-orange-100 text-orange-800',
+            self::FORECAST_HORIZON_QUARTERLY => 'bg-purple-100 text-purple-800',
+            self::FORECAST_HORIZON_YEARLY => 'bg-indigo-100 text-indigo-800',
+            self::FORECAST_HORIZON_LONG_TERM => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getForecastMethodBadgeClass(): string
+    {
+        return match($this->forecast_method) {
+            self::FORECAST_METHOD_STATISTICAL => 'bg-blue-100 text-blue-800',
+            self::FORECAST_METHOD_MACHINE_LEARNING => 'bg-purple-100 text-purple-800',
+            self::FORECAST_METHOD_PHYSICAL_MODEL => 'bg-green-100 text-green-800',
+            self::FORECAST_METHOD_HYBRID => 'bg-orange-100 text-orange-800',
+            self::FORECAST_METHOD_EXPERT_JUDGMENT => 'bg-yellow-100 text-yellow-800',
+            self::FORECAST_METHOD_OTHER => 'bg-gray-100 text-gray-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getAccuracyLevelBadgeClass(): string
+    {
+        return match($this->accuracy_level) {
+            self::ACCURACY_LEVEL_LOW => 'bg-red-100 text-red-800',
+            self::ACCURACY_LEVEL_MEDIUM => 'bg-yellow-100 text-yellow-800',
+            self::ACCURACY_LEVEL_HIGH => 'bg-blue-100 text-blue-800',
+            self::ACCURACY_LEVEL_VERY_HIGH => 'bg-green-100 text-green-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    public function getAccuracyScoreBadgeClass(): string
+    {
+        if (!$this->accuracy_score) {
             return 'bg-gray-100 text-gray-800';
         }
         
-        if ($this->isTargetDatePast()) {
+        if ($this->accuracy_score >= 90) {
+            return 'bg-green-100 text-green-800';
+        } elseif ($this->accuracy_score >= 80) {
             return 'bg-blue-100 text-blue-800';
+        } elseif ($this->accuracy_score >= 70) {
+            return 'bg-yellow-100 text-yellow-800';
+        } else {
+            return 'bg-red-100 text-red-800';
+        }
+    }
+
+    public function getConfidenceLevelBadgeClass(): string
+    {
+        if (!$this->confidence_level) {
+            return 'bg-gray-100 text-gray-800';
+        }
+        
+        if ($this->confidence_level >= 90) {
+            return 'bg-green-100 text-green-800';
+        } elseif ($this->confidence_level >= 80) {
+            return 'bg-blue-100 text-blue-800';
+        } elseif ($this->confidence_level >= 70) {
+            return 'bg-yellow-100 text-yellow-800';
+        } else {
+            return 'bg-red-100 text-red-800';
+        }
+    }
+
+    public function getExpiryBadgeClass(): string
+    {
+        if ($this->isExpired()) {
+            return 'bg-red-100 text-red-800';
+        }
+        
+        if ($this->isExpiringSoon(1)) { // 1 hora
+            return 'bg-red-100 text-red-800';
+        }
+        
+        if ($this->isExpiringSoon(24)) { // 24 horas
+            return 'bg-yellow-100 text-yellow-800';
         }
         
         return 'bg-green-100 text-green-800';
-    }
-
-    public function getConfidenceBadgeClass(): string
-    {
-        return match($this->getConfidenceClass()) {
-            'Muy Alta' => 'bg-green-100 text-green-800',
-            'Alta' => 'bg-blue-100 text-blue-800',
-            'Media' => 'bg-yellow-100 text-yellow-800',
-            'Baja' => 'bg-orange-100 text-orange-800',
-            'Muy Baja' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-
-    public function getAccuracyBadgeClass(): string
-    {
-        return match($this->getAccuracyClass()) {
-            'A+' => 'bg-green-100 text-green-800',
-            'A' => 'bg-blue-100 text-blue-800',
-            'B' => 'bg-yellow-100 text-yellow-800',
-            'C' => 'bg-orange-100 text-orange-800',
-            'D' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-
-    public function getTypeBadgeClass(): string
-    {
-        return match($this->forecast_type) {
-            self::FORECAST_TYPE_PRODUCTION => 'bg-green-100 text-green-800',
-            self::FORECAST_TYPE_CONSUMPTION => 'bg-red-100 text-red-800',
-            self::FORECAST_TYPE_DEMAND => 'bg-blue-100 text-blue-800',
-            self::FORECAST_TYPE_PRICE => 'bg-yellow-100 text-yellow-800',
-            self::FORECAST_TYPE_WEATHER => 'bg-cyan-100 text-cyan-800',
-            self::FORECAST_TYPE_AVAILABILITY => 'bg-purple-100 text-purple-800',
-            self::FORECAST_TYPE_MAINTENANCE => 'bg-orange-100 text-orange-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-
-    public function getHorizonBadgeClass(): string
-    {
-        if ($this->isShortTerm()) {
-            return 'bg-green-100 text-green-800';
-        } elseif ($this->isMediumTerm()) {
-            return 'bg-yellow-100 text-yellow-800';
-        } elseif ($this->isLongTerm()) {
-            return 'bg-orange-100 text-orange-800';
-        }
-        
-        return 'bg-gray-100 text-gray-800';
     }
 }
