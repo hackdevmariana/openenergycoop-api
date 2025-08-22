@@ -72,6 +72,7 @@ class MaintenanceSchedule extends Model
         'end_date' => 'date',
         'next_maintenance_date' => 'datetime',
         'last_maintenance_date' => 'datetime',
+        'frequency_value' => 'integer',
         'maintenance_tasks' => 'array',
         'estimated_duration_hours' => 'decimal:2',
         'estimated_cost' => 'decimal:2',

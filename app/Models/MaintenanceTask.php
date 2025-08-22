@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MaintenanceTask extends Model
 {
@@ -45,9 +46,6 @@ class MaintenanceTask extends Model
         'attachments',
         'tags',
         'notes',
-        'created_by',
-        'approved_by',
-        'approved_at',
         'work_order_number',
         'department',
         'category',
@@ -63,33 +61,36 @@ class MaintenanceTask extends Model
         'emergency_maintenance',
         'planned_maintenance',
         'unplanned_maintenance',
+        'created_by',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
-        'due_date' => 'datetime',
-        'start_date' => 'datetime',
+        'due_date' => 'date',
+        'start_date' => 'date',
         'completed_at' => 'datetime',
+        'next_recurrence_date' => 'date',
+        'follow_up_date' => 'date',
         'estimated_hours' => 'decimal:2',
         'actual_hours' => 'decimal:2',
-        'checklist_items' => 'array',
-        'required_tools' => 'array',
-        'required_parts' => 'array',
         'cost_estimate' => 'decimal:2',
         'actual_cost' => 'decimal:2',
+        'quality_score' => 'integer',
         'warranty_work' => 'boolean',
         'recurring' => 'boolean',
-        'next_recurrence_date' => 'datetime',
-        'attachments' => 'array',
-        'tags' => 'array',
-        'approved_at' => 'datetime',
-        'quality_score' => 'integer',
         'follow_up_required' => 'boolean',
-        'follow_up_date' => 'datetime',
         'preventive_maintenance' => 'boolean',
         'corrective_maintenance' => 'boolean',
         'emergency_maintenance' => 'boolean',
         'planned_maintenance' => 'boolean',
         'unplanned_maintenance' => 'boolean',
+        'approved_at' => 'datetime',
+        'checklist_items' => 'array',
+        'required_tools' => 'array',
+        'required_parts' => 'array',
+        'attachments' => 'array',
+        'tags' => 'array',
     ];
 
     // Enums
@@ -218,6 +219,31 @@ class MaintenanceTask extends Model
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function statusLogs(): HasMany
+    {
+        return $this->hasMany(MaintenanceTaskStatusLog::class, 'entity_id');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MaintenanceTaskAttachment::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(MaintenanceTaskComment::class);
+    }
+
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(MaintenanceTaskTimeLog::class);
+    }
+
+    public function costLogs(): HasMany
+    {
+        return $this->hasMany(MaintenanceTaskCostLog::class);
     }
 
     // Scopes
@@ -398,11 +424,6 @@ class MaintenanceTask extends Model
     public function isCancelled(): bool
     {
         return $this->status === self::STATUS_CANCELLED;
-    }
-
-    public function isOverdue(): bool
-    {
-        return $this->status === self::STATUS_OVERDUE;
     }
 
     public function isScheduled(): bool
@@ -660,7 +681,7 @@ class MaintenanceTask extends Model
             return 'No establecida';
         }
         
-        return $this->due_date->format('d/m/Y H:i');
+        return $this->due_date->format('d/m/Y');
     }
 
     public function getFormattedStartDate(): string
@@ -669,7 +690,7 @@ class MaintenanceTask extends Model
             return 'No iniciada';
         }
         
-        return $this->start_date->format('d/m/Y H:i');
+        return $this->start_date->format('d/m/Y');
     }
 
     public function getFormattedCompletedDate(): string
