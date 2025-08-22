@@ -64,6 +64,7 @@ use App\Http\Controllers\Api\V1\SustainabilityMetricController;
 use App\Http\Controllers\Api\V1\PerformanceIndicatorController;
 use App\Http\Controllers\Api\V1\EnergyBondController;
 use App\Http\Controllers\Api\V1\MaintenanceTaskController;
+use App\Http\Controllers\Api\V1\BondDonationController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -173,6 +174,21 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('maintenance-tasks/{maintenanceTask}/reassign', [MaintenanceTaskController::class, 'reassignTask']);
     Route::post('maintenance-tasks/{maintenanceTask}/update-progress', [MaintenanceTaskController::class, 'updateProgress']);
     Route::post('maintenance-tasks/{maintenanceTask}/duplicate', [MaintenanceTaskController::class, 'duplicate']);
+    
+    // Rutas para Bond Donations
+    Route::get('bond-donations/public', [BondDonationController::class, 'publicDonations']);
+    Route::get('bond-donations/recent', [BondDonationController::class, 'recentDonations']);
+    Route::get('bond-donations/top-donors', [BondDonationController::class, 'topDonors']);
+    Route::get('bond-donations/statistics', [BondDonationController::class, 'statistics']);
+    Route::apiResource('bond-donations', BondDonationController::class);
+    Route::post('bond-donations/{bondDonation}/confirm', [BondDonationController::class, 'confirm']);
+    Route::post('bond-donations/{bondDonation}/reject', [BondDonationController::class, 'reject']);
+    Route::post('bond-donations/{bondDonation}/process', [BondDonationController::class, 'process']);
+    Route::post('bond-donations/{bondDonation}/refund', [BondDonationController::class, 'refund']);
+    Route::post('bond-donations/{bondDonation}/make-public', [BondDonationController::class, 'makePublic']);
+    Route::post('bond-donations/{bondDonation}/make-private', [BondDonationController::class, 'makePrivate']);
+    Route::post('bond-donations/{bondDonation}/send-thank-you', [BondDonationController::class, 'sendThankYou']);
+    Route::post('bond-donations/{bondDonation}/duplicate', [BondDonationController::class, 'duplicate']);
     
     // Rutas para Articles (CMS)
     Route::get('articles/featured', [ArticleController::class, 'featured']);
