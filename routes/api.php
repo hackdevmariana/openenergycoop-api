@@ -62,6 +62,7 @@ use App\Http\Controllers\Api\V1\EnergySharingController;
 use App\Http\Controllers\Api\V1\EnergyReportController;
 use App\Http\Controllers\Api\V1\SustainabilityMetricController;
 use App\Http\Controllers\Api\V1\PerformanceIndicatorController;
+use App\Http\Controllers\Api\V1\EnergyBondController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -615,4 +616,53 @@ Route::prefix('v1')->group(function () {
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// Energy Bonds Routes
+Route::prefix('v1')->name('api.v1.')->group(function () {
+    
+    // Energy Bonds Routes
+    Route::prefix('energy-bonds')->name('energy-bonds.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/public', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'publicBonds'])
+            ->name('public');
+        Route::get('/featured', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'featuredBonds'])
+            ->name('featured');
+        Route::get('/statistics', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'statistics'])
+            ->name('statistics');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'store'])
+                ->name('store');
+            Route::get('/{energyBond}', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'show'])
+                ->name('show');
+            Route::put('/{energyBond}', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'update'])
+                ->name('update');
+            Route::patch('/{energyBond}', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'update'])
+                ->name('update');
+            Route::delete('/{energyBond}', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{energyBond}/approve', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'approve'])
+                ->name('approve');
+            Route::post('/{energyBond}/reject', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'reject'])
+                ->name('reject');
+            Route::post('/{energyBond}/mark-featured', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'markFeatured'])
+                ->name('mark-featured');
+            Route::post('/{energyBond}/remove-featured', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'removeFeatured'])
+                ->name('remove-featured');
+            Route::post('/{energyBond}/make-public', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'makePublic'])
+                ->name('make-public');
+            Route::post('/{energyBond}/make-private', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'makePrivate'])
+                ->name('make-private');
+            Route::post('/{energyBond}/duplicate', [App\Http\Controllers\Api\V1\EnergyBondController::class, 'duplicate'])
+                ->name('duplicate');
+        });
+    });
+    
+    // Add more API routes here as needed...
 });
