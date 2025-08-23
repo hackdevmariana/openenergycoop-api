@@ -100,6 +100,38 @@ class User extends Authenticatable
     }
 
     /**
+     * Notificaciones del usuario
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Configuraciones de notificación del usuario
+     */
+    public function notificationSettings(): HasMany
+    {
+        return $this->hasMany(NotificationSetting::class);
+    }
+
+    /**
+     * Notificaciones no leídas del usuario
+     */
+    public function unreadNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->unread();
+    }
+
+    /**
+     * Notificaciones recientes del usuario (últimas 24 horas)
+     */
+    public function recentNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->recent(1);
+    }
+
+    /**
      * Indicadores de rendimiento del usuario
      */
     public function performanceIndicators(): HasMany
