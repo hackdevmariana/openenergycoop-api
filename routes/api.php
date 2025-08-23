@@ -79,6 +79,7 @@ use App\Http\Controllers\Api\V1\EnergyPoolController;
 use App\Http\Controllers\Api\V1\EnergyTradingOrderController;
 use App\Http\Controllers\Api\V1\EnergyForecastController;
 use App\Http\Controllers\Api\V1\TaxCalculationController;
+use App\Http\Controllers\Api\V1\EnergyTransferController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -629,6 +630,28 @@ Route::get('tax-calculations/by-transaction/{transactionType}/{transactionId}', 
 Route::get('tax-calculations/by-currency/{currency}', [TaxCalculationController::class, 'byCurrency']);
 Route::get('tax-calculations/by-amount-range', [TaxCalculationController::class, 'byAmountRange']);
 Route::apiResource('tax-calculations', TaxCalculationController::class);
+
+// EnergyTransfer routes
+Route::get('energy-transfers/statistics', [EnergyTransferController::class, 'statistics']);
+Route::get('energy-transfers/types', [EnergyTransferController::class, 'types']);
+Route::get('energy-transfers/statuses', [EnergyTransferController::class, 'statuses']);
+Route::get('energy-transfers/priorities', [EnergyTransferController::class, 'priorities']);
+Route::patch('energy-transfers/{energyTransfer}/update-status', [EnergyTransferController::class, 'updateStatus']);
+Route::post('energy-transfers/{energyTransfer}/duplicate', [EnergyTransferController::class, 'duplicate']);
+Route::get('energy-transfers/overdue', [EnergyTransferController::class, 'overdue']);
+Route::get('energy-transfers/due-soon', [EnergyTransferController::class, 'dueSoon']);
+Route::get('energy-transfers/by-type/{type}', [EnergyTransferController::class, 'byType']);
+Route::get('energy-transfers/high-priority', [EnergyTransferController::class, 'highPriority']);
+Route::get('energy-transfers/automated', [EnergyTransferController::class, 'automated']);
+Route::get('energy-transfers/manual', [EnergyTransferController::class, 'manual']);
+Route::get('energy-transfers/requires-approval', [EnergyTransferController::class, 'requiresApproval']);
+Route::get('energy-transfers/approved', [EnergyTransferController::class, 'approved']);
+Route::get('energy-transfers/verified', [EnergyTransferController::class, 'verified']);
+Route::get('energy-transfers/by-entity/{entityType}/{entityId}', [EnergyTransferController::class, 'byEntity']);
+Route::get('energy-transfers/by-currency/{currency}', [EnergyTransferController::class, 'byCurrency']);
+Route::get('energy-transfers/by-amount-range', [EnergyTransferController::class, 'byAmountRange']);
+Route::get('energy-transfers/by-efficiency-range', [EnergyTransferController::class, 'byEfficiencyRange']);
+Route::apiResource('energy-transfers', EnergyTransferController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
