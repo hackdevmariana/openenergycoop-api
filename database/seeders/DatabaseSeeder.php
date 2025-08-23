@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             RolesAndAdminSeeder::class,
             AppSettingSeeder::class,
             ShopSeeder::class,
+            NotificationSettingsSeeder::class,
         ]);
     }
 }
