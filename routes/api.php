@@ -80,6 +80,7 @@ use App\Http\Controllers\Api\V1\EnergyTradingOrderController;
 use App\Http\Controllers\Api\V1\EnergyForecastController;
 use App\Http\Controllers\Api\V1\TaxCalculationController;
 use App\Http\Controllers\Api\V1\EnergyTransferController;
+use App\Http\Controllers\Api\V1\AutomationRuleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -652,6 +653,25 @@ Route::get('energy-transfers/by-currency/{currency}', [EnergyTransferController:
 Route::get('energy-transfers/by-amount-range', [EnergyTransferController::class, 'byAmountRange']);
 Route::get('energy-transfers/by-efficiency-range', [EnergyTransferController::class, 'byEfficiencyRange']);
 Route::apiResource('energy-transfers', EnergyTransferController::class);
+
+// AutomationRule routes
+Route::get('automation-rules/statistics', [AutomationRuleController::class, 'statistics']);
+Route::get('automation-rules/types', [AutomationRuleController::class, 'types']);
+Route::get('automation-rules/trigger-types', [AutomationRuleController::class, 'triggerTypes']);
+Route::get('automation-rules/action-types', [AutomationRuleController::class, 'actionTypes']);
+Route::get('automation-rules/execution-frequencies', [AutomationRuleController::class, 'executionFrequencies']);
+Route::patch('automation-rules/{automationRule}/toggle-active', [AutomationRuleController::class, 'toggleActive']);
+Route::post('automation-rules/{automationRule}/duplicate', [AutomationRuleController::class, 'duplicate']);
+Route::get('automation-rules/active', [AutomationRuleController::class, 'active']);
+Route::get('automation-rules/ready-to-execute', [AutomationRuleController::class, 'readyToExecute']);
+Route::get('automation-rules/failed', [AutomationRuleController::class, 'failed']);
+Route::get('automation-rules/successful', [AutomationRuleController::class, 'successful']);
+Route::get('automation-rules/high-priority', [AutomationRuleController::class, 'highPriority']);
+Route::get('automation-rules/by-type/{type}', [AutomationRuleController::class, 'byType']);
+Route::get('automation-rules/by-trigger-type/{triggerType}', [AutomationRuleController::class, 'byTriggerType']);
+Route::get('automation-rules/by-action-type/{actionType}', [AutomationRuleController::class, 'byActionType']);
+Route::get('automation-rules/by-execution-frequency/{frequency}', [AutomationRuleController::class, 'byExecutionFrequency']);
+Route::apiResource('automation-rules', AutomationRuleController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
