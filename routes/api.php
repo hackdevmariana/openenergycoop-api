@@ -75,6 +75,7 @@ use App\Http\Controllers\Api\V1\EnergyInstallationController;
 use App\Http\Controllers\Api\V1\ConsumptionPointController;
 use App\Http\Controllers\Api\V1\EnergyMeterController;
 use App\Http\Controllers\Api\V1\EnergyReadingController;
+use App\Http\Controllers\Api\V1\EnergyPoolController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -544,6 +545,24 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('energy-readings/today', [EnergyReadingController::class, 'today']);
     Route::get('energy-readings/this-month', [EnergyReadingController::class, 'thisMonth']);
     Route::apiResource('energy-readings', EnergyReadingController::class);
+
+// Energy Pool routes
+Route::get('energy-pools/statistics', [EnergyPoolController::class, 'statistics']);
+Route::get('energy-pools/types', [EnergyPoolController::class, 'types']);
+Route::get('energy-pools/statuses', [EnergyPoolController::class, 'statuses']);
+Route::get('energy-pools/categories', [EnergyPoolController::class, 'categories']);
+Route::patch('energy-pools/{energyPool}/update-status', [EnergyPoolController::class, 'updateStatus']);
+Route::post('energy-pools/{energyPool}/duplicate', [EnergyPoolController::class, 'duplicate']);
+Route::get('energy-pools/active', [EnergyPoolController::class, 'active']);
+Route::get('energy-pools/by-type/{type}', [EnergyPoolController::class, 'byType']);
+Route::get('energy-pools/by-category/{category}', [EnergyPoolController::class, 'byCategory']);
+Route::get('energy-pools/high-efficiency', [EnergyPoolController::class, 'highEfficiency']);
+Route::get('energy-pools/high-availability', [EnergyPoolController::class, 'highAvailability']);
+Route::get('energy-pools/by-region/{region}', [EnergyPoolController::class, 'byRegion']);
+Route::get('energy-pools/by-country/{country}', [EnergyPoolController::class, 'byCountry']);
+Route::get('energy-pools/pending-approval', [EnergyPoolController::class, 'pendingApproval']);
+Route::get('energy-pools/approved', [EnergyPoolController::class, 'approved']);
+Route::apiResource('energy-pools', EnergyPoolController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
