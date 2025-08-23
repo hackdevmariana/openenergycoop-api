@@ -78,6 +78,7 @@ use App\Http\Controllers\Api\V1\EnergyReadingController;
 use App\Http\Controllers\Api\V1\EnergyPoolController;
 use App\Http\Controllers\Api\V1\EnergyTradingOrderController;
 use App\Http\Controllers\Api\V1\EnergyForecastController;
+use App\Http\Controllers\Api\V1\TaxCalculationController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -607,6 +608,27 @@ Route::get('energy-forecasts/expiring', [EnergyForecastController::class, 'expir
 Route::get('energy-forecasts/by-source/{source_id}', [EnergyForecastController::class, 'bySource']);
 Route::get('energy-forecasts/by-target/{target_id}', [EnergyForecastController::class, 'byTarget']);
 Route::apiResource('energy-forecasts', EnergyForecastController::class);
+
+// TaxCalculation routes
+Route::get('tax-calculations/statistics', [TaxCalculationController::class, 'statistics']);
+Route::get('tax-calculations/types', [TaxCalculationController::class, 'types']);
+Route::get('tax-calculations/calculation-types', [TaxCalculationController::class, 'calculationTypes']);
+Route::get('tax-calculations/statuses', [TaxCalculationController::class, 'statuses']);
+Route::get('tax-calculations/priorities', [TaxCalculationController::class, 'priorities']);
+Route::patch('tax-calculations/{taxCalculation}/update-status', [TaxCalculationController::class, 'updateStatus']);
+Route::post('tax-calculations/{taxCalculation}/duplicate', [TaxCalculationController::class, 'duplicate']);
+Route::get('tax-calculations/overdue', [TaxCalculationController::class, 'overdue']);
+Route::get('tax-calculations/due-soon', [TaxCalculationController::class, 'dueSoon']);
+Route::get('tax-calculations/by-type/{type}', [TaxCalculationController::class, 'byType']);
+Route::get('tax-calculations/by-calculation-type/{calculationType}', [TaxCalculationController::class, 'byCalculationType']);
+Route::get('tax-calculations/high-priority', [TaxCalculationController::class, 'highPriority']);
+Route::get('tax-calculations/estimated', [TaxCalculationController::class, 'estimated']);
+Route::get('tax-calculations/final', [TaxCalculationController::class, 'final']);
+Route::get('tax-calculations/by-entity/{entityType}/{entityId}', [TaxCalculationController::class, 'byEntity']);
+Route::get('tax-calculations/by-transaction/{transactionType}/{transactionId}', [TaxCalculationController::class, 'byTransaction']);
+Route::get('tax-calculations/by-currency/{currency}', [TaxCalculationController::class, 'byCurrency']);
+Route::get('tax-calculations/by-amount-range', [TaxCalculationController::class, 'byAmountRange']);
+Route::apiResource('tax-calculations', TaxCalculationController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
