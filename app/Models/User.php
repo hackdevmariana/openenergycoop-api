@@ -132,6 +132,46 @@ class User extends Authenticatable
     }
 
     /**
+     * Eventos a los que el usuario está registrado
+     */
+    public function eventAttendances(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class);
+    }
+
+    /**
+     * Eventos a los que el usuario asistió
+     */
+    public function attendedEvents(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class)->where('status', 'attended');
+    }
+
+    /**
+     * Eventos a los que el usuario está registrado pero no ha asistido
+     */
+    public function registeredEvents(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class)->where('status', 'registered');
+    }
+
+    /**
+     * Eventos que el usuario canceló
+     */
+    public function cancelledEvents(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class)->where('status', 'cancelled');
+    }
+
+    /**
+     * Eventos a los que el usuario no asistió
+     */
+    public function noShowEvents(): HasMany
+    {
+        return $this->hasMany(EventAttendance::class)->where('status', 'no_show');
+    }
+
+    /**
      * Indicadores de rendimiento del usuario
      */
     public function performanceIndicators(): HasMany
