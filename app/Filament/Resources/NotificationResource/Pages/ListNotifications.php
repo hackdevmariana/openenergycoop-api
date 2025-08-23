@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Filament\Resources\NotificationResource\Pages;
+
+use App\Filament\Resources\NotificationResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Actions\Action;
+
+class ListNotifications extends ListRecords
+{
+    protected static string $resource = NotificationResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('mark_all_read')
+                ->label('Marcar Todas como Leídas')
+                ->icon('heroicon-o-check-circle')
+                ->color('success')
+                ->action(function () {
+                    $user = auth()->user();
+                    if ($user) {
+                        \App\Models\Notification::markAllAsRead($user->id);
+                        $this->notify('success', 'Todas las notificaciones han sido marcadas como leídas.');
+                    }
+                })
+                ->requiresConfirmation()
+                ->modalHeading('Confirmar Acción')
+                ->modalDescription('¿Estás seguro de que quieres marcar todas las notificaciones como leídas?')
+                ->modalSubmitActionLabel('Sí, Marcar Todas'),
+
+            Action::make('cleanup_old')
+                ->label('Limpiar Antiguas')
+                ->icon('heroicon-o-trash')
+                ->color('warning')
+                ->action(function () {
+                    $deleted = \App\Models\Notification::cleanupOld(30);
+                    $this->notify('success', "Se han eliminado {$deleted} notificaciones antiguas.");
+                })
+                ->requiresConfirmation()
+                ->modalHeading('Confirmar Limpieza')
+                ->modalDescription('¿Estás seguro de que quieres eliminar las notificaciones de más de 30 días?')
+                ->modalSubmitActionLabel('Sí, Limpiar'),
+
+            Actions\CreateAction::make()
+                ->label('Nueva Notificación'),
+        ];
+    }
+}
