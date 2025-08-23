@@ -247,3 +247,4 @@ class PreSaleOfferResource extends JsonResource
         return null;
     }
 }
+
