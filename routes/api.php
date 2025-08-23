@@ -71,6 +71,7 @@ use App\Http\Controllers\Api\V1\SaleOrderController;
 use App\Http\Controllers\Api\V1\PreSaleOfferController;
 use App\Http\Controllers\Api\V1\ProductionProjectController;
 use App\Http\Controllers\Api\V1\EnergySourceController;
+use App\Http\Controllers\Api\V1\EnergyInstallationController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -474,6 +475,23 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('energy-sources/{energySource}/update-status', [EnergySourceController::class, 'updateStatus']);
     Route::post('energy-sources/{energySource}/duplicate', [EnergySourceController::class, 'duplicate']);
     Route::apiResource('energy-sources', EnergySourceController::class);
+
+    // Rutas para Energy Installations (Instalaciones de Energía)
+    Route::get('energy-installations/statistics', [EnergyInstallationController::class, 'statistics']);
+    Route::get('energy-installations/types', [EnergyInstallationController::class, 'types']);
+    Route::get('energy-installations/statuses', [EnergyInstallationController::class, 'statuses']);
+    Route::get('energy-installations/priorities', [EnergyInstallationController::class, 'priorities']);
+    Route::get('energy-installations/operational', [EnergyInstallationController::class, 'operational']);
+    Route::get('energy-installations/maintenance', [EnergyInstallationController::class, 'maintenance']);
+    Route::get('energy-installations/high-priority', [EnergyInstallationController::class, 'highPriority']);
+    Route::get('energy-installations/by-type/{type}', [EnergyInstallationController::class, 'byType']);
+    Route::get('energy-installations/by-customer/{customer_id}', [EnergyInstallationController::class, 'byCustomer']);
+    Route::get('energy-installations/by-project/{project_id}', [EnergyInstallationController::class, 'byProject']);
+    Route::post('energy-installations/{energyInstallation}/toggle-active', [EnergyInstallationController::class, 'toggleActive']);
+    Route::post('energy-installations/{energyInstallation}/update-status', [EnergyInstallationController::class, 'updateStatus']);
+    Route::post('energy-installations/{energyInstallation}/update-priority', [EnergyInstallationController::class, 'updatePriority']);
+    Route::post('energy-installations/{energyInstallation}/duplicate', [EnergyInstallationController::class, 'duplicate']);
+    Route::apiResource('energy-installations', EnergyInstallationController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
