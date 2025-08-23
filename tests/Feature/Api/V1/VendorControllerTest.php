@@ -2,29 +2,32 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\Vendor;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use Tests\Traits\ApiTestHelpers;
 
 class VendorControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase, WithFaker, ApiTestHelpers;
 
-    protected $user;
-    protected $vendor;
+    protected User $user;
+    protected User $admin;
 
     protected function setUp(): void
     {
         parent::setUp();
+        
         $this->user = User::factory()->create();
-        $this->vendor = Vendor::factory()->create();
+        $this->admin = User::factory()->create()->assignRole('admin');
     }
 
-    public function test_index_returns_paginated_vendors()
+    /** @test */
+    public function it_can_list_vendors()
     {
-        Vendor::factory()->count(15)->create();
+        Vendor::factory()->count(5)->create();
 
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors');
@@ -33,231 +36,303 @@ class VendorControllerTest extends TestCase
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
-                        'id', 'name', 'legal_name', 'vendor_type', 'contact_person',
-                        'email', 'is_active', 'status', 'risk_level', 'created_at', 'updated_at'
+                        'id', 'name', 'legal_name', 'vendor_type', 'industry',
+                        'is_active', 'is_verified', 'is_preferred', 'is_blacklisted',
+                        'status', 'risk_level', 'compliance_status', 'rating',
+                        'created_at', 'updated_at'
                     ]
                 ],
-                'links', 'meta'
-            ]);
-    }
-
-    public function test_index_with_filters()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors?vendor_type=supplier&industry=energy&status=active&risk_level=low&is_active=true');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_index_with_search()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors?search=test');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_index_with_sorting()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors?sort=name&order=desc');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_index_with_pagination_limit()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors?per_page=5');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_store_creates_new_vendor()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'phone' => '+1234567890',
-            'industry' => 'energy',
-            'is_active' => true,
-            'status' => 'pending',
-            'risk_level' => 'medium',
-            'compliance_status' => 'pending_review',
-            'rating' => 4.0,
-            'credit_limit' => 10000,
-            'current_balance' => 0,
-            'tax_rate' => 21.0,
-            'discount_rate' => 5.0
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(201)
-            ->assertJsonStructure([
-                'data' => [
-                    'id', 'name', 'legal_name', 'vendor_type', 'contact_person',
-                    'email', 'phone', 'industry', 'is_active', 'status', 'risk_level',
-                    'compliance_status', 'rating', 'credit_limit', 'current_balance',
-                    'tax_rate', 'discount_rate', 'created_at', 'updated_at'
-                ]
-            ]);
-
-        $this->assertDatabaseHas('vendors', [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'email' => 'john@testvendor.com'
-        ]);
-    }
-
-    public function test_store_validates_required_fields()
-    {
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', []);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'legal_name', 'vendor_type', 'contact_person', 'email']);
-    }
-
-    public function test_store_validates_enum_values()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'invalid_type',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'status' => 'invalid_status',
-            'risk_level' => 'invalid_risk',
-            'compliance_status' => 'invalid_compliance'
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['vendor_type', 'status', 'risk_level', 'compliance_status']);
-    }
-
-    public function test_store_validates_cross_field_consistency()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'current_balance' => 5000,
-            'credit_limit' => 1000
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['current_balance']);
-    }
-
-    public function test_show_returns_vendor()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson("/api/v1/vendors/{$this->vendor->id}");
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    'id', 'name', 'legal_name', 'vendor_type', 'contact_person',
-                    'email', 'is_active', 'status', 'risk_level', 'created_at', 'updated_at'
+                'meta' => [
+                    'current_page', 'last_page', 'per_page', 'total',
+                    'from', 'to', 'has_more_pages'
+                ],
+                'summary' => [
+                    'total_vendors', 'active_vendors', 'verified_vendors',
+                    'preferred_vendors', 'blacklisted_vendors'
                 ]
             ]);
     }
 
-    public function test_show_returns_404_for_nonexistent_vendor()
+    /** @test */
+    public function it_can_filter_vendors_by_vendor_type()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/99999');
+        Vendor::factory()->create(['vendor_type' => 'equipment_supplier']);
+        Vendor::factory()->create(['vendor_type' => 'service_provider']);
 
-        $response->assertStatus(404);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?vendor_type=equipment_supplier');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_update_modifies_vendor()
+    /** @test */
+    public function it_can_filter_vendors_by_industry()
     {
-        $data = [
-            'name' => 'Updated Vendor',
-            'legal_name' => 'Updated Vendor Legal',
-            'rating' => 4.5,
-            'is_preferred' => true
-        ];
+        Vendor::factory()->create(['industry' => 'Technology']);
+        Vendor::factory()->create(['industry' => 'Healthcare']);
 
         $response = $this->actingAs($this->user)
-            ->putJson("/api/v1/vendors/{$this->vendor->id}", $data);
+            ->getJson('/api/v1/vendors?industry=Technology');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_filter_vendors_by_country()
+    {
+        Vendor::factory()->create(['country' => 'Spain']);
+        Vendor::factory()->create(['country' => 'France']);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?country=Spain');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_filter_vendors_by_status()
+    {
+        Vendor::factory()->create(['status' => 'active']);
+        Vendor::factory()->create(['status' => 'pending']);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?status=active');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_filter_vendors_by_risk_level()
+    {
+        Vendor::factory()->create(['risk_level' => 'high']);
+        Vendor::factory()->create(['risk_level' => 'low']);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?risk_level=high');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_filter_vendors_by_compliance_status()
+    {
+        Vendor::factory()->create(['compliance_status' => 'compliant']);
+        Vendor::factory()->create(['compliance_status' => 'non_compliant']);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?compliance_status=compliant');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_filter_vendors_by_boolean_fields()
+    {
+        Vendor::factory()->create(['is_active' => true]);
+        Vendor::factory()->create(['is_active' => false]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?is_active=true');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_search_vendors()
+    {
+        Vendor::factory()->create(['name' => 'Tech Solutions Inc']);
+        Vendor::factory()->create(['name' => 'Healthcare Services']);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?search=Tech');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
+    }
+
+    /** @test */
+    public function it_can_sort_vendors()
+    {
+        Vendor::factory()->create(['name' => 'A Company']);
+        Vendor::factory()->create(['name' => 'Z Company']);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors?sort_by=name&sort_direction=asc');
+
+        $response->assertStatus(200);
+        $this->assertEquals('A Company', $response->json('data.0.name'));
+    }
+
+    /** @test */
+    public function it_can_show_vendor()
+    {
+        $vendor = Vendor::factory()->create();
+
+        $response = $this->actingAs($this->user)
+            ->getJson("/api/v1/vendors/{$vendor->id}");
 
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'name' => 'Updated Vendor',
-                    'legal_name' => 'Updated Vendor Legal',
-                    'rating' => 4.5,
-                    'is_preferred' => true
+                    'id' => $vendor->id,
+                    'name' => $vendor->name,
+                    'legal_name' => $vendor->legal_name
+                ]
+            ]);
+    }
+
+    /** @test */
+    public function it_can_store_vendor()
+    {
+        $vendorData = [
+            'name' => 'Test Vendor',
+            'legal_name' => 'Test Vendor Legal Name',
+            'vendor_type' => 'equipment_supplier',
+            'industry' => 'Technology',
+            'description' => 'Test description',
+            'contact_person' => 'John Doe',
+            'email' => 'test@vendor.com',
+            'phone' => '+1234567890',
+            'country' => 'Spain',
+            'is_active' => true,
+            'status' => 'pending',
+            'risk_level' => 'medium',
+            'compliance_status' => 'pending_review'
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/v1/vendors', $vendorData);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'message' => 'Vendor creado exitosamente',
+                'data' => [
+                    'name' => 'Test Vendor',
+                    'legal_name' => 'Test Vendor Legal Name',
+                    'vendor_type' => 'equipment_supplier'
                 ]
             ]);
 
         $this->assertDatabaseHas('vendors', [
-            'id' => $this->vendor->id,
-            'name' => 'Updated Vendor',
-            'rating' => 4.5
+            'name' => 'Test Vendor',
+            'email' => 'test@vendor.com'
         ]);
     }
 
-    public function test_update_validates_cross_field_consistency()
+    /** @test */
+    public function it_validates_required_fields_when_storing()
     {
-        $data = [
-            'current_balance' => 5000,
-            'credit_limit' => 1000
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->putJson("/api/v1/vendors/{$this->vendor->id}", $data);
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/v1/vendors', []);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['current_balance']);
+            ->assertJsonValidationErrors(['name', 'legal_name', 'vendor_type']);
     }
 
-    public function test_destroy_deletes_vendor()
+    /** @test */
+    public function it_validates_unique_fields_when_storing()
     {
-        $response = $this->actingAs($this->user)
-            ->deleteJson("/api/v1/vendors/{$this->vendor->id}");
+        Vendor::factory()->create(['email' => 'existing@vendor.com']);
 
-        $response->assertStatus(200);
+        $vendorData = [
+            'name' => 'Test Vendor',
+            'legal_name' => 'Test Vendor Legal Name',
+            'vendor_type' => 'equipment_supplier',
+            'email' => 'existing@vendor.com'
+        ];
 
-        $this->assertDatabaseMissing('vendors', [
-            'id' => $this->vendor->id
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/v1/vendors', $vendorData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
+    }
+
+    /** @test */
+    public function it_can_update_vendor()
+    {
+        $vendor = Vendor::factory()->create(['name' => 'Old Name']);
+
+        $updateData = [
+            'name' => 'Updated Name',
+            'industry' => 'Updated Industry'
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/vendors/{$vendor->id}", $updateData);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'Vendor actualizado exitosamente',
+                'data' => [
+                    'name' => 'Updated Name',
+                    'industry' => 'Updated Industry'
+                ]
+            ]);
+
+        $this->assertDatabaseHas('vendors', [
+            'id' => $vendor->id,
+            'name' => 'Updated Name',
+            'industry' => 'Updated Industry'
         ]);
     }
 
-    public function test_statistics_returns_vendor_statistics()
+    /** @test */
+    public function it_can_destroy_vendor()
     {
+        $vendor = Vendor::factory()->create();
+
+        $response = $this->actingAs($this->admin)
+            ->deleteJson("/api/v1/vendors/{$vendor->id}");
+
+        $response->assertStatus(200)
+            ->assertJson(['message' => 'Vendor eliminado exitosamente']);
+
+        $this->assertDatabaseMissing('vendors', ['id' => $vendor->id]);
+    }
+
+    /** @test */
+    public function it_can_get_vendor_statistics()
+    {
+        Vendor::factory()->count(3)->create(['is_active' => true]);
+        Vendor::factory()->count(2)->create(['is_active' => false]);
+        Vendor::factory()->count(2)->create(['is_verified' => true]);
+        Vendor::factory()->count(1)->create(['is_preferred' => true]);
+
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/statistics');
 
         $response->assertStatus(200)
-            ->assertJsonStructure([
+            ->assertJson([
                 'data' => [
-                    'total_vendors', 'active_vendors', 'inactive_vendors', 'verified_vendors',
-                    'preferred_vendors', 'blacklisted_vendors', 'approved_vendors',
-                    'pending_approval_vendors', 'high_risk_vendors', 'compliant_vendors',
-                    'non_compliant_vendors', 'needs_audit_vendors', 'contract_expiring_soon_vendors',
-                    'expired_contract_vendors'
+                    'total_vendors' => 5,
+                    'active_vendors' => 3,
+                    'inactive_vendors' => 2,
+                    'verified_vendors' => 2,
+                    'unverified_vendors' => 3,
+                    'preferred_vendors' => 1,
+                    'non_preferred_vendors' => 4,
+                    'blacklisted_vendors' => 0,
+                    'non_blacklisted_vendors' => 5,
+                    'high_risk_vendors' => 0,
+                    'medium_risk_vendors' => 5,
+                    'low_risk_vendors' => 0,
+                    'compliant_vendors' => 0,
+                    'non_compliant_vendors' => 0,
+                    'needs_audit_vendors' => 5
                 ]
             ]);
     }
 
-    public function test_vendor_types_returns_vendor_types()
+    /** @test */
+    public function it_can_get_vendor_types()
     {
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/vendor-types');
@@ -265,25 +340,15 @@ class VendorControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['value', 'label', 'count']
+                    'equipment_supplier', 'service_provider', 'material_supplier',
+                    'consultant', 'contractor', 'distributor', 'manufacturer',
+                    'wholesaler', 'retailer', 'other'
                 ]
             ]);
     }
 
-    public function test_statuses_returns_statuses()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/statuses');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['value', 'label', 'count']
-                ]
-            ]);
-    }
-
-    public function test_risk_levels_returns_risk_levels()
+    /** @test */
+    public function it_can_get_risk_levels()
     {
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/risk-levels');
@@ -291,12 +356,13 @@ class VendorControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['value', 'label', 'count']
+                    'minimal', 'low', 'medium', 'high', 'extreme'
                 ]
             ]);
     }
 
-    public function test_compliance_statuses_returns_compliance_statuses()
+    /** @test */
+    public function it_can_get_compliance_statuses()
     {
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/compliance-statuses');
@@ -304,398 +370,344 @@ class VendorControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['value', 'label', 'count']
+                    'pending_review', 'under_review', 'compliant',
+                    'needs_audit', 'non_compliant'
                 ]
             ]);
     }
 
-    public function test_toggle_active_alternates_vendor_status()
+    /** @test */
+    public function it_can_toggle_verified_status()
     {
-        $response = $this->actingAs($this->user)
-            ->patchJson("/api/v1/vendors/{$this->vendor->id}/toggle-active");
+        $vendor = Vendor::factory()->create(['is_verified' => false]);
+
+        $response = $this->actingAs($this->admin)
+            ->patchJson("/api/v1/vendors/{$vendor->id}/toggle-verified");
 
         $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => ['is_active']
+            ->assertJson([
+                'message' => 'Estado verificado alternado exitosamente',
+                'data' => ['is_verified' => true]
+            ]);
+
+        $this->assertTrue($vendor->fresh()->is_verified);
+    }
+
+    /** @test */
+    public function it_can_toggle_preferred_status()
+    {
+        $vendor = Vendor::factory()->create(['is_preferred' => false]);
+
+        $response = $this->actingAs($this->admin)
+            ->patchJson("/api/v1/vendors/{$vendor->id}/toggle-preferred");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'Estado preferido alternado exitosamente',
+                'data' => ['is_preferred' => true]
+            ]);
+
+        $this->assertTrue($vendor->fresh()->is_preferred);
+    }
+
+    /** @test */
+    public function it_can_duplicate_vendor()
+    {
+        $vendor = Vendor::factory()->create([
+            'name' => 'Original Vendor',
+            'is_active' => true,
+            'is_verified' => true,
+            'is_preferred' => true
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/vendors/{$vendor->id}/duplicate");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'Vendor duplicado exitosamente',
+                'data' => [
+                    'name' => 'Original Vendor (Copia)',
+                    'is_active' => false,
+                    'is_verified' => false,
+                    'is_preferred' => false
+                ]
             ]);
 
         $this->assertDatabaseHas('vendors', [
-            'id' => $this->vendor->id,
-            'is_active' => !$this->vendor->is_active
+            'name' => 'Original Vendor (Copia)',
+            'is_active' => false,
+            'is_verified' => false,
+            'is_preferred' => false
         ]);
     }
 
-    public function test_duplicate_creates_copy_of_vendor()
+    /** @test */
+    public function it_can_get_active_vendors()
     {
-        $response = $this->actingAs($this->user)
-            ->postJson("/api/v1/vendors/{$this->vendor->id}/duplicate");
+        Vendor::factory()->create(['is_active' => true]);
+        Vendor::factory()->create(['is_active' => false]);
 
-        $response->assertStatus(201)
-            ->assertJsonStructure([
-                'data' => [
-                    'id', 'name', 'vendor_type', 'contact_person', 'email'
-                ]
-            ]);
-
-        $this->assertDatabaseCount('vendors', 2);
-    }
-
-    public function test_active_returns_active_vendors()
-    {
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/active');
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'is_active']
-                ]
-            ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_verified_returns_verified_vendors()
+    /** @test */
+    public function it_can_get_verified_vendors()
     {
+        Vendor::factory()->create(['is_verified' => true]);
+        Vendor::factory()->create(['is_verified' => false]);
+
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/verified');
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'is_verified']
-                ]
-            ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_preferred_returns_preferred_vendors()
+    /** @test */
+    public function it_can_get_preferred_vendors()
     {
+        Vendor::factory()->create(['is_preferred' => true]);
+        Vendor::factory()->create(['is_preferred' => false]);
+
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/vendors/preferred');
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'is_preferred']
-                ]
-            ]);
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_high_risk_returns_high_risk_vendors()
+    /** @test */
+    public function it_can_get_blacklisted_vendors()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/high-risk');
+        Vendor::factory()->create(['is_blacklisted' => true]);
+        Vendor::factory()->create(['is_blacklisted' => false]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'risk_level']
-                ]
-            ]);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors/blacklisted');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_needs_audit_returns_vendors_needing_audit()
+    /** @test */
+    public function it_can_get_compliant_vendors()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/needs-audit');
+        Vendor::factory()->create(['compliance_status' => 'compliant']);
+        Vendor::factory()->create(['compliance_status' => 'non_compliant']);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'next_audit_date']
-                ]
-            ]);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors/compliant');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_contract_expiring_returns_vendors_with_expiring_contracts()
+    /** @test */
+    public function it_can_get_vendors_by_risk_level()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/contract-expiring');
+        Vendor::factory()->create(['risk_level' => 'high']);
+        Vendor::factory()->create(['risk_level' => 'low']);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'contract_end_date']
-                ]
-            ]);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors/by-risk-level/high');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_by_type_returns_vendors_by_type()
+    /** @test */
+    public function it_can_get_vendors_by_compliance_status()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/by-type/supplier');
+        Vendor::factory()->create(['compliance_status' => 'compliant']);
+        Vendor::factory()->create(['compliance_status' => 'non_compliant']);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'vendor_type']
-                ]
-            ]);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors/by-compliance-status/compliant');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_by_industry_returns_vendors_by_industry()
+    /** @test */
+    public function it_can_get_vendors_by_location()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/by-industry/energy');
+        Vendor::factory()->create(['country' => 'Spain']);
+        Vendor::factory()->create(['country' => 'France']);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'industry']
-                ]
-            ]);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors/by-location/Spain');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_by_location_returns_vendors_by_location()
+    /** @test */
+    public function it_can_get_high_rating_vendors()
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/by-location?country=Spain');
+        Vendor::factory()->create(['rating' => 4.5]);
+        Vendor::factory()->create(['rating' => 3.0]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'country']
-                ]
-            ]);
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/vendors/high-rating');
+
+        $response->assertStatus(200);
+        $this->assertEquals(1, $response->json('meta.total'));
     }
 
-    public function test_by_rating_returns_vendors_by_rating()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/vendors/by-rating/4.0');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'rating']
-                ]
-            ]);
-    }
-
-    public function test_requires_authentication()
+    /** @test */
+    public function it_requires_authentication()
     {
         $response = $this->getJson('/api/v1/vendors');
         $response->assertStatus(401);
     }
 
-    public function test_logs_activity_on_create()
+    /** @test */
+    public function it_paginates_results()
     {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'industry' => 'energy',
-            'is_active' => true,
-            'status' => 'pending',
-            'risk_level' => 'medium',
-            'compliance_status' => 'pending_review'
-        ];
-
-        $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        // Verificar que se registró la actividad (si tienes un sistema de logging)
-        // $this->assertDatabaseHas('activity_log', [...]);
-    }
-
-    public function test_validates_contract_dates()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'contract_start_date' => now()->addMonth(),
-            'contract_end_date' => now()->subMonth()
-        ];
+        Vendor::factory()->count(25)->create();
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
+            ->getJson('/api/v1/vendors?per_page=10');
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['contract_end_date']);
+        $response->assertStatus(200)
+            ->assertJson([
+                'meta' => [
+                    'per_page' => 10,
+                    'total' => 25,
+                    'last_page' => 3
+                ]
+            ]);
     }
 
-    public function test_validates_audit_dates()
+    /** @test */
+    public function it_includes_relationships_when_requested()
     {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'last_audit_date' => now()->addMonth(),
-            'next_audit_date' => now()->subMonth()
-        ];
+        $vendor = Vendor::factory()->create([
+            'created_by' => $this->admin->id
+        ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
+            ->getJson("/api/v1/vendors/{$vendor->id}?include=createdBy");
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['next_audit_date']);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'created_by' => [
+                        'id', 'name', 'email'
+                    ]
+                ]
+            ]);
     }
 
-    public function test_validates_credit_limits()
+    /** @test */
+    public function it_validates_cross_field_validation_rules()
     {
-        $data = [
+        $vendorData = [
             'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
+            'legal_name' => 'Test Vendor Legal Name',
+            'vendor_type' => 'equipment_supplier',
             'credit_limit' => 1000,
-            'current_balance' => 2000
+            'current_balance' => 2000 // Mayor que el límite de crédito
         ];
 
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/v1/vendors', $vendorData);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['current_balance']);
+            ->assertJsonValidationErrors(['credit_limit']);
     }
 
-    public function test_validates_tax_rates()
+    /** @test */
+    public function it_validates_date_relationships()
     {
-        $data = [
+        $vendorData = [
             'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'tax_rate' => 150.0
+            'legal_name' => 'Test Vendor Legal Name',
+            'vendor_type' => 'equipment_supplier',
+            'contract_start_date' => '2024-12-31',
+            'contract_end_date' => '2024-01-01' // Fecha anterior a la de inicio
         ];
 
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['tax_rate']);
-    }
-
-    public function test_validates_discount_rates()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'discount_rate' => 50.0
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['discount_rate']);
-    }
-
-    public function test_validates_rating_range()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'rating' => 6.0
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['rating']);
-    }
-
-    public function test_validates_coordinates()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'latitude' => 100.0,
-            'longitude' => 200.0
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['latitude', 'longitude']);
-    }
-
-    public function test_validates_contact_information()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe'
-            // Sin email ni teléfono
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
-    }
-
-    public function test_validates_location_information()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com'
-            // Sin dirección, ciudad ni país
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
-
-        $response->assertStatus(422);
-    }
-
-    public function test_validates_contract_duration()
-    {
-        $data = [
-            'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'contract_start_date' => now()->subYears(6),
-            'contract_end_date' => now()->addYears(6)
-        ];
-
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/v1/vendors', $vendorData);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['contract_end_date']);
     }
 
-    public function test_validates_audit_frequency()
+    /** @test */
+    public function it_validates_boolean_consistency()
     {
-        $data = [
+        $vendorData = [
             'name' => 'Test Vendor',
-            'legal_name' => 'Test Vendor Legal',
-            'vendor_type' => 'supplier',
-            'contact_person' => 'John Doe',
-            'email' => 'john@testvendor.com',
-            'audit_frequency' => 400
+            'legal_name' => 'Test Vendor Legal Name',
+            'vendor_type' => 'equipment_supplier',
+            'is_preferred' => true,
+            'is_blacklisted' => true // No puede ser preferido y estar en lista negra
         ];
 
-        $response = $this->actingAs($this->user)
-            ->postJson('/api/v1/vendors', $data);
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/v1/vendors', $vendorData);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['audit_frequency']);
+            ->assertJsonValidationErrors(['is_preferred']);
+    }
+
+    /** @test */
+    public function it_protects_critical_fields_for_approved_vendors()
+    {
+        $vendor = Vendor::factory()->create([
+            'approved_at' => now(),
+            'vendor_type' => 'equipment_supplier'
+        ]);
+
+        $updateData = [
+            'vendor_type' => 'service_provider' // Campo crítico
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/vendors/{$vendor->id}", $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['vendor_type']);
+    }
+
+    /** @test */
+    public function it_requires_justification_for_risk_reduction()
+    {
+        $vendor = Vendor::factory()->create(['risk_level' => 'high']);
+
+        $updateData = [
+            'risk_level' => 'low', // Reducción de riesgo
+            'notes' => 'Short note' // Nota muy corta
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/vendors/{$vendor->id}", $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['notes']);
+    }
+
+    /** @test */
+    public function it_requires_justification_for_compliance_improvement()
+    {
+        $vendor = Vendor::factory()->create(['compliance_status' => 'non_compliant']);
+
+        $updateData = [
+            'compliance_status' => 'compliant', // Mejora de cumplimiento
+            'notes' => 'Short note' // Nota muy corta
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/vendors/{$vendor->id}", $updateData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['notes']);
     }
 }

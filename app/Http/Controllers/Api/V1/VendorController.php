@@ -67,12 +67,12 @@ class VendorController extends Controller
                 $query->where('is_active', $request->boolean('is_active'));
             }
 
-            if ($request->filled('country')) {
-                $query->byLocation($request->country);
+            if ($request->filled('compliance_status')) {
+                $query->byComplianceStatus($request->compliance_status);
             }
 
-            if ($request->filled('rating')) {
-                $query->byRating($request->rating);
+            if ($request->filled('country')) {
+                $query->byLocation($request->country);
             }
 
             // Búsqueda
@@ -324,8 +324,6 @@ class VendorController extends Controller
                 'compliant_vendors' => Vendor::compliant()->count(),
                 'non_compliant_vendors' => Vendor::nonCompliant()->count(),
                 'needs_audit_vendors' => Vendor::needsAudit()->count(),
-                'contract_expiring_soon_vendors' => Vendor::byContractStatus('expiring_soon')->count(),
-                'expired_contract_vendors' => Vendor::byContractStatus('expired')->count(),
             ];
 
             Log::info('Estadísticas de Vendors consultadas', [
@@ -436,7 +434,7 @@ class VendorController extends Controller
 
             return response()->json(['data' => $riskLevels]);
         } catch (\Exception $e) {
-            Log::error('Error al obtener niveles de riesgo de Vendors', [
+            Log::error('Error al obtener niveles de riesgo', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
             ]);
@@ -470,7 +468,7 @@ class VendorController extends Controller
 
             return response()->json(['data' => $complianceStatuses]);
         } catch (\Exception $e) {
-            Log::error('Error al obtener estados de cumplimiento de Vendors', [
+            Log::error('Error al obtener estados de cumplimiento', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
             ]);
@@ -529,6 +527,98 @@ class VendorController extends Controller
     }
 
     /**
+     * @OA\Patch(
+     *     path="/api/v1/vendors/{id}/toggle-verified",
+     *     summary="Alternar estado verificado del proveedor",
+     *     tags={"Vendors"},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID del proveedor", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Estado verificado alternado exitosamente"),
+     *     @OA\Response(response=404, description="Proveedor no encontrado"),
+     *     @OA\Response(response=401, description="No autorizado")
+     * )
+     */
+    public function toggleVerified(Vendor $vendor): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $vendor->update(['is_verified' => !$vendor->is_verified]);
+
+            DB::commit();
+
+            Log::info('Estado verificado de Vendor alternado', [
+                'user_id' => auth()->id(),
+                'vendor_id' => $vendor->id,
+                'new_status' => $vendor->is_verified
+            ]);
+
+            return response()->json([
+                'message' => 'Estado verificado alternado exitosamente',
+                'data' => new VendorResource($vendor)
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al alternar estado verificado', [
+                'user_id' => auth()->id(),
+                'vendor_id' => $vendor->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al alternar el estado verificado',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/v1/vendors/{id}/toggle-preferred",
+     *     summary="Alternar estado preferido del proveedor",
+     *     tags={"Vendors"},
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID del proveedor", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Estado preferido alternado exitosamente"),
+     *     @OA\Response(response=404, description="Proveedor no encontrado"),
+     *     @OA\Response(response=401, description="No autorizado")
+     * )
+     */
+    public function togglePreferred(Vendor $vendor): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $vendor->update(['is_preferred' => !$vendor->is_preferred]);
+
+            DB::commit();
+
+            Log::info('Estado preferido de Vendor alternado', [
+                'user_id' => auth()->id(),
+                'vendor_id' => $vendor->id,
+                'new_status' => $vendor->is_preferred
+            ]);
+
+            return response()->json([
+                'message' => 'Estado preferido alternado exitosamente',
+                'data' => new VendorResource($vendor)
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error al alternar estado preferido', [
+                'user_id' => auth()->id(),
+                'vendor_id' => $vendor->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al alternar el estado preferido',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/v1/vendors/{id}/duplicate",
      *     summary="Duplicar proveedor",
@@ -547,6 +637,8 @@ class VendorController extends Controller
             $duplicate = $vendor->replicate();
             $duplicate->name = $duplicate->name . ' (Copia)';
             $duplicate->is_active = false;
+            $duplicate->is_verified = false;
+            $duplicate->is_preferred = false;
             $duplicate->approved_at = null;
             $duplicate->approved_by = null;
             $duplicate->save();
@@ -701,6 +793,36 @@ class VendorController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/api/v1/vendors/compliant",
+     *     summary="Obtener proveedores que cumplen",
+     *     tags={"Vendors"},
+     *     @OA\Response(response=200, description="Proveedores que cumplen obtenidos exitosamente"),
+     *     @OA\Response(response=401, description="No autorizado")
+     * )
+     */
+    public function compliant(): JsonResponse
+    {
+        try {
+            $vendors = Vendor::compliant()
+                ->with(['createdBy', 'approvedBy'])
+                ->paginate(15);
+
+            return response()->json(new VendorCollection($vendors));
+        } catch (\Exception $e) {
+            Log::error('Error al obtener proveedores que cumplen', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al obtener los proveedores que cumplen',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
      *     path="/api/v1/vendors/needs-audit",
      *     summary="Obtener proveedores que necesitan auditoría",
      *     tags={"Vendors"},
@@ -825,24 +947,82 @@ class VendorController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/vendors/by-location",
-     *     summary="Obtener proveedores por ubicación",
+     *     path="/api/v1/vendors/by-risk-level/{riskLevel}",
+     *     summary="Obtener proveedores por nivel de riesgo",
      *     tags={"Vendors"},
-     *     @OA\Parameter(name="country", in="query", description="País", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="state", in="query", description="Estado/Provincia", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="city", in="query", description="Ciudad", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="riskLevel", in="path", required=true, description="Nivel de riesgo", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="Proveedores obtenidos exitosamente"),
      *     @OA\Response(response=401, description="No autorizado")
      * )
      */
-    public function byLocation(Request $request): JsonResponse
+    public function byRiskLevel(string $riskLevel): JsonResponse
     {
         try {
-            $vendors = Vendor::byLocation(
-                $request->get('country'),
-                $request->get('state'),
-                $request->get('city')
-            )
+            $vendors = Vendor::byRiskLevel($riskLevel)
+                ->with(['createdBy', 'approvedBy'])
+                ->paginate(15);
+
+            return response()->json(new VendorCollection($vendors));
+        } catch (\Exception $e) {
+            Log::error('Error al obtener proveedores por nivel de riesgo', [
+                'user_id' => auth()->id(),
+                'risk_level' => $riskLevel,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al obtener los proveedores por nivel de riesgo',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/vendors/by-compliance-status/{complianceStatus}",
+     *     summary="Obtener proveedores por estado de cumplimiento",
+     *     tags={"Vendors"},
+     *     @OA\Parameter(name="complianceStatus", in="path", required=true, description="Estado de cumplimiento", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Proveedores obtenidos exitosamente"),
+     *     @OA\Response(response=401, description="No autorizado")
+     * )
+     */
+    public function byComplianceStatus(string $complianceStatus): JsonResponse
+    {
+        try {
+            $vendors = Vendor::where('compliance_status', $complianceStatus)
+                ->with(['createdBy', 'approvedBy'])
+                ->paginate(15);
+
+            return response()->json(new VendorCollection($vendors));
+        } catch (\Exception $e) {
+            Log::error('Error al obtener proveedores por estado de cumplimiento', [
+                'user_id' => auth()->id(),
+                'compliance_status' => $complianceStatus,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al obtener los proveedores por estado de cumplimiento',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/vendors/by-location/{country}",
+     *     summary="Obtener proveedores por ubicación",
+     *     tags={"Vendors"},
+     *     @OA\Parameter(name="country", in="path", required=true, description="País", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Proveedores obtenidos exitosamente"),
+     *     @OA\Response(response=401, description="No autorizado")
+     * )
+     */
+    public function byLocation(string $country): JsonResponse
+    {
+        try {
+            $vendors = Vendor::byLocation($country)
                 ->with(['createdBy', 'approvedBy'])
                 ->paginate(15);
 
@@ -850,7 +1030,7 @@ class VendorController extends Controller
         } catch (\Exception $e) {
             Log::error('Error al obtener proveedores por ubicación', [
                 'user_id' => auth()->id(),
-                'location' => $request->only(['country', 'state', 'city']),
+                'country' => $country,
                 'error' => $e->getMessage()
             ]);
 
@@ -863,31 +1043,29 @@ class VendorController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/vendors/by-rating/{rating}",
-     *     summary="Obtener proveedores por calificación mínima",
+     *     path="/api/v1/vendors/high-rating",
+     *     summary="Obtener proveedores con alta calificación",
      *     tags={"Vendors"},
-     *     @OA\Parameter(name="rating", in="path", required=true, description="Calificación mínima", @OA\Schema(type="number")),
      *     @OA\Response(response=200, description="Proveedores obtenidos exitosamente"),
      *     @OA\Response(response=401, description="No autorizado")
      * )
      */
-    public function byRating(float $rating): JsonResponse
+    public function highRating(): JsonResponse
     {
         try {
-            $vendors = Vendor::byRating($rating)
+            $vendors = Vendor::highRating()
                 ->with(['createdBy', 'approvedBy'])
                 ->paginate(15);
 
             return response()->json(new VendorCollection($vendors));
         } catch (\Exception $e) {
-            Log::error('Error al obtener proveedores por calificación', [
+            Log::error('Error al obtener proveedores con alta calificación', [
                 'user_id' => auth()->id(),
-                'rating' => $rating,
                 'error' => $e->getMessage()
             ]);
 
             return response()->json([
-                'message' => 'Error al obtener los proveedores por calificación',
+                'message' => 'Error al obtener los proveedores con alta calificación',
                 'error' => $e->getMessage()
             ], 500);
         }
