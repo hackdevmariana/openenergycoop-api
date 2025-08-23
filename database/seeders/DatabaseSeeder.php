@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             AppSettingSeeder::class,
             ShopSeeder::class,
             NotificationSettingsSeeder::class,
+            EventSeeder::class,
         ]);
     }
 }
