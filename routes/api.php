@@ -82,6 +82,7 @@ use App\Http\Controllers\Api\V1\TaxCalculationController;
 use App\Http\Controllers\Api\V1\EnergyTransferController;
 use App\Http\Controllers\Api\V1\AutomationRuleController;
 use App\Http\Controllers\Api\V1\VendorController;
+use App\Http\Controllers\Api\V1\TaskTemplateController;
 use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
@@ -694,6 +695,27 @@ Route::get('vendors/by-industry/{industry}', [VendorController::class, 'byIndust
 Route::get('vendors/by-location', [VendorController::class, 'byLocation']);
 Route::get('vendors/by-rating/{rating}', [VendorController::class, 'byRating']);
 Route::apiResource('vendors', VendorController::class);
+
+// TaskTemplate routes
+Route::get('task-templates/statistics', [TaskTemplateController::class, 'statistics']);
+Route::get('task-templates/template-types', [TaskTemplateController::class, 'templateTypes']);
+Route::get('task-templates/priorities', [TaskTemplateController::class, 'priorities']);
+Route::get('task-templates/risk-levels', [TaskTemplateController::class, 'riskLevels']);
+Route::patch('task-templates/{task_template}/toggle-active', [TaskTemplateController::class, 'toggleActive']);
+Route::patch('task-templates/{task_template}/toggle-standard', [TaskTemplateController::class, 'toggleStandard']);
+Route::post('task-templates/{task_template}/duplicate', [TaskTemplateController::class, 'duplicate']);
+Route::get('task-templates/active', [TaskTemplateController::class, 'active']);
+Route::get('task-templates/standard', [TaskTemplateController::class, 'standard']);
+Route::get('task-templates/approved', [TaskTemplateController::class, 'approved']);
+Route::get('task-templates/pending-approval', [TaskTemplateController::class, 'pendingApproval']);
+Route::get('task-templates/by-type/{type}', [TaskTemplateController::class, 'byType']);
+Route::get('task-templates/by-category/{category}', [TaskTemplateController::class, 'byCategory']);
+Route::get('task-templates/by-priority/{priority}', [TaskTemplateController::class, 'byPriority']);
+Route::get('task-templates/by-risk-level/{riskLevel}', [TaskTemplateController::class, 'byRiskLevel']);
+Route::get('task-templates/by-department/{department}', [TaskTemplateController::class, 'byDepartment']);
+Route::get('task-templates/high-priority', [TaskTemplateController::class, 'highPriority']);
+Route::get('task-templates/high-risk', [TaskTemplateController::class, 'highRisk']);
+Route::apiResource('task-templates', TaskTemplateController::class);
 
 // MaintenanceSchedule routes
 Route::get('maintenance-schedules/statistics', [MaintenanceScheduleController::class, 'statistics']);
