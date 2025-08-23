@@ -73,6 +73,7 @@ use App\Http\Controllers\Api\V1\ProductionProjectController;
 use App\Http\Controllers\Api\V1\EnergySourceController;
 use App\Http\Controllers\Api\V1\EnergyInstallationController;
 use App\Http\Controllers\Api\V1\ConsumptionPointController;
+use App\Http\Controllers\Api\V1\EnergyMeterController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -509,6 +510,23 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('consumption-points/{consumptionPoint}/update-status', [ConsumptionPointController::class, 'updateStatus']);
     Route::post('consumption-points/{consumptionPoint}/duplicate', [ConsumptionPointController::class, 'duplicate']);
     Route::apiResource('consumption-points', ConsumptionPointController::class);
+
+    // Rutas para Energy Meters (Medidores de Energía)
+    Route::get('energy-meters/statistics', [EnergyMeterController::class, 'statistics']);
+    Route::get('energy-meters/types', [EnergyMeterController::class, 'types']);
+    Route::get('energy-meters/statuses', [EnergyMeterController::class, 'statuses']);
+    Route::get('energy-meters/categories', [EnergyMeterController::class, 'categories']);
+    Route::get('energy-meters/active', [EnergyMeterController::class, 'active']);
+    Route::get('energy-meters/smart-meters', [EnergyMeterController::class, 'smartMeters']);
+    Route::get('energy-meters/needs-calibration', [EnergyMeterController::class, 'needsCalibration']);
+    Route::get('energy-meters/by-type/{type}', [EnergyMeterController::class, 'byType']);
+    Route::get('energy-meters/by-category/{category}', [EnergyMeterController::class, 'byCategory']);
+    Route::get('energy-meters/by-customer/{customer_id}', [EnergyMeterController::class, 'byCustomer']);
+    Route::get('energy-meters/by-installation/{installation_id}', [EnergyMeterController::class, 'byInstallation']);
+    Route::get('energy-meters/high-accuracy', [EnergyMeterController::class, 'highAccuracy']);
+    Route::post('energy-meters/{energyMeter}/update-status', [EnergyMeterController::class, 'updateStatus']);
+    Route::post('energy-meters/{energyMeter}/duplicate', [EnergyMeterController::class, 'duplicate']);
+    Route::apiResource('energy-meters', EnergyMeterController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
