@@ -1023,3 +1023,4 @@ class PreSaleOfferController extends Controller
         return round($finalPrice * $quantity, 2);
     }
 }
+

@@ -69,6 +69,7 @@ use App\Http\Controllers\Api\V1\AffiliateController;
 use App\Http\Controllers\Api\V1\DiscountCodeController;
 use App\Http\Controllers\Api\V1\SaleOrderController;
 use App\Http\Controllers\Api\V1\PreSaleOfferController;
+use App\Http\Controllers\Api\V1\ProductionProjectController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -458,6 +459,17 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('energy-productions/my-productions', [EnergyProductionController::class, 'myProductions']);
     Route::get('energy-productions/analytics', [EnergyProductionController::class, 'analytics']);
     Route::apiResource('energy-productions', EnergyProductionController::class);
+
+    // Rutas para Production Projects (Proyectos de Producción)
+    Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
+    Route::get('production-projects/types', [ProductionProjectController::class, 'types']);
+    Route::get('production-projects/statuses', [ProductionProjectController::class, 'statuses']);
+    Route::get('production-projects/technology-types', [ProductionProjectController::class, 'technologyTypes']);
+    Route::post('production-projects/{productionProject}/toggle-active', [ProductionProjectController::class, 'toggleActive']);
+    Route::post('production-projects/{productionProject}/toggle-public', [ProductionProjectController::class, 'togglePublic']);
+    Route::post('production-projects/{productionProject}/update-status', [ProductionProjectController::class, 'updateStatus']);
+    Route::post('production-projects/{productionProject}/duplicate', [ProductionProjectController::class, 'duplicate']);
+    Route::apiResource('production-projects', ProductionProjectController::class);
 
     // Rutas para Carbon Credits (Créditos de Carbono)
     Route::get('carbon-credits/my-credits', [CarbonCreditController::class, 'myCredits']);

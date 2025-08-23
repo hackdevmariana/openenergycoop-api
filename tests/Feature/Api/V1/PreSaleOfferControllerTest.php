@@ -1058,3 +1058,4 @@ class PreSaleOfferControllerTest extends TestCase
         $this->assertEquals('Early Bird Special', $response->json('data.0.title'));
     }
 }
+
