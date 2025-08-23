@@ -76,6 +76,7 @@ use App\Http\Controllers\Api\V1\ConsumptionPointController;
 use App\Http\Controllers\Api\V1\EnergyMeterController;
 use App\Http\Controllers\Api\V1\EnergyReadingController;
 use App\Http\Controllers\Api\V1\EnergyPoolController;
+use App\Http\Controllers\Api\V1\EnergyTradingOrderController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -563,6 +564,29 @@ Route::get('energy-pools/by-country/{country}', [EnergyPoolController::class, 'b
 Route::get('energy-pools/pending-approval', [EnergyPoolController::class, 'pendingApproval']);
 Route::get('energy-pools/approved', [EnergyPoolController::class, 'approved']);
 Route::apiResource('energy-pools', EnergyPoolController::class);
+
+// Energy Trading Order routes
+Route::get('energy-trading-orders/statistics', [EnergyTradingOrderController::class, 'statistics']);
+Route::get('energy-trading-orders/types', [EnergyTradingOrderController::class, 'types']);
+Route::get('energy-trading-orders/statuses', [EnergyTradingOrderController::class, 'statuses']);
+Route::get('energy-trading-orders/sides', [EnergyTradingOrderController::class, 'sides']);
+Route::get('energy-trading-orders/price-types', [EnergyTradingOrderController::class, 'priceTypes']);
+Route::get('energy-trading-orders/execution-types', [EnergyTradingOrderController::class, 'executionTypes']);
+Route::get('energy-trading-orders/priorities', [EnergyTradingOrderController::class, 'priorities']);
+Route::patch('energy-trading-orders/{energyTradingOrder}/update-status', [EnergyTradingOrderController::class, 'updateStatus']);
+Route::post('energy-trading-orders/{energyTradingOrder}/cancel', [EnergyTradingOrderController::class, 'cancel']);
+Route::post('energy-trading-orders/{energyTradingOrder}/duplicate', [EnergyTradingOrderController::class, 'duplicate']);
+Route::get('energy-trading-orders/active', [EnergyTradingOrderController::class, 'active']);
+Route::get('energy-trading-orders/pending', [EnergyTradingOrderController::class, 'pending']);
+Route::get('energy-trading-orders/filled', [EnergyTradingOrderController::class, 'filled']);
+Route::get('energy-trading-orders/by-type/{type}', [EnergyTradingOrderController::class, 'byType']);
+Route::get('energy-trading-orders/by-side/{side}', [EnergyTradingOrderController::class, 'bySide']);
+Route::get('energy-trading-orders/by-trader/{trader_id}', [EnergyTradingOrderController::class, 'byTrader']);
+Route::get('energy-trading-orders/by-pool/{pool_id}', [EnergyTradingOrderController::class, 'byPool']);
+Route::get('energy-trading-orders/high-priority', [EnergyTradingOrderController::class, 'highPriority']);
+Route::get('energy-trading-orders/negotiable', [EnergyTradingOrderController::class, 'negotiable']);
+Route::get('energy-trading-orders/expiring', [EnergyTradingOrderController::class, 'expiring']);
+Route::apiResource('energy-trading-orders', EnergyTradingOrderController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);

@@ -1,0 +1,178 @@
+<?php
+
+namespace App\Http\Resources\Api\V1\EnergyTradingOrder;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class EnergyTradingOrderResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'order_number' => $this->order_number,
+            'order_type' => $this->order_type,
+            'order_type_label' => $this->getFormattedOrderType(),
+            'order_status' => $this->order_status,
+            'order_status_label' => $this->getFormattedOrderStatus(),
+            'order_side' => $this->order_side,
+            'order_side_label' => $this->getFormattedOrderSide(),
+            'trader_id' => $this->trader_id,
+            'pool_id' => $this->pool_id,
+            'counterparty_id' => $this->counterparty_id,
+            'quantity_mwh' => $this->quantity_mwh,
+            'filled_quantity_mwh' => $this->filled_quantity_mwh,
+            'remaining_quantity_mwh' => $this->remaining_quantity_mwh,
+            'price_per_mwh' => $this->price_per_mwh,
+            'total_value' => $this->total_value,
+            'filled_value' => $this->filled_value,
+            'remaining_value' => $this->remaining_value,
+            'price_type' => $this->price_type,
+            'price_type_label' => $this->getFormattedPriceType(),
+            'price_index' => $this->price_index,
+            'price_adjustment' => $this->price_adjustment,
+            'valid_from' => $this->valid_from,
+            'valid_until' => $this->valid_until,
+            'execution_time' => $this->execution_time,
+            'expiry_time' => $this->expiry_time,
+            'execution_type' => $this->execution_type,
+            'execution_type_label' => $this->getFormattedExecutionType(),
+            'priority' => $this->priority,
+            'priority_label' => $this->getFormattedPriority(),
+            'is_negotiable' => $this->is_negotiable,
+            'negotiation_terms' => $this->negotiation_terms,
+            'special_conditions' => $this->special_conditions,
+            'delivery_requirements' => $this->delivery_requirements,
+            'payment_terms' => $this->payment_terms,
+            'order_conditions' => $this->order_conditions,
+            'order_restrictions' => $this->order_restrictions,
+            'order_metadata' => $this->order_metadata,
+            'tags' => $this->tags,
+            'created_by' => $this->created_by,
+            'approved_by' => $this->approved_by,
+            'approved_at' => $this->approved_at,
+            'executed_by' => $this->executed_by,
+            'executed_at' => $this->executed_at,
+            'notes' => $this->notes,
+            
+            // Campos calculados
+            'fill_percentage' => $this->getFillPercentage(),
+            'time_to_expiry' => $this->getTimeToExpiry(),
+            'is_expiring_soon' => $this->isExpiringSoon(),
+            'adjusted_price' => $this->getAdjustedPrice(),
+            'total_adjusted_value' => $this->getTotalAdjustedValue(),
+            'is_buy' => $this->isBuy(),
+            'is_sell' => $this->isSell(),
+            'is_bid' => $this->isBid(),
+            'is_ask' => $this->isAsk(),
+            'is_market' => $this->isMarket(),
+            'is_limit' => $this->isLimit(),
+            'is_stop' => $this->isStop(),
+            'is_stop_limit' => $this->isStopLimit(),
+            'is_pending' => $this->isPending(),
+            'is_active' => $this->isActive(),
+            'is_filled' => $this->isFilled(),
+            'is_partially_filled' => $this->isPartiallyFilled(),
+            'is_cancelled' => $this->isCancelled(),
+            'is_rejected' => $this->isRejected(),
+            'is_expired' => $this->isExpired(),
+            'is_completed' => $this->isCompleted(),
+            'is_fixed_price' => $this->isFixedPrice(),
+            'is_floating_price' => $this->isFloatingPrice(),
+            'is_indexed_price' => $this->isIndexedPrice(),
+            'is_formula_price' => $this->isFormulaPrice(),
+            'is_immediate_execution' => $this->isImmediateExecution(),
+            'is_good_till_cancelled' => $this->isGoodTillCancelled(),
+            'is_good_till_date' => $this->isGoodTillDate(),
+            'is_fill_or_kill' => $this->isFillOrKill(),
+            'is_all_or_nothing' => $this->isAllOrNothing(),
+            'is_high_priority' => $this->isHighPriority(),
+            'is_low_priority' => $this->isLowPriority(),
+            'is_normal_priority' => $this->isNormalPriority(),
+            'is_negotiable_status' => $this->isNegotiable(),
+            'is_approved' => $this->isApproved(),
+            'is_executed' => $this->isExecuted(),
+            'can_be_cancelled' => $this->canBeCancelled(),
+            'can_be_modified' => $this->canBeModified(),
+            'is_active_status' => $this->isActiveStatus(),
+            
+            // Campos formateados
+            'quantity_formatted' => $this->getFormattedQuantity(),
+            'filled_quantity_formatted' => $this->getFormattedFilledQuantity(),
+            'remaining_quantity_formatted' => $this->getFormattedRemainingQuantity(),
+            'price_formatted' => $this->getFormattedPrice(),
+            'adjusted_price_formatted' => $this->getFormattedAdjustedPrice(),
+            'total_value_formatted' => $this->getFormattedTotalValue(),
+            'filled_value_formatted' => $this->getFormattedFilledValue(),
+            'remaining_value_formatted' => $this->getFormattedRemainingValue(),
+            'total_adjusted_value_formatted' => $this->getFormattedTotalAdjustedValue(),
+            'price_adjustment_formatted' => $this->getFormattedPriceAdjustment(),
+            'valid_from_formatted' => $this->getFormattedValidFrom(),
+            'valid_until_formatted' => $this->getFormattedValidUntil(),
+            'execution_time_formatted' => $this->getFormattedExecutionTime(),
+            'expiry_time_formatted' => $this->getFormattedExpiryTime(),
+            'approved_at_formatted' => $this->getFormattedApprovedAt(),
+            'executed_at_formatted' => $this->getFormattedExecutedAt(),
+            'fill_percentage_formatted' => $this->getFormattedFillPercentage(),
+            
+            // Banderas booleanas
+            'has_counterparty' => !is_null($this->counterparty_id),
+            'has_price_adjustment' => !is_null($this->price_adjustment),
+            'has_valid_until' => !is_null($this->valid_until),
+            'has_execution_time' => !is_null($this->execution_time),
+            'has_expiry_time' => !is_null($this->expiry_time),
+            'has_approved_by' => !is_null($this->approved_by),
+            'has_executed_by' => !is_null($this->executed_by),
+            'has_negotiation_terms' => !empty($this->negotiation_terms),
+            'has_special_conditions' => !empty($this->special_conditions),
+            'has_delivery_requirements' => !empty($this->delivery_requirements),
+            'has_payment_terms' => !empty($this->order_conditions),
+            'has_order_restrictions' => !empty($this->order_restrictions),
+            'has_order_metadata' => !empty($this->order_metadata),
+            'has_tags' => !empty($this->tags),
+            'has_notes' => !empty($this->notes),
+            
+            // Clases de badge para UI
+            'order_status_badge_class' => $this->getOrderStatusBadgeClass(),
+            'order_type_badge_class' => $this->getOrderTypeBadgeClass(),
+            'order_side_badge_class' => $this->getOrderSideBadgeClass(),
+            'price_type_badge_class' => $this->getPriceTypeBadgeClass(),
+            'execution_type_badge_class' => $this->getExecutionTypeBadgeClass(),
+            'priority_badge_class' => $this->getPriorityBadgeClass(),
+            'expiry_badge_class' => $this->getExpiryBadgeClass(),
+            'negotiable_badge_class' => $this->getNegotiableBadgeClass(),
+            
+            // Timestamps
+            'created_at' => $this->created_at,
+            'created_at_formatted' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at,
+            'updated_at_formatted' => $this->updated_at?->format('Y-m-d H:i:s'),
+            
+            // Relaciones (cargadas condicionalmente)
+            'trader' => $this->whenLoaded('trader'),
+            'pool' => $this->whenLoaded('pool'),
+            'counterparty' => $this->whenLoaded('counterparty'),
+            'created_by_user' => $this->whenLoaded('createdBy'),
+            'approved_by_user' => $this->whenLoaded('approvedBy'),
+            'executed_by_user' => $this->whenLoaded('executedBy'),
+            'matches' => $this->whenLoaded('matches'),
+            'transactions' => $this->whenLoaded('transactions'),
+            
+            // Conteos de relaciones (cargados condicionalmente)
+            'matches_count' => $this->when(isset($this->matches_count), $this->matches_count),
+            'transactions_count' => $this->when(isset($this->transactions_count), $this->transactions_count),
+            
+            // Permisos del usuario
+            'can_edit' => auth()->user()?->can('update', $this->resource) ?? false,
+            'can_delete' => auth()->user()?->can('delete', $this->resource) ?? false,
+            'can_approve' => auth()->user()?->can('approve', $this->resource) ?? false,
+            'can_execute' => auth()->user()?->can('execute', $this->resource) ?? false,
+            'can_cancel' => auth()->user()?->can('cancel', $this->resource) ?? false,
+            'can_duplicate' => auth()->user()?->can('create', $this->resource) ?? false,
+        ];
+    }
+}
