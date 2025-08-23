@@ -70,6 +70,7 @@ use App\Http\Controllers\Api\V1\DiscountCodeController;
 use App\Http\Controllers\Api\V1\SaleOrderController;
 use App\Http\Controllers\Api\V1\PreSaleOfferController;
 use App\Http\Controllers\Api\V1\ProductionProjectController;
+use App\Http\Controllers\Api\V1\EnergySourceController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -459,6 +460,20 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('energy-productions/my-productions', [EnergyProductionController::class, 'myProductions']);
     Route::get('energy-productions/analytics', [EnergyProductionController::class, 'analytics']);
     Route::apiResource('energy-productions', EnergyProductionController::class);
+
+    // Rutas para Energy Sources (Fuentes de Energía)
+    Route::get('energy-sources/statistics', [EnergySourceController::class, 'statistics']);
+    Route::get('energy-sources/categories', [EnergySourceController::class, 'categories']);
+    Route::get('energy-sources/types', [EnergySourceController::class, 'types']);
+    Route::get('energy-sources/statuses', [EnergySourceController::class, 'statuses']);
+    Route::get('energy-sources/featured', [EnergySourceController::class, 'featured']);
+    Route::get('energy-sources/renewable', [EnergySourceController::class, 'renewable']);
+    Route::get('energy-sources/clean', [EnergySourceController::class, 'clean']);
+    Route::post('energy-sources/{energySource}/toggle-active', [EnergySourceController::class, 'toggleActive']);
+    Route::post('energy-sources/{energySource}/toggle-featured', [EnergySourceController::class, 'toggleFeatured']);
+    Route::post('energy-sources/{energySource}/update-status', [EnergySourceController::class, 'updateStatus']);
+    Route::post('energy-sources/{energySource}/duplicate', [EnergySourceController::class, 'duplicate']);
+    Route::apiResource('energy-sources', EnergySourceController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
