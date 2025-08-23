@@ -86,6 +86,8 @@ use App\Http\Controllers\Api\V1\TaskTemplateController;
 use App\Http\Controllers\Api\V1\ChecklistTemplateController;
 use App\Http\Controllers\Api\V1\MilestoneController;
 use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
+use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\NotificationSettingController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -770,6 +772,28 @@ Route::get('maintenance-schedules/by-priority/{priority}', [MaintenanceScheduleC
 Route::get('maintenance-schedules/by-department/{department}', [MaintenanceScheduleController::class, 'byDepartment']);
 Route::get('maintenance-schedules/by-category/{category}', [MaintenanceScheduleController::class, 'byCategory']);
 Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class);
+
+    // ========================================
+    // SISTEMA DE NOTIFICACIONES
+    // ========================================
+
+    // Notification routes
+    Route::get('notifications/statistics', [NotificationController::class, 'statistics']);
+    Route::get('notifications/types', [NotificationController::class, 'types']);
+    Route::patch('notifications/{notification}/mark-read', [NotificationController::class, 'markAsRead']);
+    Route::patch('notifications/{notification}/mark-delivered', [NotificationController::class, 'markAsDelivered']);
+    Route::get('notifications/unread', [NotificationController::class, 'unread']);
+    Route::get('notifications/recent', [NotificationController::class, 'recent']);
+    Route::apiResource('notifications', NotificationController::class);
+
+    // NotificationSetting routes
+    Route::get('notification-settings/statistics', [NotificationSettingController::class, 'statistics']);
+    Route::get('notification-settings/channels', [NotificationSettingController::class, 'channels']);
+    Route::get('notification-settings/notification-types', [NotificationSettingController::class, 'notificationTypes']);
+    Route::patch('notification-settings/{notificationSetting}/toggle', [NotificationSettingController::class, 'toggle']);
+    Route::get('notification-settings/user/{user_id}', [NotificationSettingController::class, 'userSettings']);
+    Route::post('notification-settings/create-defaults/{user_id}', [NotificationSettingController::class, 'createDefaults']);
+    Route::apiResource('notification-settings', NotificationSettingController::class);
 
     // Vendor routes
     Route::get('vendors/statistics', [VendorController::class, 'statistics']);
