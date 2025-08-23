@@ -72,6 +72,7 @@ use App\Http\Controllers\Api\V1\PreSaleOfferController;
 use App\Http\Controllers\Api\V1\ProductionProjectController;
 use App\Http\Controllers\Api\V1\EnergySourceController;
 use App\Http\Controllers\Api\V1\EnergyInstallationController;
+use App\Http\Controllers\Api\V1\ConsumptionPointController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -492,6 +493,22 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('energy-installations/{energyInstallation}/update-priority', [EnergyInstallationController::class, 'updatePriority']);
     Route::post('energy-installations/{energyInstallation}/duplicate', [EnergyInstallationController::class, 'duplicate']);
     Route::apiResource('energy-installations', EnergyInstallationController::class);
+
+    // Rutas para Consumption Points (Puntos de Consumo)
+    Route::get('consumption-points/statistics', [ConsumptionPointController::class, 'statistics']);
+    Route::get('consumption-points/types', [ConsumptionPointController::class, 'types']);
+    Route::get('consumption-points/statuses', [ConsumptionPointController::class, 'statuses']);
+    Route::get('consumption-points/active', [ConsumptionPointController::class, 'active']);
+    Route::get('consumption-points/maintenance', [ConsumptionPointController::class, 'maintenance']);
+    Route::get('consumption-points/disconnected', [ConsumptionPointController::class, 'disconnected']);
+    Route::get('consumption-points/by-type/{type}', [ConsumptionPointController::class, 'byType']);
+    Route::get('consumption-points/by-customer/{customer_id}', [ConsumptionPointController::class, 'byCustomer']);
+    Route::get('consumption-points/by-installation/{installation_id}', [ConsumptionPointController::class, 'byInstallation']);
+    Route::get('consumption-points/high-consumption', [ConsumptionPointController::class, 'highConsumption']);
+    Route::get('consumption-points/needs-calibration', [ConsumptionPointController::class, 'needsCalibration']);
+    Route::post('consumption-points/{consumptionPoint}/update-status', [ConsumptionPointController::class, 'updateStatus']);
+    Route::post('consumption-points/{consumptionPoint}/duplicate', [ConsumptionPointController::class, 'duplicate']);
+    Route::apiResource('consumption-points', ConsumptionPointController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
