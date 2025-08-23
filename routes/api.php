@@ -74,6 +74,7 @@ use App\Http\Controllers\Api\V1\EnergySourceController;
 use App\Http\Controllers\Api\V1\EnergyInstallationController;
 use App\Http\Controllers\Api\V1\ConsumptionPointController;
 use App\Http\Controllers\Api\V1\EnergyMeterController;
+use App\Http\Controllers\Api\V1\EnergyReadingController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -527,6 +528,22 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('energy-meters/{energyMeter}/update-status', [EnergyMeterController::class, 'updateStatus']);
     Route::post('energy-meters/{energyMeter}/duplicate', [EnergyMeterController::class, 'duplicate']);
     Route::apiResource('energy-meters', EnergyMeterController::class);
+
+    // Rutas para Energy Readings (Lecturas de Energía)
+    Route::get('energy-readings/statistics', [EnergyReadingController::class, 'statistics']);
+    Route::get('energy-readings/types', [EnergyReadingController::class, 'types']);
+    Route::get('energy-readings/sources', [EnergyReadingController::class, 'sources']);
+    Route::get('energy-readings/statuses', [EnergyReadingController::class, 'statuses']);
+    Route::get('energy-readings/update-status', [EnergyReadingController::class, 'updateStatus']);
+    Route::post('energy-readings/{energyReading}/validate', [EnergyReadingController::class, 'validate']);
+    Route::get('energy-readings/valid', [EnergyReadingController::class, 'valid']);
+    Route::get('energy-readings/by-type/{type}', [EnergyReadingController::class, 'byType']);
+    Route::get('energy-readings/by-meter/{meter_id}', [EnergyReadingController::class, 'byMeter']);
+    Route::get('energy-readings/by-customer/{customer_id}', [EnergyReadingController::class, 'byCustomer']);
+    Route::get('energy-readings/high-quality', [EnergyReadingController::class, 'highQuality']);
+    Route::get('energy-readings/today', [EnergyReadingController::class, 'today']);
+    Route::get('energy-readings/this-month', [EnergyReadingController::class, 'thisMonth']);
+    Route::apiResource('energy-readings', EnergyReadingController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
