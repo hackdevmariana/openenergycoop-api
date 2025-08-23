@@ -81,6 +81,7 @@ use App\Http\Controllers\Api\V1\EnergyForecastController;
 use App\Http\Controllers\Api\V1\TaxCalculationController;
 use App\Http\Controllers\Api\V1\EnergyTransferController;
 use App\Http\Controllers\Api\V1\AutomationRuleController;
+use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -672,6 +673,24 @@ Route::get('automation-rules/by-trigger-type/{triggerType}', [AutomationRuleCont
 Route::get('automation-rules/by-action-type/{actionType}', [AutomationRuleController::class, 'byActionType']);
 Route::get('automation-rules/by-execution-frequency/{frequency}', [AutomationRuleController::class, 'byExecutionFrequency']);
 Route::apiResource('automation-rules', AutomationRuleController::class);
+
+// MaintenanceSchedule routes
+Route::get('maintenance-schedules/statistics', [MaintenanceScheduleController::class, 'statistics']);
+Route::get('maintenance-schedules/schedule-types', [MaintenanceScheduleController::class, 'scheduleTypes']);
+Route::get('maintenance-schedules/frequency-types', [MaintenanceScheduleController::class, 'frequencyTypes']);
+Route::get('maintenance-schedules/priorities', [MaintenanceScheduleController::class, 'priorities']);
+Route::patch('maintenance-schedules/{maintenanceSchedule}/toggle-active', [MaintenanceScheduleController::class, 'toggleActive']);
+Route::post('maintenance-schedules/{maintenanceSchedule}/duplicate', [MaintenanceScheduleController::class, 'duplicate']);
+Route::get('maintenance-schedules/active', [MaintenanceScheduleController::class, 'active']);
+Route::get('maintenance-schedules/overdue', [MaintenanceScheduleController::class, 'overdue']);
+Route::get('maintenance-schedules/due-soon', [MaintenanceScheduleController::class, 'dueSoon']);
+Route::get('maintenance-schedules/high-priority', [MaintenanceScheduleController::class, 'highPriority']);
+Route::get('maintenance-schedules/by-type/{type}', [MaintenanceScheduleController::class, 'byType']);
+Route::get('maintenance-schedules/by-frequency-type/{frequencyType}', [MaintenanceScheduleController::class, 'byFrequencyType']);
+Route::get('maintenance-schedules/by-priority/{priority}', [MaintenanceScheduleController::class, 'byPriority']);
+Route::get('maintenance-schedules/by-department/{department}', [MaintenanceScheduleController::class, 'byDepartment']);
+Route::get('maintenance-schedules/by-category/{category}', [MaintenanceScheduleController::class, 'byCategory']);
+Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
