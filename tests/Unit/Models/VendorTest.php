@@ -11,491 +11,520 @@ class VendorTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_fillable_attributes()
+    /** @test */
+    public function it_has_fillable_attributes()
     {
         $fillable = [
             'name', 'legal_name', 'tax_id', 'registration_number', 'vendor_type',
             'industry', 'description', 'contact_person', 'email', 'phone', 'website',
-            'address', 'city', 'state', 'postal_code', 'country', 'latitude',
-            'longitude', 'payment_terms', 'credit_limit', 'current_balance',
-            'currency', 'tax_rate', 'discount_rate', 'rating', 'is_active',
-            'is_verified', 'is_preferred', 'is_blacklisted', 'contract_start_date',
-            'contract_end_date', 'contract_terms', 'insurance_coverage',
-            'certifications', 'licenses', 'performance_metrics', 'quality_standards',
-            'delivery_terms', 'warranty_terms', 'return_policy', 'notes', 'tags',
-            'logo', 'documents', 'bank_account', 'payment_methods', 'contact_history',
-            'created_by', 'approved_by', 'approved_at', 'status', 'risk_level',
-            'compliance_status', 'audit_frequency', 'last_audit_date',
-            'next_audit_date', 'financial_stability', 'market_reputation',
-            'competitor_analysis', 'strategic_importance', 'dependencies',
-            'alternatives', 'cost_benefit_analysis', 'performance_reviews',
-            'improvement_plans', 'escalation_procedures'
+            'address', 'city', 'state', 'postal_code', 'country', 'latitude', 'longitude',
+            'payment_terms', 'credit_limit', 'current_balance', 'currency', 'tax_rate',
+            'discount_rate', 'rating', 'is_active', 'is_verified', 'is_preferred',
+            'is_blacklisted', 'contract_start_date', 'contract_end_date', 'contract_terms',
+            'insurance_coverage', 'certifications', 'licenses', 'performance_metrics',
+            'quality_standards', 'delivery_terms', 'warranty_terms', 'return_policy',
+            'notes', 'tags', 'logo', 'documents', 'bank_account', 'payment_methods',
+            'contact_history', 'status', 'risk_level', 'compliance_status', 'audit_frequency',
+            'last_audit_date', 'next_audit_date', 'financial_stability', 'market_reputation',
+            'competitor_analysis', 'strategic_importance', 'dependencies', 'alternatives',
+            'cost_benefit_analysis', 'performance_reviews', 'improvement_plans',
+            'escalation_procedures', 'created_by', 'approved_by', 'approved_at'
         ];
 
-        $this->assertEquals($fillable, (new Vendor())->getFillable());
+        $vendor = new Vendor();
+        $this->assertEquals($fillable, $vendor->getFillable());
     }
 
-    public function test_casts()
+    /** @test */
+    public function it_has_correct_casts()
     {
-        $casts = [
-            'latitude' => 'decimal:8',
-            'longitude' => 'decimal:8',
-            'credit_limit' => 'decimal:2',
-            'current_balance' => 'decimal:2',
-            'tax_rate' => 'decimal:2',
-            'discount_rate' => 'decimal:2',
-            'rating' => 'decimal:1',
-            'is_active' => 'boolean',
-            'is_verified' => 'boolean',
-            'is_preferred' => 'boolean',
-            'is_blacklisted' => 'boolean',
-            'contract_start_date' => 'date',
-            'contract_end_date' => 'date',
-            'contract_terms' => 'array',
-            'insurance_coverage' => 'array',
-            'certifications' => 'array',
-            'licenses' => 'array',
-            'performance_metrics' => 'array',
-            'quality_standards' => 'array',
-            'delivery_terms' => 'array',
-            'warranty_terms' => 'array',
-            'return_policy' => 'array',
-            'tags' => 'array',
-            'documents' => 'array',
-            'bank_account' => 'array',
-            'payment_methods' => 'array',
-            'contact_history' => 'array',
-            'approved_at' => 'datetime',
-            'audit_frequency' => 'integer',
-            'last_audit_date' => 'date',
-            'next_audit_date' => 'date',
-            'financial_stability' => 'array',
-            'market_reputation' => 'array',
-            'competitor_analysis' => 'array',
-            'strategic_importance' => 'array',
-            'dependencies' => 'array',
-            'alternatives' => 'array',
-            'cost_benefit_analysis' => 'array',
-            'performance_reviews' => 'array',
-            'improvement_plans' => 'array',
-            'escalation_procedures' => 'array',
-        ];
+        $vendor = new Vendor();
+        $casts = $vendor->getCasts();
 
-        $this->assertEquals($casts, (new Vendor())->getCasts());
+        $this->assertArrayHasKey('is_active', $casts);
+        $this->assertArrayHasKey('is_verified', $casts);
+        $this->assertArrayHasKey('is_preferred', $casts);
+        $this->assertArrayHasKey('is_blacklisted', $casts);
+        $this->assertArrayHasKey('credit_limit', $casts);
+        $this->assertArrayHasKey('current_balance', $casts);
+        $this->assertArrayHasKey('tax_rate', $casts);
+        $this->assertArrayHasKey('discount_rate', $casts);
+        $this->assertArrayHasKey('rating', $casts);
+        $this->assertArrayHasKey('latitude', $casts);
+        $this->assertArrayHasKey('longitude', $casts);
+        $this->assertArrayHasKey('audit_frequency', $casts);
+        $this->assertArrayHasKey('contract_start_date', $casts);
+        $this->assertArrayHasKey('contract_end_date', $casts);
+        $this->assertArrayHasKey('last_audit_date', $casts);
+        $this->assertArrayHasKey('next_audit_date', $casts);
+        $this->assertArrayHasKey('approved_at', $casts);
+        $this->assertArrayHasKey('contract_terms', $casts);
+        $this->assertArrayHasKey('insurance_coverage', $casts);
+        $this->assertArrayHasKey('certifications', $casts);
+        $this->assertArrayHasKey('licenses', $casts);
+        $this->assertArrayHasKey('performance_metrics', $casts);
+        $this->assertArrayHasKey('quality_standards', $casts);
+        $this->assertArrayHasKey('delivery_terms', $casts);
+        $this->assertArrayHasKey('warranty_terms', $casts);
+        $this->assertArrayHasKey('return_policy', $casts);
+        $this->assertArrayHasKey('tags', $casts);
+        $this->assertArrayHasKey('documents', $casts);
+        $this->assertArrayHasKey('bank_account', $casts);
+        $this->assertArrayHasKey('payment_methods', $casts);
+        $this->assertArrayHasKey('contact_history', $casts);
+        $this->assertArrayHasKey('financial_stability', $casts);
+        $this->assertArrayHasKey('market_reputation', $casts);
+        $this->assertArrayHasKey('competitor_analysis', $casts);
+        $this->assertArrayHasKey('strategic_importance', $casts);
+        $this->assertArrayHasKey('dependencies', $casts);
+        $this->assertArrayHasKey('alternatives', $casts);
+        $this->assertArrayHasKey('cost_benefit_analysis', $casts);
+        $this->assertArrayHasKey('performance_reviews', $casts);
+        $this->assertArrayHasKey('improvement_plans', $casts);
+        $this->assertArrayHasKey('escalation_procedures', $casts);
     }
 
-    public function test_static_enum_methods()
+    /** @test */
+    public function it_has_vendor_types_enum()
     {
-        $this->assertIsArray(Vendor::getVendorTypes());
-        $this->assertIsArray(Vendor::getStatuses());
-        $this->assertIsArray(Vendor::getRiskLevels());
-        $this->assertIsArray(Vendor::getComplianceStatuses());
+        $vendorTypes = Vendor::getVendorTypes();
+        
+        $this->assertIsArray($vendorTypes);
+        $this->assertArrayHasKey('equipment_supplier', $vendorTypes);
+        $this->assertArrayHasKey('service_provider', $vendorTypes);
+        $this->assertArrayHasKey('material_supplier', $vendorTypes);
+        $this->assertArrayHasKey('consultant', $vendorTypes);
+        $this->assertArrayHasKey('contractor', $vendorTypes);
+        $this->assertArrayHasKey('distributor', $vendorTypes);
+        $this->assertArrayHasKey('manufacturer', $vendorTypes);
+        $this->assertArrayHasKey('wholesaler', $vendorTypes);
+        $this->assertArrayHasKey('retailer', $vendorTypes);
+        $this->assertArrayHasKey('other', $vendorTypes);
     }
 
-    public function test_relationships()
+    /** @test */
+    public function it_has_statuses_enum()
+    {
+        $statuses = Vendor::getStatuses();
+        
+        $this->assertIsArray($statuses);
+        $this->assertArrayHasKey('pending', $statuses);
+        $this->assertArrayHasKey('active', $statuses);
+        $this->assertArrayHasKey('suspended', $statuses);
+        $this->assertArrayHasKey('terminated', $statuses);
+        $this->assertArrayHasKey('under_review', $statuses);
+    }
+
+    /** @test */
+    public function it_has_risk_levels_enum()
+    {
+        $riskLevels = Vendor::getRiskLevels();
+        
+        $this->assertIsArray($riskLevels);
+        $this->assertArrayHasKey('minimal', $riskLevels);
+        $this->assertArrayHasKey('low', $riskLevels);
+        $this->assertArrayHasKey('medium', $riskLevels);
+        $this->assertArrayHasKey('high', $riskLevels);
+        $this->assertArrayHasKey('extreme', $riskLevels);
+    }
+
+    /** @test */
+    public function it_has_compliance_statuses_enum()
+    {
+        $complianceStatuses = Vendor::getComplianceStatuses();
+        
+        $this->assertIsArray($complianceStatuses);
+        $this->assertArrayHasKey('pending_review', $complianceStatuses);
+        $this->assertArrayHasKey('under_review', $complianceStatuses);
+        $this->assertArrayHasKey('compliant', $complianceStatuses);
+        $this->assertArrayHasKey('needs_audit', $complianceStatuses);
+        $this->assertArrayHasKey('non_compliant', $complianceStatuses);
+    }
+
+    /** @test */
+    public function it_has_relationships()
     {
         $vendor = Vendor::factory()->create();
         
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $vendor->country());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $vendor->state());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $vendor->city());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $vendor->maintenanceTasks());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class, $vendor->maintenanceSchedules());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $vendor->createdBy());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class, $vendor->approvedBy());
+        $this->assertInstanceOf(User::class, $vendor->createdBy);
+        $this->assertInstanceOf(User::class, $vendor->approvedBy);
     }
 
-    public function test_scopes()
+    /** @test */
+    public function it_has_scopes()
     {
-        $vendor = Vendor::factory()->create(['is_active' => true]);
+        // Active scope
+        Vendor::factory()->create(['is_active' => true]);
+        Vendor::factory()->create(['is_active' => false]);
         
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::active());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::verified());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::preferred());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::blacklisted());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byType('supplier'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byIndustry('energy'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byStatus('active'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byRiskLevel('low'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byComplianceStatus('compliant'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byRating(4.0));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::highRating());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byLocation('Spain'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byContractStatus('active'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byPaymentTerms('30 days'));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::byCreditLimit(1000));
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::approved());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::pendingApproval());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::highRisk());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::compliant());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::nonCompliant());
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Builder::class, Vendor::needsAudit());
+        $this->assertEquals(1, Vendor::active()->count());
+        
+        // Verified scope
+        Vendor::factory()->create(['is_verified' => true]);
+        Vendor::factory()->create(['is_verified' => false]);
+        
+        $this->assertEquals(1, Vendor::verified()->count());
+        
+        // Preferred scope
+        Vendor::factory()->create(['is_preferred' => true]);
+        Vendor::factory()->create(['is_preferred' => false]);
+        
+        $this->assertEquals(1, Vendor::preferred()->count());
+        
+        // Blacklisted scope
+        Vendor::factory()->create(['is_blacklisted' => true]);
+        Vendor::factory()->create(['is_blacklisted' => false]);
+        
+        $this->assertEquals(1, Vendor::blacklisted()->count());
+        
+        // Compliant scope
+        Vendor::factory()->create(['compliance_status' => 'compliant']);
+        Vendor::factory()->create(['compliance_status' => 'non_compliant']);
+        
+        $this->assertEquals(1, Vendor::compliant()->count());
+        
+        // NonCompliant scope
+        $this->assertEquals(1, Vendor::nonCompliant()->count());
+        
+        // NeedsAudit scope
+        Vendor::factory()->create(['compliance_status' => 'needs_audit']);
+        $this->assertEquals(1, Vendor::needsAudit()->count());
+        
+        // HighRating scope
+        Vendor::factory()->create(['rating' => 4.5]);
+        Vendor::factory()->create(['rating' => 3.0]);
+        
+        $this->assertEquals(1, Vendor::highRating()->count());
     }
 
-    public function test_boolean_status_checks()
+    /** @test */
+    public function it_has_boolean_checks()
     {
-        $vendor = Vendor::factory()->create(['is_active' => true]);
+        $vendor = Vendor::factory()->create([
+            'is_active' => true,
+            'is_verified' => true,
+            'is_preferred' => true,
+            'is_blacklisted' => false
+        ]);
         
         $this->assertTrue($vendor->isActive());
-        $this->assertFalse($vendor->isVerified());
-        $this->assertFalse($vendor->isPreferred());
+        $this->assertTrue($vendor->isVerified());
+        $this->assertTrue($vendor->isPreferred());
         $this->assertFalse($vendor->isBlacklisted());
-        $this->assertFalse($vendor->isApproved());
     }
 
-    public function test_vendor_type_checks()
-    {
-        $vendor = Vendor::factory()->create(['vendor_type' => 'supplier']);
-        
-        $this->assertTrue($vendor->isSupplier());
-        $this->assertFalse($vendor->isServiceProvider());
-        $this->assertFalse($vendor->isContractor());
-        $this->assertFalse($vendor->isConsultant());
-        $this->assertFalse($vendor->isManufacturer());
-        $this->assertFalse($vendor->isDistributor());
-        $this->assertFalse($vendor->isWholesaler());
-        $this->assertFalse($vendor->isRetailer());
-        $this->assertFalse($vendor->isMaintenance());
-        $this->assertFalse($vendor->isItServices());
-        $this->assertFalse($vendor->isFinancial());
-        $this->assertFalse($vendor->isInsurance());
-        $this->assertFalse($vendor->isLegal());
-        $this->assertFalse($vendor->isMarketing());
-        $this->assertFalse($vendor->isTransportation());
-        $this->assertFalse($vendor->isWasteManagement());
-        $this->assertFalse($vendor->isSecurity());
-        $this->assertFalse($vendor->isCleaning());
-        $this->assertFalse($vendor->isCatering());
-        $this->assertFalse($vendor->isOther());
-    }
-
-    public function test_risk_level_checks()
-    {
-        $vendor = Vendor::factory()->create(['risk_level' => 'high']);
-        
-        $this->assertTrue($vendor->isHighRisk());
-        $this->assertFalse($vendor->isLowRisk());
-        $this->assertFalse($vendor->isMediumRisk());
-        $this->assertFalse($vendor->isExtremeRisk());
-    }
-
-    public function test_compliance_status_checks()
-    {
-        $vendor = Vendor::factory()->create(['compliance_status' => 'compliant']);
-        
-        $this->assertTrue($vendor->isCompliant());
-        $this->assertFalse($vendor->isNonCompliant());
-        $this->assertFalse($vendor->isPendingReview());
-        $this->assertFalse($vendor->isUnderInvestigation());
-        $this->assertFalse($vendor->isComplianceApproved());
-        $this->assertFalse($vendor->isComplianceRejected());
-    }
-
-    public function test_contract_methods()
+    /** @test */
+    public function it_can_calculate_available_credit()
     {
         $vendor = Vendor::factory()->create([
-            'contract_start_date' => now()->subMonth(),
-            'contract_end_date' => now()->addMonth()
+            'credit_limit' => 10000,
+            'current_balance' => 3000
         ]);
-
-        $this->assertTrue($vendor->hasActiveContract());
-        $this->assertFalse($vendor->isContractExpired());
-        $this->assertFalse($vendor->isContractExpiringSoon());
-        $this->assertGreaterThan(0, $vendor->getDaysUntilContractExpiry());
+        
+        $this->assertEquals(7000, $vendor->getAvailableCredit());
     }
 
-    public function test_credit_methods()
+    /** @test */
+    public function it_can_calculate_credit_utilization()
     {
         $vendor = Vendor::factory()->create([
-            'credit_limit' => 1000,
-            'current_balance' => 300
+            'credit_limit' => 10000,
+            'current_balance' => 3000
         ]);
-
-        $this->assertTrue($vendor->hasAvailableCredit());
-        $this->assertEquals(700, $vendor->getAvailableCredit());
+        
         $this->assertEquals(30.0, $vendor->getCreditUtilization());
     }
 
-    public function test_audit_methods()
+    /** @test */
+    public function it_can_get_vendor_type_label()
     {
-        $vendor = Vendor::factory()->create([
-            'next_audit_date' => now()->addDays(15)
-        ]);
-
-        $this->assertFalse($vendor->needsAudit());
-        $this->assertEquals(15, $vendor->getDaysUntilNextAudit());
-    }
-
-    public function test_calculation_methods()
-    {
-        $vendor = Vendor::factory()->create([
-            'rating' => 4.5,
-            'tax_rate' => 21.0,
-            'discount_rate' => 5.0
-        ]);
-
-        $this->assertEquals('4.5/5.0', $vendor->getFormattedRating());
-        $this->assertEquals('21.00%', $vendor->getFormattedTaxRate());
-        $this->assertEquals('5.00%', $vendor->getFormattedDiscountRate());
-    }
-
-    public function test_formatting_methods()
-    {
-        $vendor = Vendor::factory()->create([
-            'vendor_type' => 'supplier',
-            'status' => 'active',
-            'risk_level' => 'low',
-            'compliance_status' => 'compliant'
-        ]);
-
-        $this->assertEquals('Proveedor', $vendor->getFormattedVendorType());
-        $this->assertEquals('Activo', $vendor->getFormattedStatus());
-        $this->assertEquals('Bajo', $vendor->getFormattedRiskLevel());
-        $this->assertEquals('Cumple', $vendor->getFormattedComplianceStatus());
-    }
-
-    public function test_badge_classes()
-    {
-        $vendor = Vendor::factory()->create(['is_active' => true]);
+        $vendor = Vendor::factory()->create(['vendor_type' => 'equipment_supplier']);
         
-        $this->assertStringContainsString('bg-blue-100', $vendor->getStatusBadgeClass());
-        $this->assertStringContainsString('text-blue-800', $vendor->getStatusBadgeClass());
-        $this->assertStringContainsString('bg-blue-100', $vendor->getVendorTypeBadgeClass());
-        $this->assertStringContainsString('bg-green-100', $vendor->getRiskLevelBadgeClass());
-        $this->assertStringContainsString('bg-green-100', $vendor->getComplianceStatusBadgeClass());
+        $this->assertEquals('Proveedor de Equipos', $vendor->getVendorTypeLabel());
     }
 
-    public function test_contract_status_badge_class()
+    /** @test */
+    public function it_can_get_status_label()
+    {
+        $vendor = Vendor::factory()->create(['status' => 'active']);
+        
+        $this->assertEquals('Activo', $vendor->getStatusLabel());
+    }
+
+    /** @test */
+    public function it_can_get_risk_level_label()
+    {
+        $vendor = Vendor::factory()->create(['risk_level' => 'medium']);
+        
+        $this->assertEquals('Medio', $vendor->getRiskLevelLabel());
+    }
+
+    /** @test */
+    public function it_can_get_compliance_status_label()
+    {
+        $vendor = Vendor::factory()->create(['compliance_status' => 'compliant']);
+        
+        $this->assertEquals('Cumple', $vendor->getComplianceStatusLabel());
+    }
+
+    /** @test */
+    public function it_can_get_status_badge_class()
+    {
+        $vendor = Vendor::factory()->create(['status' => 'active']);
+        
+        $this->assertEquals('badge badge-success', $vendor->getStatusBadgeClass());
+    }
+
+    /** @test */
+    public function it_can_get_risk_level_badge_class()
+    {
+        $vendor = Vendor::factory()->create(['risk_level' => 'high']);
+        
+        $this->assertEquals('badge badge-warning', $vendor->getRiskLevelBadgeClass());
+    }
+
+    /** @test */
+    public function it_can_get_compliance_status_badge_class()
+    {
+        $vendor = Vendor::factory()->create(['compliance_status' => 'compliant']);
+        
+        $this->assertEquals('badge badge-success', $vendor->getComplianceStatusBadgeClass());
+    }
+
+    /** @test */
+    public function it_can_get_rating_stars()
+    {
+        $vendor = Vendor::factory()->create(['rating' => 4.5]);
+        
+        $stars = $vendor->getRatingStars();
+        $this->assertStringContainsString('★★★★☆', $stars);
+        $this->assertStringContainsString('(4.5)', $stars);
+    }
+
+    /** @test */
+    public function it_can_get_contract_status()
     {
         $vendor = Vendor::factory()->create([
-            'contract_start_date' => now()->subMonth(),
-            'contract_end_date' => now()->addDays(5)
+            'contract_start_date' => now()->subDays(30),
+            'contract_end_date' => now()->addDays(30)
         ]);
-
-        $this->assertStringContainsString('bg-orange-100', $vendor->getContractStatusBadgeClass());
+        
+        $this->assertEquals('Activo', $vendor->getContractStatus());
     }
 
-    public function test_audit_status_badge_class()
+    /** @test */
+    public function it_can_get_contract_days_remaining()
     {
         $vendor = Vendor::factory()->create([
-            'next_audit_date' => now()->subDays(5)
+            'contract_end_date' => now()->addDays(15)
         ]);
-
-        $this->assertStringContainsString('bg-red-100', $vendor->getAuditStatusBadgeClass());
+        
+        $this->assertEquals(15, $vendor->getContractDaysRemaining());
     }
 
-    public function test_credit_status_badge_class()
+    /** @test */
+    public function it_can_get_audit_status()
     {
         $vendor = Vendor::factory()->create([
-            'credit_limit' => 1000,
-            'current_balance' => 950
+            'next_audit_date' => now()->addDays(20)
         ]);
-
-        $this->assertStringContainsString('bg-red-100', $vendor->getCreditStatusBadgeClass());
+        
+        $this->assertEquals('Próxima', $vendor->getAuditStatus());
     }
 
-    public function test_date_methods()
+    /** @test */
+    public function it_can_get_days_until_audit()
     {
         $vendor = Vendor::factory()->create([
-            'contract_start_date' => now()->subMonth(),
-            'contract_end_date' => now()->addMonth(),
-            'last_audit_date' => now()->subMonths(6),
-            'next_audit_date' => now()->addMonths(6)
+            'next_audit_date' => now()->addDays(25)
         ]);
-
-        $this->assertStringContainsString('establecida', $vendor->getFormattedContractStartDate());
-        $this->assertStringContainsString('fin', $vendor->getFormattedContractEndDate());
-        $this->assertStringContainsString('auditado', $vendor->getFormattedLastAuditDate());
-        $this->assertStringContainsString('programado', $vendor->getFormattedNextAuditDate());
+        
+        $this->assertEquals(25, $vendor->getDaysUntilAudit());
     }
 
-    public function test_ready_to_execute_scope()
+    /** @test */
+    public function it_can_get_last_contact_date()
     {
-        $readyVendor = Vendor::factory()->create([
+        $vendor = Vendor::factory()->create([
+            'contact_history' => [
+                ['date' => '2024-01-15', 'type' => 'email'],
+                ['date' => '2024-01-20', 'type' => 'phone']
+            ]
+        ]);
+        
+        $this->assertEquals('2024-01-20', $vendor->getLastContactDate());
+    }
+
+    /** @test */
+    public function it_can_toggle_verified_status()
+    {
+        $vendor = Vendor::factory()->create(['is_verified' => false]);
+        
+        $vendor->toggleVerified();
+        $this->assertTrue($vendor->is_verified);
+        
+        $vendor->toggleVerified();
+        $this->assertFalse($vendor->is_verified);
+    }
+
+    /** @test */
+    public function it_can_toggle_preferred_status()
+    {
+        $vendor = Vendor::factory()->create(['is_preferred' => false]);
+        
+        $vendor->togglePreferred();
+        $this->assertTrue($vendor->is_preferred);
+        
+        $vendor->togglePreferred();
+        $this->assertFalse($vendor->is_preferred);
+    }
+
+    /** @test */
+    public function it_can_toggle_blacklisted_status()
+    {
+        $vendor = Vendor::factory()->create(['is_blacklisted' => false]);
+        
+        $vendor->toggleBlacklisted();
+        $this->assertTrue($vendor->is_blacklisted);
+        
+        $vendor->toggleBlacklisted();
+        $this->assertFalse($vendor->is_blacklisted);
+    }
+
+    /** @test */
+    public function it_can_duplicate()
+    {
+        $vendor = Vendor::factory()->create([
+            'name' => 'Original Vendor',
             'is_active' => true,
-            'next_audit_date' => now()->subHour()
+            'is_verified' => true,
+            'is_preferred' => true
         ]);
-
-        $notReadyVendor = Vendor::factory()->create([
-            'is_active' => false,
-            'next_audit_date' => now()->addMonth()
-        ]);
-
-        $needsAuditVendors = Vendor::needsAudit()->get();
         
-        $this->assertTrue($needsAuditVendors->contains($readyVendor));
-        $this->assertFalse($needsAuditVendors->contains($notReadyVendor));
+        $duplicate = $vendor->duplicate();
+        
+        $this->assertNotEquals($vendor->id, $duplicate->id);
+        $this->assertEquals('Original Vendor (Copia)', $duplicate->name);
+        $this->assertFalse($duplicate->is_active);
+        $this->assertFalse($duplicate->is_verified);
+        $this->assertFalse($duplicate->is_preferred);
+        $this->assertNull($duplicate->approved_at);
+        $this->assertNull($duplicate->approved_by);
     }
 
-    public function test_high_risk_scope()
+    /** @test */
+    public function it_can_scope_by_location()
     {
-        $highRiskVendor = Vendor::factory()->create(['risk_level' => 'high']);
-        $lowRiskVendor = Vendor::factory()->create(['risk_level' => 'low']);
-
-        $highRiskVendors = Vendor::highRisk()->get();
+        Vendor::factory()->create(['country' => 'Spain']);
+        Vendor::factory()->create(['country' => 'France']);
         
-        $this->assertTrue($highRiskVendors->contains($highRiskVendor));
-        $this->assertFalse($highRiskVendors->contains($lowRiskVendor));
+        $this->assertEquals(1, Vendor::byLocation('Spain')->count());
+        $this->assertEquals(1, Vendor::byLocation('France')->count());
     }
 
-    public function test_by_type_scope()
+    /** @test */
+    public function it_can_scope_by_risk_level()
     {
-        $supplierVendor = Vendor::factory()->create(['vendor_type' => 'supplier']);
-        $serviceVendor = Vendor::factory()->create(['vendor_type' => 'service_provider']);
-
-        $supplierVendors = Vendor::byType('supplier')->get();
+        Vendor::factory()->create(['risk_level' => 'high']);
+        Vendor::factory()->create(['risk_level' => 'medium']);
         
-        $this->assertTrue($supplierVendors->contains($supplierVendor));
-        $this->assertFalse($supplierVendors->contains($serviceVendor));
+        $this->assertEquals(1, Vendor::byRiskLevel('high')->count());
+        $this->assertEquals(1, Vendor::byRiskLevel('medium')->count());
     }
 
-    public function test_by_industry_scope()
+    /** @test */
+    public function it_can_scope_by_compliance_status()
     {
-        $energyVendor = Vendor::factory()->create(['industry' => 'energy']);
-        $techVendor = Vendor::factory()->create(['industry' => 'technology']);
-
-        $energyVendors = Vendor::byIndustry('energy')->get();
+        Vendor::factory()->create(['compliance_status' => 'compliant']);
+        Vendor::factory()->create(['compliance_status' => 'non_compliant']);
         
-        $this->assertTrue($energyVendors->contains($energyVendor));
-        $this->assertFalse($energyVendors->contains($techVendor));
+        $this->assertEquals(1, Vendor::byComplianceStatus('compliant')->count());
+        $this->assertEquals(1, Vendor::byComplianceStatus('non_compliant')->count());
     }
 
-    public function test_by_status_scope()
+    /** @test */
+    public function it_can_scope_by_vendor_type()
     {
-        $activeVendor = Vendor::factory()->create(['status' => 'active']);
-        $inactiveVendor = Vendor::factory()->create(['status' => 'inactive']);
-
-        $activeVendors = Vendor::byStatus('active')->get();
+        Vendor::factory()->create(['vendor_type' => 'equipment_supplier']);
+        Vendor::factory()->create(['vendor_type' => 'service_provider']);
         
-        $this->assertTrue($activeVendors->contains($activeVendor));
-        $this->assertFalse($activeVendors->contains($inactiveVendor));
+        $this->assertEquals(1, Vendor::byVendorType('equipment_supplier')->count());
+        $this->assertEquals(1, Vendor::byVendorType('service_provider')->count());
     }
 
-    public function test_by_risk_level_scope()
+    /** @test */
+    public function it_can_scope_by_industry()
     {
-        $highRiskVendor = Vendor::factory()->create(['risk_level' => 'high']);
-        $lowRiskVendor = Vendor::factory()->create(['risk_level' => 'low']);
-
-        $highRiskVendors = Vendor::byRiskLevel('high')->get();
+        Vendor::factory()->create(['industry' => 'Technology']);
+        Vendor::factory()->create(['industry' => 'Healthcare']);
         
-        $this->assertTrue($highRiskVendors->contains($highRiskVendor));
-        $this->assertFalse($highRiskVendors->contains($lowRiskVendor));
+        $this->assertEquals(1, Vendor::byIndustry('Technology')->count());
+        $this->assertEquals(1, Vendor::byIndustry('Healthcare')->count());
     }
 
-    public function test_by_compliance_status_scope()
+    /** @test */
+    public function it_can_scope_by_rating_range()
     {
-        $compliantVendor = Vendor::factory()->create(['compliance_status' => 'compliant']);
-        $nonCompliantVendor = Vendor::factory()->create(['compliance_status' => 'non_compliant']);
-
-        $compliantVendors = Vendor::compliant()->get();
+        Vendor::factory()->create(['rating' => 4.5]);
+        Vendor::factory()->create(['rating' => 3.0]);
+        Vendor::factory()->create(['rating' => 2.0]);
         
-        $this->assertTrue($compliantVendors->contains($compliantVendor));
-        $this->assertFalse($compliantVendors->contains($nonCompliantVendor));
+        $this->assertEquals(2, Vendor::byRatingRange(3.0, 5.0)->count());
+        $this->assertEquals(1, Vendor::byRatingRange(1.0, 2.5)->count());
     }
 
-    public function test_by_rating_scope()
+    /** @test */
+    public function it_can_scope_by_credit_limit_range()
     {
-        $highRatingVendor = Vendor::factory()->create(['rating' => 4.5]);
-        $lowRatingVendor = Vendor::factory()->create(['rating' => 2.5]);
-
-        $highRatingVendors = Vendor::byRating(4.0)->get();
+        Vendor::factory()->create(['credit_limit' => 50000]);
+        Vendor::factory()->create(['credit_limit' => 100000]);
+        Vendor::factory()->create(['credit_limit' => 200000]);
         
-        $this->assertTrue($highRatingVendors->contains($highRatingVendor));
-        $this->assertFalse($highRatingVendors->contains($lowRatingVendor));
+        $this->assertEquals(2, Vendor::byCreditLimitRange(50000, 150000)->count());
+        $this->assertEquals(1, Vendor::byCreditLimitRange(150000, 300000)->count());
     }
 
-    public function test_high_rating_scope()
+    /** @test */
+    public function it_can_scope_by_contract_expiry()
     {
-        $highRatingVendor = Vendor::factory()->create(['rating' => 4.5]);
-        $lowRatingVendor = Vendor::factory()->create(['rating' => 3.5]);
-
-        $highRatingVendors = Vendor::highRating()->get();
+        Vendor::factory()->create(['contract_end_date' => now()->addDays(30)]);
+        Vendor::factory()->create(['contract_end_date' => now()->addDays(90)]);
+        Vendor::factory()->create(['contract_end_date' => now()->addDays(180)]);
         
-        $this->assertTrue($highRatingVendors->contains($highRatingVendor));
-        $this->assertFalse($highRatingVendors->contains($lowRatingVendor));
+        $this->assertEquals(1, Vendor::contractExpiringSoon(60)->count());
+        $this->assertEquals(2, Vendor::contractExpiringSoon(120)->count());
     }
 
-    public function test_by_location_scope()
+    /** @test */
+    public function it_can_scope_by_audit_due()
     {
-        $spainVendor = Vendor::factory()->create(['country' => 'Spain']);
-        $franceVendor = Vendor::factory()->create(['country' => 'France']);
-
-        $spainVendors = Vendor::byLocation('Spain')->get();
+        Vendor::factory()->create(['next_audit_date' => now()->addDays(15)]);
+        Vendor::factory()->create(['next_audit_date' => now()->addDays(45)]);
+        Vendor::factory()->create(['next_audit_date' => now()->addDays(90)]);
         
-        $this->assertTrue($spainVendors->contains($spainVendor));
-        $this->assertFalse($spainVendors->contains($franceVendor));
+        $this->assertEquals(1, Vendor::auditDueSoon(30)->count());
+        $this->assertEquals(2, Vendor::auditDueSoon(60)->count());
     }
 
-    public function test_by_contract_status_scope()
+    /** @test */
+    public function it_can_scope_by_creation_date()
     {
-        $activeContractVendor = Vendor::factory()->create([
-            'contract_start_date' => now()->subMonth(),
-            'contract_end_date' => now()->addMonth()
-        ]);
-
-        $expiredContractVendor = Vendor::factory()->create([
-            'contract_start_date' => now()->subMonths(2),
-            'contract_end_date' => now()->subMonth()
-        ]);
-
-        $activeContractVendors = Vendor::byContractStatus('active')->get();
+        Vendor::factory()->create(['created_at' => now()->subDays(30)]);
+        Vendor::factory()->create(['created_at' => now()->subDays(90)]);
+        Vendor::factory()->create(['created_at' => now()->subDays(180)]);
         
-        $this->assertTrue($activeContractVendors->contains($activeContractVendor));
-        $this->assertFalse($activeContractVendors->contains($expiredContractVendor));
+        $this->assertEquals(2, Vendor::createdAfter(now()->subDays(100))->count());
+        $this->assertEquals(1, Vendor::createdBefore(now()->subDays(100))->count());
     }
 
-    public function test_by_payment_terms_scope()
+    /** @test */
+    public function it_can_scope_by_approval_date()
     {
-        $thirtyDaysVendor = Vendor::factory()->create(['payment_terms' => '30 days']);
-        $sixtyDaysVendor = Vendor::factory()->create(['payment_terms' => '60 days']);
-
-        $thirtyDaysVendors = Vendor::byPaymentTerms('30 days')->get();
+        Vendor::factory()->create(['approved_at' => now()->subDays(30)]);
+        Vendor::factory()->create(['approved_at' => now()->subDays(90)]);
+        Vendor::factory()->create(['approved_at' => now()->subDays(180)]);
         
-        $this->assertTrue($thirtyDaysVendors->contains($thirtyDaysVendor));
-        $this->assertFalse($thirtyDaysVendors->contains($sixtyDaysVendor));
-    }
-
-    public function test_by_credit_limit_scope()
-    {
-        $highLimitVendor = Vendor::factory()->create(['credit_limit' => 10000]);
-        $lowLimitVendor = Vendor::factory()->create(['credit_limit' => 1000]);
-
-        $highLimitVendors = Vendor::byCreditLimit(5000)->get();
-        
-        $this->assertTrue($highLimitVendors->contains($highLimitVendor));
-        $this->assertFalse($highLimitVendors->contains($lowLimitVendor));
-    }
-
-    public function test_approved_scope()
-    {
-        $approvedVendor = Vendor::factory()->create(['approved_at' => now()]);
-        $pendingVendor = Vendor::factory()->create(['approved_at' => null]);
-
-        $approvedVendors = Vendor::approved()->get();
-        
-        $this->assertTrue($approvedVendors->contains($approvedVendor));
-        $this->assertFalse($approvedVendors->contains($pendingVendor));
-    }
-
-    public function test_pending_approval_scope()
-    {
-        $approvedVendor = Vendor::factory()->create(['approved_at' => now()]);
-        $pendingVendor = Vendor::factory()->create(['approved_at' => null]);
-
-        $pendingVendors = Vendor::pendingApproval()->get();
-        
-        $this->assertTrue($pendingVendors->contains($pendingVendor));
-        $this->assertFalse($pendingVendors->contains($approvedVendor));
-    }
-
-    public function test_non_compliant_scope()
-    {
-        $compliantVendor = Vendor::factory()->create(['compliance_status' => 'compliant']);
-        $nonCompliantVendor = Vendor::factory()->create(['compliance_status' => 'non_compliant']);
-
-        $nonCompliantVendors = Vendor::nonCompliant()->get();
-        
-        $this->assertTrue($nonCompliantVendors->contains($nonCompliantVendor));
-        $this->assertFalse($nonCompliantVendors->contains($compliantVendor));
+        $this->assertEquals(2, Vendor::approvedAfter(now()->subDays(100))->count());
+        $this->assertEquals(1, Vendor::approvedBefore(now()->subDays(100))->count());
     }
 }

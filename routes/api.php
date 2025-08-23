@@ -713,6 +713,25 @@ Route::get('maintenance-schedules/by-department/{department}', [MaintenanceSched
 Route::get('maintenance-schedules/by-category/{category}', [MaintenanceScheduleController::class, 'byCategory']);
 Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class);
 
+    // Vendor routes
+    Route::get('vendors/statistics', [VendorController::class, 'statistics']);
+    Route::get('vendors/vendor-types', [VendorController::class, 'vendorTypes']);
+    Route::get('vendors/risk-levels', [VendorController::class, 'riskLevels']);
+    Route::get('vendors/compliance-statuses', [VendorController::class, 'complianceStatuses']);
+    Route::patch('vendors/{vendor}/toggle-verified', [VendorController::class, 'toggleVerified']);
+    Route::patch('vendors/{vendor}/toggle-preferred', [VendorController::class, 'togglePreferred']);
+    Route::post('vendors/{vendor}/duplicate', [VendorController::class, 'duplicate']);
+    Route::get('vendors/active', [VendorController::class, 'active']);
+    Route::get('vendors/verified', [VendorController::class, 'verified']);
+    Route::get('vendors/preferred', [VendorController::class, 'preferred']);
+    Route::get('vendors/blacklisted', [VendorController::class, 'blacklisted']);
+    Route::get('vendors/compliant', [VendorController::class, 'compliant']);
+    Route::get('vendors/by-risk-level/{riskLevel}', [VendorController::class, 'byRiskLevel']);
+    Route::get('vendors/by-compliance-status/{complianceStatus}', [VendorController::class, 'byComplianceStatus']);
+    Route::get('vendors/by-location/{country}', [VendorController::class, 'byLocation']);
+    Route::get('vendors/high-rating', [VendorController::class, 'highRating']);
+    Route::apiResource('vendors', VendorController::class);
+
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
     Route::get('production-projects/types', [ProductionProjectController::class, 'types']);
