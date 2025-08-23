@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('type', ['info', 'alert', 'success', 'warning', 'error'])->default('info');
             $table->timestamp('delivered_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             
             // Índices para mejorar el rendimiento
             $table->index(['user_id', 'read_at']);
