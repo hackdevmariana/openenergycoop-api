@@ -83,6 +83,7 @@ use App\Http\Controllers\Api\V1\EnergyTransferController;
 use App\Http\Controllers\Api\V1\AutomationRuleController;
 use App\Http\Controllers\Api\V1\VendorController;
 use App\Http\Controllers\Api\V1\TaskTemplateController;
+use App\Http\Controllers\Api\V1\ChecklistTemplateController;
 use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
@@ -716,6 +717,28 @@ Route::get('task-templates/by-department/{department}', [TaskTemplateController:
 Route::get('task-templates/high-priority', [TaskTemplateController::class, 'highPriority']);
 Route::get('task-templates/high-risk', [TaskTemplateController::class, 'highRisk']);
 Route::apiResource('task-templates', TaskTemplateController::class);
+
+    // ChecklistTemplate routes
+    Route::get('checklist-templates/statistics', [ChecklistTemplateController::class, 'statistics']);
+    Route::get('checklist-templates/template-types', [ChecklistTemplateController::class, 'templateTypes']);
+    Route::get('checklist-templates/priorities', [ChecklistTemplateController::class, 'priorities']);
+    Route::get('checklist-templates/risk-levels', [ChecklistTemplateController::class, 'riskLevels']);
+    Route::patch('checklist-templates/{checklist_template}/toggle-active', [ChecklistTemplateController::class, 'toggleActive']);
+    Route::patch('checklist-templates/{checklist_template}/toggle-standard', [ChecklistTemplateController::class, 'toggleStandard']);
+    Route::post('checklist-templates/{checklist_template}/duplicate', [ChecklistTemplateController::class, 'duplicate']);
+    Route::get('checklist-templates/active', [ChecklistTemplateController::class, 'active']);
+    Route::get('checklist-templates/standard', [ChecklistTemplateController::class, 'standard']);
+    Route::get('checklist-templates/approved', [ChecklistTemplateController::class, 'approved']);
+    Route::get('checklist-templates/pending-approval', [ChecklistTemplateController::class, 'pendingApproval']);
+    Route::get('checklist-templates/by-type/{type}', [ChecklistTemplateController::class, 'byType']);
+    Route::get('checklist-templates/by-category/{category}', [ChecklistTemplateController::class, 'byCategory']);
+    Route::get('checklist-templates/by-priority/{priority}', [ChecklistTemplateController::class, 'byPriority']);
+    Route::get('checklist-templates/by-risk-level/{riskLevel}', [ChecklistTemplateController::class, 'byRiskLevel']);
+    Route::get('checklist-templates/by-department/{department}', [ChecklistTemplateController::class, 'byDepartment']);
+    Route::get('checklist-templates/high-priority', [ChecklistTemplateController::class, 'highPriority']);
+    Route::get('checklist-templates/high-risk', [ChecklistTemplateController::class, 'highRisk']);
+    Route::get('checklist-templates/needs-review', [ChecklistTemplateController::class, 'needsReview']);
+    Route::apiResource('checklist-templates', ChecklistTemplateController::class);
 
 // MaintenanceSchedule routes
 Route::get('maintenance-schedules/statistics', [MaintenanceScheduleController::class, 'statistics']);
