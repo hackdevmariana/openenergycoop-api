@@ -67,4 +67,12 @@ class Organization extends Model implements HasMedia
     {
         return $this->hasManyThrough(Comment::class, Article::class);
     }
+
+    /**
+     * Eventos de la organización
+     */
+    public function events()
+    {
+        return $this->hasMany(Event::class);
+    }
 }
