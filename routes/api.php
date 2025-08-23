@@ -84,6 +84,7 @@ use App\Http\Controllers\Api\V1\AutomationRuleController;
 use App\Http\Controllers\Api\V1\VendorController;
 use App\Http\Controllers\Api\V1\TaskTemplateController;
 use App\Http\Controllers\Api\V1\ChecklistTemplateController;
+use App\Http\Controllers\Api\V1\MilestoneController;
 use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
@@ -738,7 +739,19 @@ Route::apiResource('task-templates', TaskTemplateController::class);
     Route::get('checklist-templates/high-priority', [ChecklistTemplateController::class, 'highPriority']);
     Route::get('checklist-templates/high-risk', [ChecklistTemplateController::class, 'highRisk']);
     Route::get('checklist-templates/needs-review', [ChecklistTemplateController::class, 'needsReview']);
-    Route::apiResource('checklist-templates', ChecklistTemplateController::class);
+Route::apiResource('checklist-templates', ChecklistTemplateController::class);
+
+    // Milestone routes
+    Route::get('milestones/statistics', [MilestoneController::class, 'statistics']);
+    Route::get('milestones/milestone-types', [MilestoneController::class, 'milestoneTypes']);
+    Route::get('milestones/statuses', [MilestoneController::class, 'statuses']);
+    Route::get('milestones/priorities', [MilestoneController::class, 'priorities']);
+    Route::patch('milestones/{milestone}/start', [MilestoneController::class, 'start']);
+    Route::patch('milestones/{milestone}/complete', [MilestoneController::class, 'complete']);
+    Route::get('milestones/overdue', [MilestoneController::class, 'overdue']);
+    Route::get('milestones/due-soon', [MilestoneController::class, 'dueSoon']);
+    Route::get('milestones/high-priority', [MilestoneController::class, 'highPriority']);
+    Route::apiResource('milestones', MilestoneController::class);
 
 // MaintenanceSchedule routes
 Route::get('maintenance-schedules/statistics', [MaintenanceScheduleController::class, 'statistics']);
