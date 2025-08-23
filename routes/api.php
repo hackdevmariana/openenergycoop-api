@@ -81,6 +81,7 @@ use App\Http\Controllers\Api\V1\EnergyForecastController;
 use App\Http\Controllers\Api\V1\TaxCalculationController;
 use App\Http\Controllers\Api\V1\EnergyTransferController;
 use App\Http\Controllers\Api\V1\AutomationRuleController;
+use App\Http\Controllers\Api\V1\VendorController;
 use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
@@ -673,6 +674,26 @@ Route::get('automation-rules/by-trigger-type/{triggerType}', [AutomationRuleCont
 Route::get('automation-rules/by-action-type/{actionType}', [AutomationRuleController::class, 'byActionType']);
 Route::get('automation-rules/by-execution-frequency/{frequency}', [AutomationRuleController::class, 'byExecutionFrequency']);
 Route::apiResource('automation-rules', AutomationRuleController::class);
+
+// Vendor routes
+Route::get('vendors/statistics', [VendorController::class, 'statistics']);
+Route::get('vendors/vendor-types', [VendorController::class, 'vendorTypes']);
+Route::get('vendors/statuses', [VendorController::class, 'statuses']);
+Route::get('vendors/risk-levels', [VendorController::class, 'riskLevels']);
+Route::get('vendors/compliance-statuses', [VendorController::class, 'complianceStatuses']);
+Route::patch('vendors/{vendor}/toggle-active', [VendorController::class, 'toggleActive']);
+Route::post('vendors/{vendor}/duplicate', [VendorController::class, 'duplicate']);
+Route::get('vendors/active', [VendorController::class, 'active']);
+Route::get('vendors/verified', [VendorController::class, 'verified']);
+Route::get('vendors/preferred', [VendorController::class, 'preferred']);
+Route::get('vendors/high-risk', [VendorController::class, 'highRisk']);
+Route::get('vendors/needs-audit', [VendorController::class, 'needsAudit']);
+Route::get('vendors/contract-expiring', [VendorController::class, 'contractExpiring']);
+Route::get('vendors/by-type/{type}', [VendorController::class, 'byType']);
+Route::get('vendors/by-industry/{industry}', [VendorController::class, 'byIndustry']);
+Route::get('vendors/by-location', [VendorController::class, 'byLocation']);
+Route::get('vendors/by-rating/{rating}', [VendorController::class, 'byRating']);
+Route::apiResource('vendors', VendorController::class);
 
 // MaintenanceSchedule routes
 Route::get('maintenance-schedules/statistics', [MaintenanceScheduleController::class, 'statistics']);
