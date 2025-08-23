@@ -77,6 +77,7 @@ use App\Http\Controllers\Api\V1\EnergyMeterController;
 use App\Http\Controllers\Api\V1\EnergyReadingController;
 use App\Http\Controllers\Api\V1\EnergyPoolController;
 use App\Http\Controllers\Api\V1\EnergyTradingOrderController;
+use App\Http\Controllers\Api\V1\EnergyForecastController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -587,6 +588,25 @@ Route::get('energy-trading-orders/high-priority', [EnergyTradingOrderController:
 Route::get('energy-trading-orders/negotiable', [EnergyTradingOrderController::class, 'negotiable']);
 Route::get('energy-trading-orders/expiring', [EnergyTradingOrderController::class, 'expiring']);
 Route::apiResource('energy-trading-orders', EnergyTradingOrderController::class);
+
+// Energy Forecast Routes
+Route::get('energy-forecasts/statistics', [EnergyForecastController::class, 'statistics']);
+Route::get('energy-forecasts/types', [EnergyForecastController::class, 'types']);
+Route::get('energy-forecasts/horizons', [EnergyForecastController::class, 'horizons']);
+Route::get('energy-forecasts/methods', [EnergyForecastController::class, 'methods']);
+Route::get('energy-forecasts/statuses', [EnergyForecastController::class, 'statuses']);
+Route::get('energy-forecasts/accuracy-levels', [EnergyForecastController::class, 'accuracyLevels']);
+Route::patch('energy-forecasts/{energyForecast}/update-status', [EnergyForecastController::class, 'updateStatus']);
+Route::post('energy-forecasts/{energyForecast}/duplicate', [EnergyForecastController::class, 'duplicate']);
+Route::get('energy-forecasts/active', [EnergyForecastController::class, 'active']);
+Route::get('energy-forecasts/validated', [EnergyForecastController::class, 'validated']);
+Route::get('energy-forecasts/by-type/{type}', [EnergyForecastController::class, 'byType']);
+Route::get('energy-forecasts/by-horizon/{horizon}', [EnergyForecastController::class, 'byHorizon']);
+Route::get('energy-forecasts/high-accuracy', [EnergyForecastController::class, 'highAccuracy']);
+Route::get('energy-forecasts/expiring', [EnergyForecastController::class, 'expiring']);
+Route::get('energy-forecasts/by-source/{source_id}', [EnergyForecastController::class, 'bySource']);
+Route::get('energy-forecasts/by-target/{target_id}', [EnergyForecastController::class, 'byTarget']);
+Route::apiResource('energy-forecasts', EnergyForecastController::class);
 
     // Rutas para Production Projects (Proyectos de Producción)
     Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
