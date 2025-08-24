@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing discount codes and promotional offers
  */
-class DiscountCodeController extends Controller
+class DiscountCodeController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of discount codes.
@@ -515,7 +515,7 @@ class DiscountCodeController extends Controller
      *   }
      * }
      */
-    public function validate(Request $request): JsonResponse
+    public function validateCode(Request $request): JsonResponse
     {
         try {
             $request->validate([

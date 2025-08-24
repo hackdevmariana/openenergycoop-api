@@ -88,6 +88,8 @@ use App\Http\Controllers\Api\V1\MilestoneController;
 use App\Http\Controllers\Api\V1\MaintenanceScheduleController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
+use App\Http\Controllers\Api\V1\EventController;
+use App\Http\Controllers\Api\V1\EventAttendanceController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -794,6 +796,37 @@ Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class
     Route::get('notification-settings/user/{user_id}', [NotificationSettingController::class, 'userSettings']);
     Route::post('notification-settings/create-defaults/{user_id}', [NotificationSettingController::class, 'createDefaults']);
     Route::apiResource('notification-settings', NotificationSettingController::class);
+
+    // ========================================
+    // GESTIÓN DE EVENTOS
+    // ========================================
+
+    // Event routes
+    Route::get('events/statistics', [EventController::class, 'statistics']);
+    Route::get('events/types', [EventController::class, 'types']);
+    Route::get('events/languages', [EventController::class, 'languages']);
+    Route::get('events/upcoming', [EventController::class, 'upcoming']);
+    Route::get('events/today', [EventController::class, 'today']);
+    Route::get('events/by-date-range', [EventController::class, 'byDateRange']);
+    Route::get('events/recommended', [EventController::class, 'recommended']);
+    Route::patch('events/{event}/toggle-public', [EventController::class, 'togglePublic']);
+    Route::patch('events/{event}/toggle-draft', [EventController::class, 'toggleDraft']);
+    Route::get('events/{event}/attendance-stats', [EventController::class, 'attendanceStats']);
+    Route::get('events/{event}/check-user-registration', [EventController::class, 'checkUserRegistration']);
+    Route::apiResource('events', EventController::class);
+
+    // Event Attendance routes
+    Route::get('event-attendances/statistics', [EventAttendanceController::class, 'statistics']);
+    Route::get('event-attendances/statuses', [EventAttendanceController::class, 'statuses']);
+    Route::patch('event-attendances/{eventAttendance}/check-in', [EventAttendanceController::class, 'checkIn']);
+    Route::patch('event-attendances/{eventAttendance}/cancel', [EventAttendanceController::class, 'cancel']);
+    Route::patch('event-attendances/{eventAttendance}/mark-no-show', [EventAttendanceController::class, 'markAsNoShow']);
+    Route::patch('event-attendances/{eventAttendance}/re-register', [EventAttendanceController::class, 'reRegister']);
+    Route::get('event-attendances/find-by-token', [EventAttendanceController::class, 'findByToken']);
+    Route::patch('event-attendances/{eventAttendance}/generate-new-token', [EventAttendanceController::class, 'generateNewToken']);
+    Route::get('event-attendances/event/{event}/stats', [EventAttendanceController::class, 'eventStats']);
+    Route::get('event-attendances/user/{user}/stats', [EventAttendanceController::class, 'userStats']);
+    Route::apiResource('event-attendances', EventAttendanceController::class);
 
     // Vendor routes
     Route::get('vendors/statistics', [VendorController::class, 'statistics']);
