@@ -90,6 +90,8 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\EventAttendanceController;
+use App\Http\Controllers\Api\V1\SurveyController;
+use App\Http\Controllers\Api\V1\SurveyResponseController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -827,6 +829,30 @@ Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class
     Route::get('event-attendances/event/{event}/stats', [EventAttendanceController::class, 'eventStats']);
     Route::get('event-attendances/user/{user}/stats', [EventAttendanceController::class, 'userStats']);
     Route::apiResource('event-attendances', EventAttendanceController::class);
+
+    // ========================================
+    // GESTIÓN DE ENCUESTAS
+    // ========================================
+
+    // Survey routes
+    Route::get('surveys/statistics', [SurveyController::class, 'statistics']);
+    Route::get('surveys/by-status', [SurveyController::class, 'getByStatus']);
+    Route::get('surveys/popular', [SurveyController::class, 'popular']);
+    Route::get('surveys/expiring-soon', [SurveyController::class, 'expiringSoon']);
+    Route::get('surveys/active-today', [SurveyController::class, 'activeToday']);
+    Route::get('surveys/recommended', [SurveyController::class, 'recommended']);
+    Route::get('surveys/search', [SurveyController::class, 'search']);
+    Route::apiResource('surveys', SurveyController::class);
+
+    // Survey Response routes
+    Route::get('survey-responses/statistics', [SurveyResponseController::class, 'statistics']);
+    Route::get('survey-responses/by-survey/{surveyId}', [SurveyResponseController::class, 'getBySurvey']);
+    Route::get('survey-responses/by-user/{userId}', [SurveyResponseController::class, 'getByUser']);
+    Route::get('survey-responses/popular', [SurveyResponseController::class, 'popular']);
+    Route::get('survey-responses/recent', [SurveyResponseController::class, 'recent']);
+    Route::get('survey-responses/check-user-response/{surveyId}', [SurveyResponseController::class, 'checkUserResponse']);
+    Route::get('survey-responses/search', [SurveyResponseController::class, 'searchInResponses']);
+    Route::apiResource('survey-responses', SurveyResponseController::class);
 
     // Vendor routes
     Route::get('vendors/statistics', [VendorController::class, 'statistics']);
