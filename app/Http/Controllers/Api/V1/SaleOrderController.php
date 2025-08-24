@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing sales orders and transactions
  */
-class SaleOrderController extends Controller
+class SaleOrderController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of sale orders.

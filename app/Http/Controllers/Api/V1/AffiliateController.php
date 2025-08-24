@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
  *
  * APIs for managing affiliate relationships and partnerships
  */
-class AffiliateController extends Controller
+class AffiliateController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of affiliates.
