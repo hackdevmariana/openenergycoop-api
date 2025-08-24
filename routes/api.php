@@ -872,6 +872,68 @@ Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class
     Route::get('survey-responses/search', [SurveyResponseController::class, 'searchInResponses']);
     Route::apiResource('survey-responses', SurveyResponseController::class);
 
+    // ========================================
+    // SISTEMA DE GAMIFICACIÓN - PLANTAS
+    // ========================================
+
+    // Plant routes
+    Route::get('plants/active', [App\Http\Controllers\Api\PlantController::class, 'active']);
+    Route::get('plants/by-unit-label/{unitLabel}', [App\Http\Controllers\Api\PlantController::class, 'byUnitLabel']);
+    Route::get('plants/by-co2-range', [App\Http\Controllers\Api\PlantController::class, 'byCo2Range']);
+    Route::post('plants/{plant}/toggle-active', [App\Http\Controllers\Api\PlantController::class, 'toggleActive']);
+    Route::get('plants/statistics', [App\Http\Controllers\Api\PlantController::class, 'statistics']);
+    Route::apiResource('plants', App\Http\Controllers\Api\PlantController::class);
+
+    // Plant Group routes
+    Route::get('plant-groups/by-user/{userId}', [App\Http\Controllers\Api\PlantGroupController::class, 'byUser']);
+    Route::get('plant-groups/collective', [App\Http\Controllers\Api\PlantGroupController::class, 'collective']);
+    Route::post('plant-groups/{plantGroup}/add-plants', [App\Http\Controllers\Api\PlantGroupController::class, 'addPlants']);
+    Route::post('plant-groups/{plantGroup}/remove-plants', [App\Http\Controllers\Api\PlantGroupController::class, 'removePlants']);
+    Route::post('plant-groups/{plantGroup}/toggle-active', [App\Http\Controllers\Api\PlantGroupController::class, 'toggleActive']);
+    Route::get('plant-groups/statistics', [App\Http\Controllers\Api\PlantGroupController::class, 'statistics']);
+    Route::apiResource('plant-groups', App\Http\Controllers\Api\PlantGroupController::class);
+
+    // Cooperative Plant Config routes
+    Route::get('cooperative-plant-configs/by-cooperative/{cooperativeId}', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'byCooperative']);
+    Route::get('cooperative-plant-configs/get-default/{cooperativeId}', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'getDefault']);
+    Route::post('cooperative-plant-configs/{config}/set-as-default', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'setAsDefault']);
+    Route::post('cooperative-plant-configs/{config}/remove-default', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'removeDefault']);
+    Route::post('cooperative-plant-configs/{config}/toggle-active', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'toggleActive']);
+    Route::get('cooperative-plant-configs/statistics', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'statistics']);
+    Route::apiResource('cooperative-plant-configs', App\Http\Controllers\Api\CooperativePlantConfigController::class);
+
+    // ========================================
+    // SISTEMA DE MÉTRICAS DE IMPACTO Y COMUNITARIAS
+    // ========================================
+
+    // Impact Metrics routes
+    Route::get('impact-metrics/by-user/{userId}', [App\Http\Controllers\Api\ImpactMetricsController::class, 'byUser']);
+    Route::get('impact-metrics/by-plant-group/{plantGroupId}', [App\Http\Controllers\Api\ImpactMetricsController::class, 'byPlantGroup']);
+    Route::get('impact-metrics/global', [App\Http\Controllers\Api\ImpactMetricsController::class, 'global']);
+    Route::get('impact-metrics/individual', [App\Http\Controllers\Api\ImpactMetricsController::class, 'individual']);
+    Route::get('impact-metrics/recent', [App\Http\Controllers\Api\ImpactMetricsController::class, 'recent']);
+    Route::get('impact-metrics/this-month', [App\Http\Controllers\Api\ImpactMetricsController::class, 'thisMonth']);
+    Route::get('impact-metrics/this-year', [App\Http\Controllers\Api\ImpactMetricsController::class, 'thisYear']);
+    Route::get('impact-metrics/statistics', [App\Http\Controllers\Api\ImpactMetricsController::class, 'statistics']);
+    Route::post('impact-metrics/{impactMetric}/update-metrics', [App\Http\Controllers\Api\ImpactMetricsController::class, 'updateMetrics']);
+    Route::post('impact-metrics/{impactMetric}/reset-metrics', [App\Http\Controllers\Api\ImpactMetricsController::class, 'resetMetrics']);
+    Route::apiResource('impact-metrics', App\Http\Controllers\Api\ImpactMetricsController::class);
+
+    // Community Metrics routes
+    Route::get('community-metrics/by-organization/{organizationId}', [App\Http\Controllers\Api\CommunityMetricsController::class, 'byOrganization']);
+    Route::get('community-metrics/active', [App\Http\Controllers\Api\CommunityMetricsController::class, 'active']);
+    Route::get('community-metrics/inactive', [App\Http\Controllers\Api\CommunityMetricsController::class, 'inactive']);
+    Route::get('community-metrics/recent', [App\Http\Controllers\Api\CommunityMetricsController::class, 'recent']);
+    Route::get('community-metrics/this-month', [App\Http\Controllers\Api\CommunityMetricsController::class, 'thisMonth']);
+    Route::get('community-metrics/this-year', [App\Http\Controllers\Api\CommunityMetricsController::class, 'thisYear']);
+    Route::get('community-metrics/statistics', [App\Http\Controllers\Api\CommunityMetricsController::class, 'statistics']);
+    Route::post('community-metrics/{communityMetric}/add-user', [App\Http\Controllers\Api\CommunityMetricsController::class, 'addUser']);
+    Route::post('community-metrics/{communityMetric}/remove-user', [App\Http\Controllers\Api\CommunityMetricsController::class, 'removeUser']);
+    Route::post('community-metrics/{communityMetric}/add-kwh-production', [App\Http\Controllers\Api\CommunityMetricsController::class, 'addKwhProduction']);
+    Route::post('community-metrics/{communityMetric}/add-co2-avoided', [App\Http\Controllers\Api\CommunityMetricsController::class, 'addCo2Avoided']);
+    Route::post('community-metrics/{communityMetric}/reset-metrics', [App\Http\Controllers\Api\CommunityMetricsController::class, 'resetMetrics']);
+    Route::apiResource('community-metrics', App\Http\Controllers\Api\CommunityMetricsController::class);
+
     // Vendor routes
     Route::get('vendors/statistics', [VendorController::class, 'statistics']);
     Route::get('vendors/vendor-types', [VendorController::class, 'vendorTypes']);
@@ -1148,6 +1210,53 @@ Route::prefix('v1')->group(function () {
     Route::get('energy-challenges/upcoming', [App\Http\Controllers\Api\EnergyChallengeController::class, 'upcoming']);
     Route::get('energy-challenges/{energyChallenge}', [App\Http\Controllers\Api\EnergyChallengeController::class, 'show']);
     Route::get('energy-challenges/{energyChallenge}/statistics', [App\Http\Controllers\Api\EnergyChallengeController::class, 'statistics']);
+
+    // ========================================
+    // RUTAS PÚBLICAS - SISTEMA DE GAMIFICACIÓN - PLANTAS
+    // ========================================
+
+    // Rutas públicas para Plants (solo lectura)
+    Route::get('plants', [App\Http\Controllers\Api\PlantController::class, 'index']);
+    Route::get('plants/active', [App\Http\Controllers\Api\PlantController::class, 'active']);
+    Route::get('plants/by-unit-label/{unitLabel}', [App\Http\Controllers\Api\PlantController::class, 'byUnitLabel']);
+    Route::get('plants/by-co2-range', [App\Http\Controllers\Api\PlantController::class, 'byCo2Range']);
+    Route::get('plants/{plant}', [App\Http\Controllers\Api\PlantController::class, 'show']);
+    Route::get('plants/statistics', [App\Http\Controllers\Api\PlantController::class, 'statistics']);
+
+    // Rutas públicas para Plant Groups (solo lectura)
+    Route::get('plant-groups', [App\Http\Controllers\Api\PlantGroupController::class, 'index']);
+    Route::get('plant-groups/collective', [App\Http\Controllers\Api\PlantGroupController::class, 'collective']);
+    Route::get('plant-groups/statistics', [App\Http\Controllers\Api\PlantGroupController::class, 'statistics']);
+
+    // Rutas públicas para Cooperative Plant Configs (solo lectura)
+    Route::get('cooperative-plant-configs', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'index']);
+    Route::get('cooperative-plant-configs/by-cooperative/{cooperativeId}', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'byCooperative']);
+    Route::get('cooperative-plant-configs/get-default/{cooperativeId}', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'getDefault']);
+    Route::get('cooperative-plant-configs/statistics', [App\Http\Controllers\Api\CooperativePlantConfigController::class, 'statistics']);
+
+    // ========================================
+    // RUTAS PÚBLICAS - SISTEMA DE MÉTRICAS DE IMPACTO Y COMUNITARIAS
+    // ========================================
+
+    // Rutas públicas para Impact Metrics (solo lectura)
+    Route::get('impact-metrics', [App\Http\Controllers\Api\ImpactMetricsController::class, 'index']);
+    Route::get('impact-metrics/global', [App\Http\Controllers\Api\ImpactMetricsController::class, 'global']);
+    Route::get('impact-metrics/individual', [App\Http\Controllers\Api\ImpactMetricsController::class, 'individual']);
+    Route::get('impact-metrics/recent', [App\Http\Controllers\Api\ImpactMetricsController::class, 'recent']);
+    Route::get('impact-metrics/this-month', [App\Http\Controllers\Api\ImpactMetricsController::class, 'thisMonth']);
+    Route::get('impact-metrics/this-year', [App\Http\Controllers\Api\ImpactMetricsController::class, 'thisYear']);
+    Route::get('impact-metrics/statistics', [App\Http\Controllers\Api\ImpactMetricsController::class, 'statistics']);
+    Route::get('impact-metrics/{impactMetric}', [App\Http\Controllers\Api\ImpactMetricsController::class, 'show']);
+
+    // Rutas públicas para Community Metrics (solo lectura)
+    Route::get('community-metrics', [App\Http\Controllers\Api\CommunityMetricsController::class, 'index']);
+    Route::get('community-metrics/active', [App\Http\Controllers\Api\CommunityMetricsController::class, 'active']);
+    Route::get('community-metrics/inactive', [App\Http\Controllers\Api\CommunityMetricsController::class, 'inactive']);
+    Route::get('community-metrics/recent', [App\Http\Controllers\Api\CommunityMetricsController::class, 'recent']);
+    Route::get('community-metrics/this-month', [App\Http\Controllers\Api\CommunityMetricsController::class, 'thisMonth']);
+    Route::get('community-metrics/this-year', [App\Http\Controllers\Api\CommunityMetricsController::class, 'thisYear']);
+    Route::get('community-metrics/statistics', [App\Http\Controllers\Api\CommunityMetricsController::class, 'statistics']);
+    Route::get('community-metrics/{communityMetric}', [App\Http\Controllers\Api\CommunityMetricsController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
