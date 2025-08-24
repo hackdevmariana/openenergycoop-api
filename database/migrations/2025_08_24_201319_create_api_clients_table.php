@@ -34,7 +34,7 @@ return new class extends Migration
 
             // Índices
             $table->index(['organization_id', 'status']);
-            $table->index(['status', 'active']);
+            $table->index('status');
             $table->index('token');
             $table->index('last_used_at');
             $table->index('expires_at');
