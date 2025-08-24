@@ -17,7 +17,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de logros de usuario"
  * )
  */
-class UserAchievementController extends Controller
+class UserAchievementController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

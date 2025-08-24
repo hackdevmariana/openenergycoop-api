@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
  *
  * APIs for managing energy forecasts
  */
-class EnergyForecastController extends Controller
+class EnergyForecastController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy forecasts.

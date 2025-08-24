@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de imágenes del sistema CMS"
  * )
  */
-class ImageController extends Controller
+class ImageController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

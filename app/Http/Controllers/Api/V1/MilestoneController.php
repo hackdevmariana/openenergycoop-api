@@ -19,7 +19,7 @@ use OpenApi\Attributes as OA;
     name: 'Milestones',
     description: 'Endpoints para gestión de hitos y metas del proyecto'
 )]
-class MilestoneController extends Controller
+class MilestoneController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/milestones',

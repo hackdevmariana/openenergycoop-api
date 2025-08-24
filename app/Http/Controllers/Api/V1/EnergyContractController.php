@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
  *     description="Gestión de contratos energéticos"
  * )
  */
-class EnergyContractController extends Controller
+class EnergyContractController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of the resource.

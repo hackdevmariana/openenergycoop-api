@@ -20,7 +20,7 @@ use Illuminate\Validation\ValidationException;
  *     description="API Endpoints for Energy Transfer management"
  * )
  */
-class EnergyTransferController extends Controller
+class EnergyTransferController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

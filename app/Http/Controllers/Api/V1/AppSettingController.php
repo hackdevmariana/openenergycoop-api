@@ -7,7 +7,7 @@ use App\Http\Resources\AppSettingResource;
 use App\Models\AppSetting;
 use Illuminate\Http\Request;
 
-class AppSettingController extends Controller
+class AppSettingController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

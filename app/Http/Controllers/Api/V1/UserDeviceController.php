@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de dispositivos de usuario"
  * )
  */
-class UserDeviceController extends Controller
+class UserDeviceController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

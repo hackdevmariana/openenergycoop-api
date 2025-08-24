@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
     name: 'Challenges',
     description: 'Endpoints para gestión de desafíos energéticos'
 )]
-class ChallengeController extends Controller
+class ChallengeController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/challenges',

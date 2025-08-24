@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de roles de organización"
  * )
  */
-class OrganizationRoleController extends Controller
+class OrganizationRoleController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

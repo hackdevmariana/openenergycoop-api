@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Indicadores de Rendimiento", description: "Gestión de KPIs e indicadores de performance")]
-class PerformanceIndicatorController extends Controller
+class PerformanceIndicatorController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: "/api/v1/performance-indicators",

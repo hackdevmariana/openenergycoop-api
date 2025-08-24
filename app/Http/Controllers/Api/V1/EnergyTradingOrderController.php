@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * @group Energy Trading Order Management
  * APIs for managing energy trading orders
  */
-class EnergyTradingOrderController extends Controller
+class EnergyTradingOrderController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy trading orders.

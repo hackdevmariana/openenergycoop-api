@@ -19,7 +19,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para gestión de programas de mantenimiento"
  * )
  */
-class MaintenanceScheduleController extends Controller
+class MaintenanceScheduleController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

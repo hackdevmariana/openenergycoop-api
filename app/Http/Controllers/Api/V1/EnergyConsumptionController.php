@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class EnergyConsumptionController extends Controller
+class EnergyConsumptionController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): JsonResponse
     {

@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de artículos del sistema CMS"
  * )
  */
-class ArticleController extends Controller
+class ArticleController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

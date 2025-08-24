@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  *     description="API Endpoints for Spanish municipalities"
  * )
  */
-class MunicipalityController extends Controller
+class MunicipalityController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): JsonResponse
     {

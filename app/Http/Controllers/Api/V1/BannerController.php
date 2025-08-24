@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de banners promocionales del sitio web"
  * )
  */
-class BannerController extends Controller
+class BannerController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de temas de preguntas frecuentes"
  * )
  */
-class FaqTopicController extends Controller
+class FaqTopicController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

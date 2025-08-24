@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de suscripciones al newsletter"
  * )
  */
-class NewsletterSubscriptionController extends Controller
+class NewsletterSubscriptionController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

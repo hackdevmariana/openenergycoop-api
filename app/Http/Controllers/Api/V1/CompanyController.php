@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de empresas"
  * )
  */
-class CompanyController extends Controller
+class CompanyController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

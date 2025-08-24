@@ -15,7 +15,7 @@ use App\Policies\CustomerProfilePolicy;
  *     description="API Endpoints para gestión de perfiles de clientes"
  * )
  */
-class CustomerProfileController extends Controller
+class CustomerProfileController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

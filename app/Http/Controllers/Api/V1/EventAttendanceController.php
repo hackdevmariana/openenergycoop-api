@@ -20,7 +20,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  *
  * APIs for managing event attendances and registrations
  */
-class EventAttendanceController extends Controller
+class EventAttendanceController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of event attendances.

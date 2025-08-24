@@ -16,7 +16,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de metadatos SEO"
  * )
  */
-class SeoMetaDataController extends Controller
+class SeoMetaDataController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

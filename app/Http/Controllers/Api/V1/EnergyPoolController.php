@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * @group Energy Pool Management
  * APIs for managing energy pools
  */
-class EnergyPoolController extends Controller
+class EnergyPoolController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy pools.

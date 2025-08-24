@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing energy installations
  */
-class EnergyInstallationController extends Controller
+class EnergyInstallationController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy installations.

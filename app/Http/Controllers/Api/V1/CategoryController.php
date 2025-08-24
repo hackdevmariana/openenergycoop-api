@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de categorías del sistema CMS"
  * )
  */
-class CategoryController extends Controller
+class CategoryController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

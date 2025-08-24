@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
     name: 'Team Memberships',
     description: 'Gestión de membresías de equipos'
 )]
-class TeamMembershipController extends Controller
+class TeamMembershipController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/team-memberships',

@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
     name: 'Organization Features',
     description: 'Gestión de características organizacionales'
 )]
-class OrganizationFeatureController extends Controller
+class OrganizationFeatureController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/organization-features',

@@ -19,7 +19,7 @@ use OpenApi\Attributes as OA;
     name: 'Checklist Templates',
     description: 'Endpoints para gestión de plantillas de listas de verificación'
 )]
-class ChecklistTemplateController extends Controller
+class ChecklistTemplateController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/checklist-templates',

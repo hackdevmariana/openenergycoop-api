@@ -17,7 +17,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de tokens de invitación"
  * )
  */
-class InvitationTokenController extends Controller
+class InvitationTokenController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

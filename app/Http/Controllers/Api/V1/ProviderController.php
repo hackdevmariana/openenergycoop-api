@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de proveedores energéticos"
  * )
  */
-class ProviderController extends Controller
+class ProviderController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

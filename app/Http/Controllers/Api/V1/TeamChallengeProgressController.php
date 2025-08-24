@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
     name: 'Team Challenge Progress',
     description: 'Gestión del progreso de equipos en desafíos'
 )]
-class TeamChallengeProgressController extends Controller
+class TeamChallengeProgressController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/team-challenge-progress',

@@ -16,7 +16,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de configuraciones de usuario"
  * )
  */
-class UserSettingsController extends Controller
+class UserSettingsController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

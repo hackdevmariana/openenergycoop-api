@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing energy production projects
  */
-class ProductionProjectController extends Controller
+class ProductionProjectController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of production projects.

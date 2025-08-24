@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing energy sources
  */
-class EnergySourceController extends Controller
+class EnergySourceController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy sources.

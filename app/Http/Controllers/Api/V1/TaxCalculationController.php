@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
  *
  * APIs for managing tax calculations
  */
-class TaxCalculationController extends Controller
+class TaxCalculationController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of tax calculations.

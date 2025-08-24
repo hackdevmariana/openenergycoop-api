@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing energy meters
  */
-class EnergyMeterController extends Controller
+class EnergyMeterController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy meters.

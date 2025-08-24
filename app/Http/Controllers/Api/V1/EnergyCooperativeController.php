@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
     name: "Cooperativas Energéticas",
     description: "API para gestión de cooperativas energéticas y comunidades"
 )]
-class EnergyCooperativeController extends Controller
+class EnergyCooperativeController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: "/api/v1/energy-cooperatives",

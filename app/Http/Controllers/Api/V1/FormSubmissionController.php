@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
     name: 'Form Submissions',
     description: 'Gestión de envíos de formularios'
 )]
-class FormSubmissionController extends Controller
+class FormSubmissionController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/form-submissions',

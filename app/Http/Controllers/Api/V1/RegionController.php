@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  *     description="API Endpoints for Spanish regions (Comunidades Autónomas)"
  * )
  */
-class RegionController extends Controller
+class RegionController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of regions.

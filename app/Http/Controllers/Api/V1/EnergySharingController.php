@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
     name: "Intercambios de Energía",
     description: "API para gestión de intercambios P2P de energía entre usuarios"
 )]
-class EnergySharingController extends Controller
+class EnergySharingController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): JsonResponse
     {

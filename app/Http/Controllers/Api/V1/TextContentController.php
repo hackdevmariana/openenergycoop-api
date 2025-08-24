@@ -16,7 +16,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de contenidos de texto del CMS"
  * )
  */
-class TextContentController extends Controller
+class TextContentController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

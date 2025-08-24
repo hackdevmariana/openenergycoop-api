@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
  *     description="API Endpoints for managing legal documents"
  * )
  */
-class LegalDocumentController extends Controller
+class LegalDocumentController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of legal documents.

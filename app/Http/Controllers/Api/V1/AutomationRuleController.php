@@ -19,7 +19,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para gestión de reglas de automatización"
  * )
  */
-class AutomationRuleController extends Controller
+class AutomationRuleController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

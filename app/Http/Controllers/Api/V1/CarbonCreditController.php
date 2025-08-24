@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
  *     description="Gestión de créditos de carbono"
  * )
  */
-class CarbonCreditController extends Controller
+class CarbonCreditController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of the resource.

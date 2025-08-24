@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
     name: 'Teams',
     description: 'Endpoints para gestión de equipos'
 )]
-class TeamController extends Controller
+class TeamController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: '/api/v1/teams',
