@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Reportes de Energía", description: "Gestión de reportes energéticos y analytics")]
-class EnergyReportController extends Controller
+class EnergyReportController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: "/api/v1/energy-reports",

@@ -19,7 +19,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para gestión de proveedores"
  * )
  */
-class VendorController extends Controller
+class VendorController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

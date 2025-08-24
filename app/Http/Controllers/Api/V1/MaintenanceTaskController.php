@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-class MaintenanceTaskController extends Controller
+class MaintenanceTaskController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of maintenance tasks.

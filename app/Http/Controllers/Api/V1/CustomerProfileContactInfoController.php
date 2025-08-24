@@ -17,7 +17,7 @@ use Illuminate\Auth\Access\AuthorizationException;
  *     description="API Endpoints for managing customer profile contact information"
  * )
  */
-class CustomerProfileContactInfoController extends Controller
+class CustomerProfileContactInfoController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of customer profile contact info records.

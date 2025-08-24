@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
-class MarketPriceController extends Controller
+class MarketPriceController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): JsonResponse
     {

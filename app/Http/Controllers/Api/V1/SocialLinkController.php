@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de enlaces a redes sociales"
  * )
  */
-class SocialLinkController extends Controller
+class SocialLinkController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

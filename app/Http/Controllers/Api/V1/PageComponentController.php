@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de componentes de página del CMS"
  * )
  */
-class PageComponentController extends Controller
+class PageComponentController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

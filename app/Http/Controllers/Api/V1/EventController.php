@@ -19,7 +19,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  *
  * APIs for managing events and their configurations
  */
-class EventController extends Controller
+class EventController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of events.

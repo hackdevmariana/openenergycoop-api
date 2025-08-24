@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: "Métricas de Sostenibilidad", description: "Gestión de métricas ambientales y sostenibilidad")]
-class SustainabilityMetricController extends Controller
+class SustainabilityMetricController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: "/api/v1/sustainability-metrics",

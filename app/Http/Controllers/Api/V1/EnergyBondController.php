@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-class EnergyBondController extends Controller
+class EnergyBondController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy bonds.

@@ -20,7 +20,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para gestión de notificaciones"
  * )
  */
-class NotificationController extends Controller
+class NotificationController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

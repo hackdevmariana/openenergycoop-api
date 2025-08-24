@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de activos energéticos de usuarios"
  * )
  */
-class UserAssetController extends Controller
+class UserAssetController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

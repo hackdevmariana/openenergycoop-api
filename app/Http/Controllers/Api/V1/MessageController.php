@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de mensajes y formularios de contacto"
  * )
  */
-class MessageController extends Controller
+class MessageController extends \App\Http\Controllers\Controller
 {
     // Public endpoint for contact form submissions
     public function index(Request $request): AnonymousResourceCollection

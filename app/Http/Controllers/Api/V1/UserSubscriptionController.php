@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
     name: "Suscripciones de Usuario",
     description: "API para gestión de suscripciones de usuarios a servicios energéticos"
 )]
-class UserSubscriptionController extends Controller
+class UserSubscriptionController extends \App\Http\Controllers\Controller
 {
     #[OA\Get(
         path: "/api/v1/user-subscriptions",

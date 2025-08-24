@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class TaskTemplateController extends Controller
+class TaskTemplateController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

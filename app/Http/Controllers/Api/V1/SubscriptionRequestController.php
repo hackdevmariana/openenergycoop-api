@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de solicitudes de suscripción"
  * )
  */
-class SubscriptionRequestController extends Controller
+class SubscriptionRequestController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

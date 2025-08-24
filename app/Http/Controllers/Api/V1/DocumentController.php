@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de documentos del sistema"
  * )
  */
-class DocumentController extends Controller
+class DocumentController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

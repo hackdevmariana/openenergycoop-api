@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Sistema de navegación y menús del sitio web"
  * )
  */
-class MenuController extends Controller
+class MenuController extends \App\Http\Controllers\Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {

@@ -17,7 +17,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de registros de consentimiento (GDPR)"
  * )
  */
-class ConsentLogController extends Controller
+class ConsentLogController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

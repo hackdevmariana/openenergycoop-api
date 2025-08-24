@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de organizaciones del sistema"
  * )
  */
-class OrganizationController extends Controller
+class OrganizationController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

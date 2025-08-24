@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * @group Energy Reading Management
  * APIs for managing energy readings
  */
-class EnergyReadingController extends Controller
+class EnergyReadingController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of energy readings.
@@ -613,7 +613,7 @@ class EnergyReadingController extends Controller
      *   }
      * }
      */
-    public function validate(Request $request, EnergyReading $energyReading): JsonResponse
+    public function validateData(Request $request, EnergyReading $energyReading): JsonResponse
     {
         try {
             $request->validate([

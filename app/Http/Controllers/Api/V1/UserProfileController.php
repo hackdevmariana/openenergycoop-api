@@ -17,7 +17,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de perfiles de usuario"
  * )
  */
-class UserProfileController extends Controller
+class UserProfileController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

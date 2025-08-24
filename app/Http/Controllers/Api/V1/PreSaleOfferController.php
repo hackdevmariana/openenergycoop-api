@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing pre-sale offers and early bird promotions
  */
-class PreSaleOfferController extends Controller
+class PreSaleOfferController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of pre-sale offers.
@@ -907,7 +907,7 @@ class PreSaleOfferController extends Controller
      *   }
      * }
      */
-    public function validate(Request $request): JsonResponse
+    public function validateOffer(Request $request): JsonResponse
     {
         try {
             $request->validate([

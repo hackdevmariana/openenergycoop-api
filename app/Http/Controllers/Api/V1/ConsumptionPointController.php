@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  *
  * APIs for managing energy consumption points
  */
-class ConsumptionPointController extends Controller
+class ConsumptionPointController extends \App\Http\Controllers\Controller
 {
     /**
      * Display a listing of consumption points.

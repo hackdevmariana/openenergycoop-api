@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Sistema de comentarios para artículos y páginas"
  * )
  */
-class CommentController extends Controller
+class CommentController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

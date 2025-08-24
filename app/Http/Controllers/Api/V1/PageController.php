@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Gestión de páginas del sistema CMS"
  * )
  */
-class PageController extends Controller
+class PageController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(

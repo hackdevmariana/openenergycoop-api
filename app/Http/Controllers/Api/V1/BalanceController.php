@@ -18,7 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="API Endpoints para la gestión de balances y transacciones económicas"
  * )
  */
-class BalanceController extends Controller
+class BalanceController extends \App\Http\Controllers\Controller
 {
     /**
      * @OA\Get(
