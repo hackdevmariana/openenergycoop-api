@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ShopSeeder::class,
             NotificationSettingsSeeder::class,
             EventSeeder::class,
+            SurveySeeder::class,
         ]);
     }
 }
