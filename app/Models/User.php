@@ -392,4 +392,56 @@ class User extends Authenticatable
             $setCurrent
         );
     }
+
+    /**
+     * Relación con las respuestas de encuestas del usuario
+     */
+    public function surveyResponses(): HasMany
+    {
+        return $this->hasMany(SurveyResponse::class);
+    }
+
+    /**
+     * Relación con las encuestas que el usuario ha respondido
+     */
+    public function respondedSurveys()
+    {
+        return $this->belongsToMany(Survey::class, 'survey_responses')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Verificar si el usuario ha respondido una encuesta específica
+     */
+    public function hasRespondedToSurvey(int $surveyId): bool
+    {
+        return $this->surveyResponses()->where('survey_id', $surveyId)->exists();
+    }
+
+    /**
+     * Obtener la respuesta del usuario a una encuesta específica
+     */
+    public function getSurveyResponse(int $surveyId): ?SurveyResponse
+    {
+        return $this->surveyResponses()->where('survey_id', $surveyId)->first();
+    }
+
+    /**
+     * Obtener estadísticas de respuestas del usuario
+     */
+    public function getSurveyResponseStats(): array
+    {
+        $totalResponses = $this->surveyResponses()->count();
+        $recentResponses = $this->surveyResponses()->recent(30)->count();
+        $thisMonthResponses = $this->surveyResponses()->thisMonth()->count();
+        $surveysResponded = $this->surveyResponses()->distinct('survey_id')->count();
+
+        return [
+            'total_responses' => $totalResponses,
+            'recent_responses' => $recentResponses,
+            'this_month_responses' => $thisMonthResponses,
+            'surveys_responded' => $surveysResponded,
+            'average_responses_per_survey' => $surveysResponded > 0 ? round($totalResponses / $surveysResponded, 2) : 0
+        ];
+    }
 }
