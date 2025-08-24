@@ -3,21 +3,21 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 abstract class TestCase extends BaseTestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected function setUp(): void
     {
         parent::setUp();
         
-        // Ejecutar seeders después de las migraciones
-        $this->seed([
-            \Database\Seeders\RolesAndPermissionsSeeder::class,
-            \Database\Seeders\RolesAndAdminSeeder::class,
-            \Database\Seeders\AppSettingSeeder::class,
-        ]);
+        // Comentado temporalmente para evitar problemas con la base de datos de testing
+        // $this->seed([
+        //     \Database\Seeders\RolesAndPermissionsSeeder::class,
+        //     \Database\Seeders\RolesAndAdminSeeder::class,
+        //     \Database\Seeders\AppSettingSeeder::class,
+        // ]);
     }
 }
