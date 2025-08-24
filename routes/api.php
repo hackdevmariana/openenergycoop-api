@@ -844,6 +844,24 @@ Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class
     Route::get('surveys/search', [SurveyController::class, 'search']);
     Route::apiResource('surveys', SurveyController::class);
 
+    // ========================================
+    // SISTEMA DE GAMIFICACIÓN - DESAFÍOS ENERGÉTICOS
+    // ========================================
+
+    // Energy Challenge routes
+    Route::get('energy-challenges/active', [App\Http\Controllers\Api\EnergyChallengeController::class, 'active']);
+    Route::get('energy-challenges/upcoming', [App\Http\Controllers\Api\EnergyChallengeController::class, 'upcoming']);
+    Route::get('energy-challenges/{energyChallenge}/statistics', [App\Http\Controllers\Api\EnergyChallengeController::class, 'statistics']);
+    Route::apiResource('energy-challenges', App\Http\Controllers\Api\EnergyChallengeController::class);
+
+    // User Challenge Progress routes
+    Route::get('user-challenge-progress/my-progress', [App\Http\Controllers\Api\UserChallengeProgressController::class, 'myProgress']);
+    Route::post('user-challenge-progress/{userChallengeProgress}/update-progress', [App\Http\Controllers\Api\UserChallengeProgressController::class, 'updateProgress']);
+    Route::post('user-challenge-progress/{userChallengeProgress}/complete', [App\Http\Controllers\Api\UserChallengeProgressController::class, 'complete']);
+    Route::post('user-challenge-progress/{userChallengeProgress}/reset', [App\Http\Controllers\Api\UserChallengeProgressController::class, 'reset']);
+    Route::post('energy-challenges/{challenge}/join', [App\Http\Controllers\Api\UserChallengeProgressController::class, 'joinChallenge']);
+    Route::apiResource('user-challenge-progress', App\Http\Controllers\Api\UserChallengeProgressController::class);
+
     // Survey Response routes
     Route::get('survey-responses/statistics', [SurveyResponseController::class, 'statistics']);
     Route::get('survey-responses/by-survey/{surveyId}', [SurveyResponseController::class, 'getBySurvey']);
@@ -1119,6 +1137,17 @@ Route::prefix('v1')->group(function () {
     // Rutas públicas para Sustainability Metrics (métricas públicas)
     Route::get('sustainability-metrics/public', [SustainabilityMetricController::class, 'index'])->middleware('throttle:60,1');
     Route::get('sustainability-metrics/public/summary', [SustainabilityMetricController::class, 'summary'])->middleware('throttle:60,1');
+
+    // ========================================
+    // RUTAS PÚBLICAS - SISTEMA DE GAMIFICACIÓN
+    // ========================================
+
+    // Rutas públicas para Energy Challenges (solo lectura)
+    Route::get('energy-challenges', [App\Http\Controllers\Api\EnergyChallengeController::class, 'index']);
+    Route::get('energy-challenges/active', [App\Http\Controllers\Api\EnergyChallengeController::class, 'active']);
+    Route::get('energy-challenges/upcoming', [App\Http\Controllers\Api\EnergyChallengeController::class, 'upcoming']);
+    Route::get('energy-challenges/{energyChallenge}', [App\Http\Controllers\Api\EnergyChallengeController::class, 'show']);
+    Route::get('energy-challenges/{energyChallenge}/statistics', [App\Http\Controllers\Api\EnergyChallengeController::class, 'statistics']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
