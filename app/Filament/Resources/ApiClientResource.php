@@ -500,7 +500,6 @@ class ApiClientResource extends Resource
             'index' => Pages\ListApiClients::route('/'),
             'create' => Pages\CreateApiClient::route('/create'),
             'edit' => Pages\EditApiClient::route('/{record}/edit'),
-            'view' => Pages\ViewApiClient::route('/{record}'),
         ];
     }
 
