@@ -21,7 +21,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
@@ -31,7 +30,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
-
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TaxCalculationResource extends Resource
 {
@@ -57,43 +56,49 @@ class TaxCalculationResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                TextInput::make('calculation_number')
+                                    ->label('Número de Cálculo')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Número único del cálculo')
+                                    ->copyable()
+                                    ->tooltip('Haz clic para copiar'),
+                                TextInput::make('name')
+                                    ->label('Nombre')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Nombre descriptivo del cálculo'),
+                            ]),
+                        Textarea::make('description')
+                            ->label('Descripción')
+                            ->rows(3)
+                            ->maxLength(65535)
+                            ->helperText('Descripción detallada del cálculo'),
+                        Grid::make(3)
+                            ->schema([
+                                Select::make('tax_type')
+                                    ->label('Tipo de Impuesto')
+                                    ->options(TaxCalculation::getTaxTypes())
+                                    ->required()
+                                    ->searchable(),
                                 Select::make('calculation_type')
                                     ->label('Tipo de Cálculo')
                                     ->options(TaxCalculation::getCalculationTypes())
                                     ->required()
                                     ->searchable(),
-                                Select::make('tax_jurisdiction')
-                                    ->label('Jurisdicción Fiscal')
-                                    ->options([
-                                        'ES' => 'España',
-                                        'EU' => 'Unión Europea',
-                                        'US' => 'Estados Unidos',
-                                        'UK' => 'Reino Unido',
-                                        'MX' => 'México',
-                                        'CA' => 'Canadá',
-                                        'AU' => 'Australia',
-                                        'JP' => 'Japón',
-                                        'other' => 'Otra',
-                                    ])
-                                    ->default('ES')
+                                Select::make('status')
+                                    ->label('Estado')
+                                    ->options(TaxCalculation::getStatuses())
                                     ->required()
                                     ->searchable(),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('tax_code')
-                                    ->label('Código de Impuesto')
-                                    ->maxLength(50)
+                                Select::make('priority')
+                                    ->label('Prioridad')
+                                    ->options(TaxCalculation::getPriorities())
                                     ->required()
-                                    ->helperText('Código único del impuesto'),
-                                TextInput::make('tax_name')
-                                    ->label('Nombre del Impuesto')
-                                    ->maxLength(255)
-                                    ->required()
-                                    ->helperText('Nombre descriptivo del impuesto'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
+                                    ->searchable(),
                                 Select::make('currency')
                                     ->label('Moneda')
                                     ->options([
@@ -109,19 +114,15 @@ class TaxCalculationResource extends Resource
                                     ->default('EUR')
                                     ->required()
                                     ->searchable(),
-                                TextInput::make('tax_configuration_version')
-                                    ->label('Versión de Configuración')
-                                    ->maxLength(50)
-                                    ->helperText('Versión de la configuración fiscal'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Relaciones y Asignaciones')
+                Section::make('Entidad y Transacción')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('calculable_type')
+                                Select::make('entity_type')
                                     ->label('Tipo de Entidad')
                                     ->options([
                                         'App\Models\SaleOrder' => 'Orden de Venta',
@@ -134,7 +135,7 @@ class TaxCalculationResource extends Resource
                                         'other' => 'Otra',
                                     ])
                                     ->searchable(),
-                                TextInput::make('calculable_id')
+                                TextInput::make('entity_id')
                                     ->label('ID de la Entidad')
                                     ->numeric()
                                     ->minValue(1)
@@ -142,31 +143,53 @@ class TaxCalculationResource extends Resource
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('calculated_by_user_id')
-                                    ->label('Calculado por')
-                                    ->relationship('calculatedByUser', 'name')
-                                    ->searchable()
-                                    ->preload(),
-                                Select::make('applied_by_user_id')
-                                    ->label('Aplicado por')
-                                    ->relationship('appliedByUser', 'name')
-                                    ->searchable()
-                                    ->preload(),
+                                Select::make('transaction_type')
+                                    ->label('Tipo de Transacción')
+                                    ->options([
+                                        'sale' => 'Venta',
+                                        'purchase' => 'Compra',
+                                        'transfer' => 'Transferencia',
+                                        'service' => 'Servicio',
+                                        'rental' => 'Alquiler',
+                                        'other' => 'Otro',
+                                    ])
+                                    ->searchable(),
+                                TextInput::make('transaction_id')
+                                    ->label('ID de la Transacción')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->helperText('ID de la transacción relacionada'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Período Fiscal')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                DatePicker::make('tax_period_start')
+                                    ->label('Inicio del Período Fiscal')
+                                    ->required()
+                                    ->helperText('Fecha de inicio del período fiscal'),
+                                DatePicker::make('tax_period_end')
+                                    ->label('Fin del Período Fiscal')
+                                    ->required()
+                                    ->helperText('Fecha de fin del período fiscal'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('verified_by_user_id')
-                                    ->label('Verificado por')
-                                    ->relationship('verifiedByUser', 'name')
-                                    ->searchable()
-                                    ->preload(),
-                                Select::make('created_by')
-                                    ->label('Creado por')
-                                    ->relationship('createdBy', 'name')
+                                DatePicker::make('calculation_date')
+                                    ->label('Fecha de Cálculo')
                                     ->required()
-                                    ->searchable()
-                                    ->preload(),
+                                    ->helperText('Cuándo se realizó el cálculo'),
+                                DatePicker::make('due_date')
+                                    ->label('Fecha de Vencimiento')
+                                    ->required()
+                                    ->helperText('Cuándo vence el pago'),
                             ]),
+                        DatePicker::make('payment_date')
+                            ->label('Fecha de Pago')
+                            ->helperText('Cuándo se realizó el pago'),
                     ])
                     ->collapsible(),
 
@@ -174,8 +197,8 @@ class TaxCalculationResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('base_amount')
-                                    ->label('Monto Base')
+                                TextInput::make('taxable_amount')
+                                    ->label('Monto Tributable')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
@@ -198,149 +221,214 @@ class TaxCalculationResource extends Resource
                                     ->required()
                                     ->helperText('Monto calculado del impuesto'),
                             ]),
-                        Grid::make(2)
+                        Grid::make(3)
                             ->schema([
-                                TextInput::make('total_amount')
-                                    ->label('Monto Total')
+                                TextInput::make('tax_base_amount')
+                                    ->label('Base Impositiva')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
-                                    ->required()
-                                    ->helperText('Monto total incluyendo impuestos'),
-                                TextInput::make('effective_tax_rate')
-                                    ->label('Tasa Efectiva (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Tasa efectiva considerando exenciones'),
-                            ]),
-                        Placeholder::make('calculation_summary')
-                            ->content(function ($get) {
-                                $base = $get('base_amount') ?: 0;
-                                $rate = $get('tax_rate') ?: 0;
-                                $tax = $get('tax_amount') ?: 0;
-                                $total = $get('total_amount') ?: 0;
-                                
-                                $calculatedTax = $base * ($rate / 100);
-                                $calculatedTotal = $base + $calculatedTax;
-                                
-                                return "**Resumen del Cálculo:**\n" .
-                                       "Base: {$base} | Tasa: {$rate}% | Impuesto: {$calculatedTax} | Total: {$calculatedTotal}";
-                            })
-                            ->visible(fn ($get) => $get('base_amount') > 0 && $get('tax_rate') > 0),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Exenciones y Deducciones')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('exemptions_amount')
+                                    ->helperText('Base imponible para el cálculo'),
+                                TextInput::make('exemption_amount')
                                     ->label('Monto de Exenciones')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
+                                    ->default(0)
                                     ->helperText('Monto exento de impuestos'),
-                                TextInput::make('deductions_amount')
+                                TextInput::make('deduction_amount')
                                     ->label('Monto de Deducciones')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
+                                    ->default(0)
                                     ->helperText('Monto deducible'),
                             ]),
-                        Grid::make(2)
+                        Grid::make(3)
                             ->schema([
-                                TextInput::make('exemptions_percentage')
-                                    ->label('Porcentaje de Exenciones (%)')
+                                TextInput::make('credit_amount')
+                                    ->label('Monto de Créditos')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->maxValue(100)
                                     ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Porcentaje exento'),
-                                TextInput::make('deductions_percentage')
-                                    ->label('Porcentaje de Deducciones (%)')
+                                    ->default(0)
+                                    ->helperText('Créditos fiscales aplicables'),
+                                TextInput::make('net_tax_amount')
+                                    ->label('Impuesto Neto')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->maxValue(100)
                                     ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Porcentaje deducible'),
+                                    ->helperText('Impuesto neto después de exenciones y deducciones'),
+                                TextInput::make('total_amount_due')
+                                    ->label('Total a Pagar')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->required()
+                                    ->helperText('Total final a pagar'),
                             ]),
-                        RichEditor::make('exemptions_applied')
-                            ->label('Exenciones Aplicadas')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Detalle de las exenciones aplicadas'),
-                        RichEditor::make('deductions_applied')
-                            ->label('Deducciones Aplicadas')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Detalle de las deducciones aplicadas'),
+                        Placeholder::make('calculation_summary')
+                            ->content(function ($get) {
+                                $taxable = $get('taxable_amount') ?: 0;
+                                $rate = $get('tax_rate') ?: 0;
+                                $exemption = $get('exemption_amount') ?: 0;
+                                $deduction = $get('deduction_amount') ?: 0;
+                                $credit = $get('credit_amount') ?: 0;
+                                
+                                $calculatedTax = $taxable * ($rate / 100);
+                                $netTax = $calculatedTax - $exemption - $deduction - $credit;
+                                
+                                return "**Resumen del Cálculo:**\n" .
+                                       "Tributable: {$taxable} | Tasa: {$rate}% | Impuesto: {$calculatedTax} | " .
+                                       "Exenciones: {$exemption} | Deducciones: {$deduction} | Créditos: {$credit} | " .
+                                       "Neto: {$netTax}";
+                            })
+                            ->visible(fn ($get) => $get('taxable_amount') > 0 && $get('tax_rate') > 0),
                     ])
                     ->collapsible(),
 
-                Section::make('Escalas y Brackets Fiscales')
+                Section::make('Penalizaciones e Intereses')
                     ->schema([
-                        RichEditor::make('tax_brackets')
-                            ->label('Escalas Fiscales')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                                'codeBlock',
-                            ])
-                            ->helperText('Escalas y brackets fiscales aplicables'),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('penalty_amount')
+                                    ->label('Monto de Penalización')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->default(0)
+                                    ->helperText('Penalizaciones por pago tardío'),
+                                TextInput::make('interest_amount')
+                                    ->label('Monto de Intereses')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->default(0)
+                                    ->helperText('Intereses acumulados'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Estado de Pago')
+                    ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('bracket_start')
-                                    ->label('Inicio de Bracket')
+                                TextInput::make('amount_paid')
+                                    ->label('Monto Pagado')
                                     ->numeric()
+                                    ->prefix('$')
                                     ->minValue(0)
                                     ->step(0.01)
-                                    ->helperText('Valor inicial del bracket'),
-                                TextInput::make('bracket_end')
-                                    ->label('Fin de Bracket')
+                                    ->default(0)
+                                    ->helperText('Monto ya pagado'),
+                                TextInput::make('amount_remaining')
+                                    ->label('Monto Restante')
                                     ->numeric()
+                                    ->prefix('$')
                                     ->minValue(0)
                                     ->step(0.01)
-                                    ->helperText('Valor final del bracket'),
-                                TextInput::make('bracket_rate')
-                                    ->label('Tasa del Bracket (%)')
+                                    ->helperText('Monto pendiente de pago'),
+                                TextInput::make('exchange_rate')
+                                    ->label('Tipo de Cambio')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Tasa aplicable al bracket'),
+                                    ->step(0.000001)
+                                    ->default(1)
+                                    ->helperText('Tipo de cambio si aplica'),
                             ]),
-                        TextInput::make('progressive_tax')
-                            ->label('Impuesto Progresivo')
+                    ])
+                    ->collapsible(),
+
+                Section::make('Información Jurisdiccional')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('tax_jurisdiction')
+                                    ->label('Jurisdicción Fiscal')
                                     ->options([
-                                        'yes' => 'Sí',
-                                        'no' => 'No',
-                                        'partial' => 'Parcial',
+                                        'ES' => 'España',
+                                        'EU' => 'Unión Europea',
+                                        'US' => 'Estados Unidos',
+                                        'UK' => 'Reino Unido',
+                                        'MX' => 'México',
+                                        'CA' => 'Canadá',
+                                        'AU' => 'Australia',
+                                        'JP' => 'Japón',
+                                        'other' => 'Otra',
+                                    ])
+                                    ->default('ES')
+                                    ->required()
+                                    ->searchable(),
+                                TextInput::make('tax_authority')
+                                    ->label('Autoridad Fiscal')
+                                    ->maxLength(255)
+                                    ->helperText('Autoridad fiscal responsable'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('tax_registration_number')
+                                    ->label('Número de Registro Fiscal')
+                                    ->maxLength(255)
+                                    ->helperText('Número de registro fiscal'),
+                                Select::make('tax_filing_frequency')
+                                    ->label('Frecuencia de Declaración')
+                                    ->options([
+                                        'monthly' => 'Mensual',
+                                        'quarterly' => 'Trimestral',
+                                        'semi_annual' => 'Semestral',
+                                        'annual' => 'Anual',
+                                        'other' => 'Otra',
                                     ])
                                     ->searchable(),
+                            ]),
+                        Select::make('tax_filing_method')
+                            ->label('Método de Declaración')
+                            ->options([
+                                'electronic' => 'Electrónico',
+                                'paper' => 'Papel',
+                                'phone' => 'Teléfono',
+                                'other' => 'Otro',
+                            ])
+                            ->searchable(),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Estado del Cálculo')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                Toggle::make('is_estimated')
+                                    ->label('Es Estimado')
+                                    ->default(false)
+                                    ->helperText('¿Es un cálculo estimado?'),
+                                Toggle::make('is_final')
+                                    ->label('Es Final')
+                                    ->default(false)
+                                    ->helperText('¿Es el cálculo final?'),
+                                Toggle::make('is_amended')
+                                    ->label('Es Modificado')
+                                    ->default(false)
+                                    ->helperText('¿Ha sido modificado?'),
+                            ]),
+                        TextInput::make('amendment_reason')
+                            ->label('Razón de Modificación')
+                            ->maxLength(255)
+                            ->helperText('Razón de la modificación si aplica'),
                     ])
                     ->collapsible(),
 
                 Section::make('Detalles del Cálculo')
                     ->schema([
+                        RichEditor::make('calculation_notes')
+                            ->label('Notas del Cálculo')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Notas sobre el cálculo realizado'),
                         RichEditor::make('calculation_details')
                             ->label('Detalles del Cálculo')
                             ->toolbarButtons([
@@ -352,126 +440,122 @@ class TaxCalculationResource extends Resource
                                 'codeBlock',
                             ])
                             ->helperText('Detalle paso a paso del cálculo'),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('calculation_method')
-                                    ->label('Método de Cálculo')
-                                    ->options([
-                                        'standard' => 'Estándar',
-                                        'progressive' => 'Progresivo',
-                                        'flat_rate' => 'Tasa Plana',
-                                        'marginal' => 'Marginal',
-                                        'effective' => 'Efectivo',
-                                        'other' => 'Otro',
-                                    ])
-                                    ->searchable(),
-                                TextInput::make('calculation_formula')
-                                    ->label('Fórmula de Cálculo')
-                                    ->maxLength(255)
-                                    ->helperText('Fórmula utilizada para el cálculo'),
-                            ]),
-                        RichEditor::make('configuration_snapshot')
-                            ->label('Configuración del Sistema')
+                        RichEditor::make('tax_breakdown')
+                            ->label('Desglose del Impuesto')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
                                 'underline',
                                 'bulletList',
                                 'orderedList',
-                                'codeBlock',
                             ])
-                            ->helperText('Configuración del sistema al momento del cálculo'),
+                            ->helperText('Desglose detallado del impuesto'),
                     ])
                     ->collapsible(),
 
-                Section::make('Estado y Verificación')
+                Section::make('Revisión y Aprobación')
                     ->schema([
-                        Grid::make(3)
+                        RichEditor::make('review_notes')
+                            ->label('Notas de Revisión')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Notas de la revisión'),
+                        RichEditor::make('approval_notes')
+                            ->label('Notas de Aprobación')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Notas de la aprobación'),
+                        Grid::make(2)
                             ->schema([
-                                Select::make('status')
-                                    ->label('Estado')
-                                    ->options(TaxCalculation::getStatuses())
-                                    ->required()
-                                    ->searchable(),
-                                Toggle::make('is_verified')
-                                    ->label('Verificado')
-                                    ->default(false)
-                                    ->required()
-                                    ->helperText('¿El cálculo ha sido verificado?'),
-                                TextInput::make('verification_score')
-                                    ->label('Puntuación de Verificación')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Puntuación de la verificación'),
+                                DateTimePicker::make('reviewed_at')
+                                    ->label('Revisado el')
+                                    ->helperText('Cuándo fue revisado'),
+                                DateTimePicker::make('approved_at')
+                                    ->label('Aprobado el')
+                                    ->helperText('Cuándo fue aprobado'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Documentos y Auditoría')
+                    ->schema([
+                        RichEditor::make('supporting_documents')
+                            ->label('Documentos de Apoyo')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Documentos que respaldan el cálculo'),
+                        RichEditor::make('audit_trail')
+                            ->label('Traza de Auditoría')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Traza de auditoría del cálculo'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Asignaciones del Sistema')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('calculated_by')
+                                    ->label('Calculado por')
+                                    ->relationship('calculatedBy', 'name')
+                                    ->searchable()
+                                    ->preload(),
+                                Select::make('reviewed_by')
+                                    ->label('Revisado por')
+                                    ->relationship('reviewedBy', 'name')
+                                    ->searchable()
+                                    ->preload(),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                DateTimePicker::make('calculated_at')
-                                    ->label('Calculado el')
-                                    ->helperText('Cuándo se realizó el cálculo'),
+                                Select::make('approved_by')
+                                    ->label('Aprobado por')
+                                    ->relationship('approvedBy', 'name')
+                                    ->searchable()
+                                    ->preload(),
+                                Select::make('applied_by')
+                                    ->label('Aplicado por')
+                                    ->relationship('appliedBy', 'name')
+                                    ->searchable()
+                                    ->preload(),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('created_by')
+                                    ->label('Creado por')
+                                    ->relationship('createdBy', 'name')
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
                                 DateTimePicker::make('applied_at')
                                     ->label('Aplicado el')
                                     ->helperText('Cuándo se aplicó el cálculo'),
                             ]),
-                        Grid::make(2)
-                            ->schema([
-                                DateTimePicker::make('verified_at')
-                                    ->label('Verificado el')
-                                    ->helperText('Cuándo se verificó el cálculo'),
-                                TextInput::make('calculation_hash')
-                                    ->label('Hash del Cálculo')
-                                    ->maxLength(64)
-                                    ->helperText('Hash único del cálculo'),
-                            ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Configuración del Sistema')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_active')
-                                    ->label('Activo')
-                                    ->default(true)
-                                    ->helperText('¿El cálculo está activo?'),
-                                Toggle::make('requires_approval')
-                                    ->label('Requiere Aprobación')
-                                    ->helperText('¿Se necesita aprobación?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('auto_calculate')
-                                    ->label('Cálculo Automático')
-                                    ->helperText('¿Se calcula automáticamente?'),
-                                Toggle::make('is_template')
-                                    ->label('Es Plantilla')
-                                    ->helperText('¿Es una plantilla reutilizable?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('priority')
-                                    ->label('Prioridad')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(10)
-                                    ->step(1)
-                                    ->default(5)
-                                    ->helperText('Prioridad del cálculo (1-10)'),
-                                TextInput::make('sort_order')
-                                    ->label('Orden de Clasificación')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(1)
-                                    ->default(0)
-                                    ->helperText('Orden para mostrar en listas'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Metadatos y Etiquetas')
+                Section::make('Metadatos')
                     ->schema([
                         TagsInput::make('tags')
                             ->label('Etiquetas')
@@ -487,18 +571,6 @@ class TaxCalculationResource extends Resource
                             ]),
                     ])
                     ->collapsible(),
-
-                Section::make('Documentos y Archivos')
-                    ->schema([
-                        FileUpload::make('documents')
-                            ->label('Documentos')
-                            ->multiple()
-                            ->directory('tax-calculations')
-                            ->maxFiles(20)
-                            ->maxSize(10240)
-                            ->helperText('Máximo 20 documentos de 10MB cada uno'),
-                    ])
-                    ->collapsible(),
             ]);
     }
 
@@ -506,18 +578,20 @@ class TaxCalculationResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('tax_code')
-                    ->label('Código')
+                TextColumn::make('calculation_number')
+                    ->label('Número')
                     ->searchable()
                     ->sortable()
+                    ->copyable()
+                    ->tooltip('Haz clic para copiar')
                     ->limit(15),
-                TextColumn::make('tax_name')
-                    ->label('Nombre del Impuesto')
+                TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable()
                     ->sortable()
                     ->limit(25),
-                BadgeColumn::make('calculation_type')
-                    ->label('Tipo')
+                BadgeColumn::make('tax_type')
+                    ->label('Tipo de Impuesto')
                     ->colors([
                         'primary' => 'income_tax',
                         'success' => 'sales_tax',
@@ -527,20 +601,41 @@ class TaxCalculationResource extends Resource
                         'secondary' => 'carbon_tax',
                         'gray' => 'other',
                     ])
-                    ->formatStateUsing(fn (string $state): string => TaxCalculation::getCalculationTypes()[$state] ?? $state),
-                BadgeColumn::make('tax_jurisdiction')
-                    ->label('Jurisdicción')
+                    ->formatStateUsing(fn (string $state): string => TaxCalculation::getTaxTypes()[$state] ?? $state),
+                BadgeColumn::make('calculation_type')
+                    ->label('Tipo de Cálculo')
                     ->colors([
-                        'primary' => 'ES',
-                        'success' => 'EU',
-                        'warning' => 'US',
-                        'danger' => 'UK',
-                        'info' => 'MX',
-                        'secondary' => 'CA',
-                        'gray' => 'other',
-                    ]),
-                TextColumn::make('base_amount')
-                    ->label('Base (€)')
+                        'primary' => 'standard',
+                        'success' => 'progressive',
+                        'warning' => 'flat_rate',
+                        'danger' => 'marginal',
+                        'info' => 'effective',
+                        'secondary' => 'other',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => TaxCalculation::getCalculationTypes()[$state] ?? $state),
+                BadgeColumn::make('status')
+                    ->label('Estado')
+                    ->colors([
+                        'success' => 'calculated',
+                        'warning' => 'pending',
+                        'danger' => 'error',
+                        'info' => 'applied',
+                        'secondary' => 'verified',
+                        'gray' => 'cancelled',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => TaxCalculation::getStatuses()[$state] ?? $state),
+                BadgeColumn::make('priority')
+                    ->label('Prioridad')
+                    ->colors([
+                        'gray' => 'low',
+                        'warning' => 'medium',
+                        'danger' => 'high',
+                        'purple' => 'urgent',
+                        'red' => 'critical',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => TaxCalculation::getPriorities()[$state] ?? $state),
+                TextColumn::make('taxable_amount')
+                    ->label('Monto Tributable')
                     ->money('EUR')
                     ->sortable()
                     ->badge()
@@ -565,7 +660,7 @@ class TaxCalculationResource extends Resource
                         default => 'success',
                     }),
                 TextColumn::make('tax_amount')
-                    ->label('Impuesto (€)')
+                    ->label('Impuesto')
                     ->money('EUR')
                     ->sortable()
                     ->summarize([
@@ -573,8 +668,8 @@ class TaxCalculationResource extends Resource
                             ->label('Total')
                             ->money('EUR'),
                     ]),
-                TextColumn::make('total_amount')
-                    ->label('Total (€)')
+                TextColumn::make('total_amount_due')
+                    ->label('Total a Pagar')
                     ->money('EUR')
                     ->sortable()
                     ->summarize([
@@ -582,42 +677,36 @@ class TaxCalculationResource extends Resource
                             ->label('Total')
                             ->money('EUR'),
                     ]),
-                BadgeColumn::make('status')
-                    ->label('Estado')
-                    ->colors([
-                        'success' => 'calculated',
-                        'warning' => 'pending',
-                        'danger' => 'error',
-                        'info' => 'applied',
-                        'secondary' => 'verified',
-                        'gray' => 'cancelled',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => TaxCalculation::getStatuses()[$state] ?? $state),
+                TextColumn::make('amount_paid')
+                    ->label('Pagado')
+                    ->money('EUR')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('amount_remaining')
+                    ->label('Pendiente')
+                    ->money('EUR')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state > 0 => 'danger',
+                        $state == 0 => 'success',
+                        default => 'gray',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('currency')
                     ->label('Moneda')
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('secondary'),
-                TextColumn::make('effective_tax_rate')
-                    ->label('Tasa Efectiva (%)')
-                    ->suffix('%')
-                    ->numeric()
+                TextColumn::make('tax_jurisdiction')
+                    ->label('Jurisdicción')
+                    ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('exemptions_amount')
-                    ->label('Exenciones (€)')
-                    ->money('EUR')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('deductions_amount')
-                    ->label('Deducciones (€)')
-                    ->money('EUR')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('calculated_at')
-                    ->label('Calculado')
-                    ->dateTime()
+                TextColumn::make('calculation_date')
+                    ->label('Fecha de Cálculo')
+                    ->date()
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
@@ -626,13 +715,21 @@ class TaxCalculationResource extends Resource
                         str_contains($state, '2026') => 'danger',
                         default => 'gray',
                     }),
-                ToggleColumn::make('is_verified')
-                    ->label('Verificado'),
-                TextColumn::make('verified_at')
-                    ->label('Verificado el')
-                    ->dateTime()
+                TextColumn::make('due_date')
+                    ->label('Vencimiento')
+                    ->date()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        str_contains($state, '2024') => 'success',
+                        str_contains($state, '2025') => 'warning',
+                        str_contains($state, '2026') => 'danger',
+                        default => 'gray',
+                    }),
+                ToggleColumn::make('is_estimated')
+                    ->label('Estimado'),
+                ToggleColumn::make('is_final')
+                    ->label('Final'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -640,9 +737,34 @@ class TaxCalculationResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('tax_type')
+                    ->label('Tipo de Impuesto')
+                    ->options(TaxCalculation::getTaxTypes())
+                    ->multiple(),
                 SelectFilter::make('calculation_type')
                     ->label('Tipo de Cálculo')
                     ->options(TaxCalculation::getCalculationTypes())
+                    ->multiple(),
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options(TaxCalculation::getStatuses())
+                    ->multiple(),
+                SelectFilter::make('priority')
+                    ->label('Prioridad')
+                    ->options(TaxCalculation::getPriorities())
+                    ->multiple(),
+                SelectFilter::make('currency')
+                    ->label('Moneda')
+                    ->options([
+                        'EUR' => 'Euro (€)',
+                        'USD' => 'Dólar Estadounidense ($)',
+                        'GBP' => 'Libra Esterlina (£)',
+                        'MXN' => 'Peso Mexicano ($)',
+                        'CAD' => 'Dólar Canadiense ($)',
+                        'AUD' => 'Dólar Australiano ($)',
+                        'JPY' => 'Yen Japonés (¥)',
+                        'other' => 'Otra',
+                    ])
                     ->multiple(),
                 SelectFilter::make('tax_jurisdiction')
                     ->label('Jurisdicción Fiscal')
@@ -658,60 +780,49 @@ class TaxCalculationResource extends Resource
                         'other' => 'Otra',
                     ])
                     ->multiple(),
-                SelectFilter::make('status')
-                    ->label('Estado')
-                    ->options(TaxCalculation::getStatuses())
-                    ->multiple(),
-                SelectFilter::make('currency')
-                    ->label('Moneda')
-                    ->options([
-                        'EUR' => 'Euro (€)',
-                        'USD' => 'Dólar Estadounidense ($)',
-                        'GBP' => 'Libra Esterlina (£)',
-                        'MXN' => 'Peso Mexicano ($)',
-                        'CAD' => 'Dólar Canadiense ($)',
-                        'AUD' => 'Dólar Australiano ($)',
-                        'JPY' => 'Yen Japonés (¥)',
-                        'other' => 'Otra',
-                    ])
-                    ->multiple(),
-                Filter::make('verified')
-                    ->query(fn (Builder $query): Builder => $query->where('is_verified', true))
-                    ->label('Solo Verificados'),
-                Filter::make('unverified')
-                    ->query(fn (Builder $query): Builder => $query->where('is_verified', false))
-                    ->label('Solo No Verificados'),
+                Filter::make('estimated')
+                    ->query(fn (Builder $query): Builder => $query->where('is_estimated', true))
+                    ->label('Solo Estimados'),
+                Filter::make('final')
+                    ->query(fn (Builder $query): Builder => $query->where('is_final', true))
+                    ->label('Solo Finales'),
+                Filter::make('amended')
+                    ->query(fn (Builder $query): Builder => $query->where('is_amended', true))
+                    ->label('Solo Modificados'),
                 Filter::make('high_tax_rate')
                     ->query(fn (Builder $query): Builder => $query->where('tax_rate', '>=', 20))
                     ->label('Alta Tasa (≥20%)'),
                 Filter::make('low_tax_rate')
                     ->query(fn (Builder $query): Builder => $query->where('tax_rate', '<=', 5))
                     ->label('Baja Tasa (≤5%)'),
-                Filter::make('high_base_amount')
-                    ->query(fn (Builder $query): Builder => $query->where('base_amount', '>=', 10000))
+                Filter::make('high_taxable_amount')
+                    ->query(fn (Builder $query): Builder => $query->where('taxable_amount', '>=', 10000))
                     ->label('Alta Base (≥€10000)'),
-                Filter::make('low_base_amount')
-                    ->query(fn (Builder $query): Builder => $query->where('base_amount', '<', 1000))
+                Filter::make('low_taxable_amount')
+                    ->query(fn (Builder $query): Builder => $query->where('taxable_amount', '<', 1000))
                     ->label('Baja Base (<€1000)'),
-                Filter::make('recent_calculations')
-                    ->query(fn (Builder $query): Builder => $query->where('calculated_at', '>=', now()->subDays(30)))
-                    ->label('Cálculos Recientes (≤30 días)'),
+                Filter::make('outstanding_payment')
+                    ->query(fn (Builder $query): Builder => $query->where('amount_remaining', '>', 0))
+                    ->label('Con Saldo Pendiente'),
+                Filter::make('overdue')
+                    ->query(fn (Builder $query): Builder => $query->where('due_date', '<', now()))
+                    ->label('Vencidos'),
                 Filter::make('date_range')
                     ->form([
-                        DateTimePicker::make('calculated_from')
-                            ->label('Calculado desde'),
-                        DateTimePicker::make('calculated_until')
-                            ->label('Calculado hasta'),
+                        DatePicker::make('calculation_from')
+                            ->label('Cálculo desde'),
+                        DatePicker::make('calculation_until')
+                            ->label('Cálculo hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['calculated_from'],
-                                fn (Builder $query, $date): Builder => $query->where('calculated_at', '>=', $date),
+                                $data['calculation_from'],
+                                fn (Builder $query, $date): Builder => $query->where('calculation_date', '>=', $date),
                             )
                             ->when(
-                                $data['calculated_until'],
-                                fn (Builder $query, $date): Builder => $query->where('calculated_at', '<=', $date),
+                                $data['calculation_until'],
+                                fn (Builder $query, $date): Builder => $query->where('calculation_date', '<=', $date),
                             );
                     })
                     ->label('Rango de Fechas de Cálculo'),
@@ -730,11 +841,11 @@ class TaxCalculationResource extends Resource
                         return $query
                             ->when(
                                 $data['min_amount'],
-                                fn (Builder $query, $amount): Builder => $query->where('base_amount', '>=', $amount),
+                                fn (Builder $query, $amount): Builder => $query->where('taxable_amount', '>=', $amount),
                             )
                             ->when(
                                 $data['max_amount'],
-                                fn (Builder $query, $amount): Builder => $query->where('base_amount', '<=', $amount),
+                                fn (Builder $query, $amount): Builder => $query->where('taxable_amount', '<=', $amount),
                             );
                     })
                     ->label('Rango de Montos'),
@@ -746,15 +857,15 @@ class TaxCalculationResource extends Resource
                     ->color('warning'),
                 Tables\Actions\DeleteAction::make()
                     ->color('danger'),
-                Tables\Actions\Action::make('verify_calculation')
-                    ->label('Verificar')
+                Tables\Actions\Action::make('mark_final')
+                    ->label('Marcar Final')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
-                    ->visible(fn (TaxCalculation $record) => !$record->is_verified)
+                    ->visible(fn (TaxCalculation $record) => !$record->is_final)
                     ->action(function (TaxCalculation $record) {
                         $record->update([
-                            'is_verified' => true,
-                            'verified_at' => now(),
+                            'is_final' => true,
+                            'is_estimated' => false,
                         ]);
                     }),
                 Tables\Actions\Action::make('apply_calculation')
@@ -768,14 +879,16 @@ class TaxCalculationResource extends Resource
                             'applied_at' => now(),
                         ]);
                     }),
-                Tables\Actions\Action::make('recalculate')
-                    ->label('Recalcular')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('warning')
+                Tables\Actions\Action::make('mark_paid')
+                    ->label('Marcar Pagado')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('success')
+                    ->visible(fn (TaxCalculation $record) => $record->amount_remaining > 0)
                     ->action(function (TaxCalculation $record) {
                         $record->update([
-                            'calculated_at' => now(),
-                            'calculation_hash' => md5(now() . $record->id),
+                            'amount_paid' => $record->total_amount_due,
+                            'amount_remaining' => 0,
+                            'payment_date' => now(),
                         ]);
                     }),
                 Tables\Actions\Action::make('duplicate')
@@ -784,24 +897,31 @@ class TaxCalculationResource extends Resource
                     ->color('secondary')
                     ->action(function (TaxCalculation $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->is_verified = false;
-                        $newRecord->verified_at = null;
+                        $newRecord->calculation_number = $newRecord->calculation_number . '_copy';
+                        $newRecord->status = 'pending';
+                        $newRecord->is_estimated = true;
+                        $newRecord->is_final = false;
+                        $newRecord->is_amended = false;
+                        $newRecord->amount_paid = 0;
+                        $newRecord->amount_remaining = $newRecord->total_amount_due;
+                        $newRecord->payment_date = null;
                         $newRecord->applied_at = null;
-                        $newRecord->calculation_hash = md5(now() . $newRecord->id);
+                        $newRecord->reviewed_at = null;
+                        $newRecord->approved_at = null;
                         $newRecord->save();
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('verify_all')
-                        ->label('Verificar Todos')
+                    Tables\Actions\BulkAction::make('mark_final_all')
+                        ->label('Marcar Finales Todos')
                         ->icon('heroicon-o-check-badge')
                         ->action(function ($records) {
                             $records->each(function ($record) {
                                 $record->update([
-                                    'is_verified' => true,
-                                    'verified_at' => now(),
+                                    'is_final' => true,
+                                    'is_estimated' => false,
                                 ]);
                             });
                         }),
@@ -818,15 +938,18 @@ class TaxCalculationResource extends Resource
                                 }
                             });
                         }),
-                    Tables\Actions\BulkAction::make('recalculate_all')
-                        ->label('Recalcular Todos')
-                        ->icon('heroicon-o-arrow-path')
+                    Tables\Actions\BulkAction::make('mark_paid_all')
+                        ->label('Marcar Pagados Todos')
+                        ->icon('heroicon-o-credit-card')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update([
-                                    'calculated_at' => now(),
-                                    'calculation_hash' => md5(now() . $record->id),
-                                ]);
+                                if ($record->amount_remaining > 0) {
+                                    $record->update([
+                                        'amount_paid' => $record->total_amount_due,
+                                        'amount_remaining' => 0,
+                                        'payment_date' => now(),
+                                    ]);
+                                }
                             });
                         }),
                     Tables\Actions\BulkAction::make('update_status')
@@ -843,18 +966,18 @@ class TaxCalculationResource extends Resource
                                 $record->update(['status' => $data['status']]);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('update_calculation_type')
-                        ->label('Actualizar Tipo de Cálculo')
-                        ->icon('heroicon-o-tag')
+                    Tables\Actions\BulkAction::make('update_priority')
+                        ->label('Actualizar Prioridad')
+                        ->icon('heroicon-o-flag')
                         ->form([
-                            Select::make('calculation_type')
-                                ->label('Tipo de Cálculo')
-                                ->options(TaxCalculation::getCalculationTypes())
+                            Select::make('priority')
+                                ->label('Prioridad')
+                                ->options(TaxCalculation::getPriorities())
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
-                                $record->update(['calculation_type' => $data['calculation_type']]);
+                                $record->update(['priority' => $data['priority']]);
                             });
                         }),
                 ]),
@@ -882,7 +1005,7 @@ class TaxCalculationResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -892,16 +1015,16 @@ class TaxCalculationResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $unverifiedCount = static::getModel()::where('is_verified', false)->count();
+        $overdueCount = static::getModel()::where('due_date', '<', now())->count();
         
-        if ($unverifiedCount > 0) {
-            return 'warning';
+        if ($overdueCount > 0) {
+            return 'danger';
         }
         
-        $errorCount = static::getModel()::where('status', 'error')->count();
+        $pendingCount = static::getModel()::where('status', 'pending')->count();
         
-        if ($errorCount > 0) {
-            return 'danger';
+        if ($pendingCount > 0) {
+            return 'warning';
         }
         
         return 'success';
