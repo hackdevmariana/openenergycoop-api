@@ -20,7 +20,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Tables\Columns\TextColumn;
@@ -31,7 +30,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
-
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SaleOrderResource extends Resource
 {
@@ -71,28 +70,39 @@ class SaleOrderResource extends Resource
                                     ->required()
                                     ->searchable(),
                             ]),
-                        Grid::make(3)
+                        Grid::make(2)
                             ->schema([
                                 Select::make('status')
                                     ->label('Estado')
                                     ->options(SaleOrder::getStatuses())
                                     ->required()
                                     ->searchable(),
-                                Select::make('priority')
-                                    ->label('Prioridad')
-                                    ->options(SaleOrder::getPriorities())
+                                Select::make('payment_status')
+                                    ->label('Estado de Pago')
+                                    ->options(SaleOrder::getPaymentStatuses())
                                     ->required()
                                     ->searchable(),
-                                Select::make('source')
-                                    ->label('Origen')
-                                    ->options(SaleOrder::getSources())
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('shipping_status')
+                                    ->label('Estado de Envío')
+                                    ->options(SaleOrder::getShippingStatuses())
+                                    ->searchable(),
+                                Select::make('currency')
+                                    ->label('Moneda')
+                                    ->options([
+                                        'USD' => 'Dólar Estadounidense',
+                                        'EUR' => 'Euro',
+                                        'MXN' => 'Peso Mexicano',
+                                        'CAD' => 'Dólar Canadiense',
+                                        'GBP' => 'Libra Esterlina',
+                                        'JPY' => 'Yen Japonés',
+                                        'other' => 'Otra',
+                                    ])
+                                    ->default('USD')
                                     ->searchable(),
                             ]),
-                        Textarea::make('description')
-                            ->label('Descripción')
-                            ->rows(3)
-                            ->maxLength(65535)
-                            ->helperText('Descripción de la orden'),
                     ])
                     ->collapsible(),
 
@@ -107,27 +117,25 @@ class SaleOrderResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->helperText('Cliente que realiza la orden'),
-                                Select::make('user_id')
-                                    ->label('Usuario')
-                                    ->relationship('user', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Usuario del sistema'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Select::make('sales_representative_id')
-                                    ->label('Representante de Ventas')
-                                    ->relationship('salesRepresentative', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Representante asignado'),
                                 Select::make('affiliate_id')
                                     ->label('Afiliado')
                                     ->relationship('affiliate', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->helperText('Afiliado que generó la venta'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('created_by')
+                                    ->label('Creado por')
+                                    ->relationship('createdBy', 'name')
+                                    ->searchable()
+                                    ->preload(),
+                                Select::make('processed_by')
+                                    ->label('Procesado por')
+                                    ->relationship('processedBy', 'name')
+                                    ->searchable()
+                                    ->preload(),
                             ]),
                     ])
                     ->collapsible(),
@@ -144,14 +152,6 @@ class SaleOrderResource extends Resource
                                     ->step(0.01)
                                     ->required()
                                     ->helperText('Subtotal antes de descuentos'),
-                                TextInput::make('discount_amount')
-                                    ->label('Descuento')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->default(0)
-                                    ->helperText('Monto del descuento'),
                                 TextInput::make('tax_amount')
                                     ->label('Impuestos')
                                     ->numeric()
@@ -160,10 +160,7 @@ class SaleOrderResource extends Resource
                                     ->step(0.01)
                                     ->default(0)
                                     ->helperText('Monto de impuestos'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('shipping_cost')
+                                TextInput::make('shipping_amount')
                                     ->label('Costo de Envío')
                                     ->numeric()
                                     ->prefix('$')
@@ -171,14 +168,17 @@ class SaleOrderResource extends Resource
                                     ->step(0.01)
                                     ->default(0)
                                     ->helperText('Costo del envío'),
-                                TextInput::make('handling_fee')
-                                    ->label('Cargo por Manejo')
+                            ]),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('discount_amount')
+                                    ->label('Descuento')
                                     ->numeric()
                                     ->prefix('$')
                                     ->minValue(0)
                                     ->step(0.01)
                                     ->default(0)
-                                    ->helperText('Cargo adicional por manejo'),
+                                    ->helperText('Monto del descuento'),
                                 TextInput::make('total_amount')
                                     ->label('Total')
                                     ->numeric()
@@ -187,22 +187,6 @@ class SaleOrderResource extends Resource
                                     ->step(0.01)
                                     ->required()
                                     ->helperText('Total final de la orden'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Select::make('currency')
-                                    ->label('Moneda')
-                                    ->options([
-                                        'USD' => 'Dólar Estadounidense',
-                                        'EUR' => 'Euro',
-                                        'MXN' => 'Peso Mexicano',
-                                        'CAD' => 'Dólar Canadiense',
-                                        'GBP' => 'Libra Esterlina',
-                                        'JPY' => 'Yen Japonés',
-                                        'other' => 'Otra',
-                                    ])
-                                    ->default('USD')
-                                    ->searchable(),
                                 TextInput::make('exchange_rate')
                                     ->label('Tipo de Cambio')
                                     ->numeric()
@@ -211,18 +195,50 @@ class SaleOrderResource extends Resource
                                     ->default(1)
                                     ->helperText('Tipo de cambio si aplica'),
                             ]),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('paid_amount')
+                                    ->label('Monto Pagado')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->default(0)
+                                    ->helperText('Monto ya pagado'),
+                                TextInput::make('refunded_amount')
+                                    ->label('Monto Reembolsado')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->default(0)
+                                    ->helperText('Monto reembolsado'),
+                                TextInput::make('outstanding_amount')
+                                    ->label('Monto Pendiente')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->default(0)
+                                    ->helperText('Monto pendiente de pago'),
+                            ]),
+                        Placeholder::make('payment_summary')
+                            ->content(function ($get) {
+                                $total = $get('total_amount') ?: 0;
+                                $paid = $get('paid_amount') ?: 0;
+                                $refunded = $get('refunded_amount') ?: 0;
+                                $outstanding = $get('outstanding_amount') ?: 0;
+                                
+                                return "**Total: $" . number_format($total, 2) . " | Pagado: $" . number_format($paid, 2) . " | Reembolsado: $" . number_format($refunded, 2) . " | Pendiente: $" . number_format($outstanding, 2) . "**";
+                            })
+                            ->visible(fn ($get) => $get('total_amount') > 0),
                     ])
                     ->collapsible(),
 
                 Section::make('Estado de Pago')
                     ->schema([
-                        Grid::make(3)
+                        Grid::make(2)
                             ->schema([
-                                Select::make('payment_status')
-                                    ->label('Estado de Pago')
-                                    ->options(SaleOrder::getPaymentStatuses())
-                                    ->required()
-                                    ->searchable(),
                                 Select::make('payment_method')
                                     ->label('Método de Pago')
                                     ->options([
@@ -247,10 +263,6 @@ class SaleOrderResource extends Resource
                                 DateTimePicker::make('payment_date')
                                     ->label('Fecha de Pago')
                                     ->helperText('Cuándo se realizó el pago'),
-                                TextInput::make('payment_notes')
-                                    ->label('Notas de Pago')
-                                    ->maxLength(255)
-                                    ->helperText('Notas adicionales sobre el pago'),
                             ]),
                     ])
                     ->collapsible(),
@@ -259,10 +271,6 @@ class SaleOrderResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('shipping_status')
-                                    ->label('Estado de Envío')
-                                    ->options(SaleOrder::getShippingStatuses())
-                                    ->searchable(),
                                 Select::make('shipping_method')
                                     ->label('Método de Envío')
                                     ->options([
@@ -275,15 +283,22 @@ class SaleOrderResource extends Resource
                                         'other' => 'Otro',
                                     ])
                                     ->searchable(),
+                                TextInput::make('tracking_number')
+                                    ->label('Número de Seguimiento')
+                                    ->maxLength(255)
+                                    ->helperText('Número de seguimiento del envío'),
                             ]),
-                        Grid::make(2)
+                        Grid::make(3)
                             ->schema([
-                                DateTimePicker::make('shipped_at')
+                                DateTimePicker::make('shipped_date')
                                     ->label('Enviado el')
                                     ->helperText('Cuándo se envió la orden'),
-                                DateTimePicker::make('delivered_at')
+                                DateTimePicker::make('delivered_date')
                                     ->label('Entregado el')
                                     ->helperText('Cuándo se entregó la orden'),
+                                DateTimePicker::make('expected_delivery_date')
+                                    ->label('Entrega Esperada')
+                                    ->helperText('Fecha esperada de entrega'),
                             ]),
                         RichEditor::make('shipping_address')
                             ->label('Dirección de Envío')
@@ -310,25 +325,8 @@ class SaleOrderResource extends Resource
 
                 Section::make('Descuentos y Promociones')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Select::make('discount_code_id')
-                                    ->label('Código de Descuento')
-                                    ->relationship('discountCode', 'code')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Código de descuento aplicado'),
-                                TextInput::make('discount_percentage')
-                                    ->label('Porcentaje de Descuento (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Porcentaje de descuento'),
-                            ]),
-                        RichEditor::make('promotional_notes')
-                            ->label('Notas Promocionales')
+                        RichEditor::make('applied_discounts')
+                            ->label('Descuentos Aplicados')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -336,127 +334,72 @@ class SaleOrderResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
-                            ->helperText('Notas sobre promociones aplicadas'),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Fechas y Programación')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                DateTimePicker::make('order_date')
-                                    ->label('Fecha de Orden')
-                                    ->required()
-                                    ->helperText('Cuándo se realizó la orden'),
-                                DateTimePicker::make('confirmed_at')
-                                    ->label('Confirmado el')
-                                    ->helperText('Cuándo se confirmó la orden'),
-                                DateTimePicker::make('processing_at')
-                                    ->label('En Procesamiento el')
-                                    ->helperText('Cuándo comenzó el procesamiento'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                DateTimePicker::make('estimated_delivery')
-                                    ->label('Entrega Estimada')
-                                    ->helperText('Fecha estimada de entrega'),
-                                DateTimePicker::make('cancelled_at')
-                                    ->label('Cancelado el')
-                                    ->helperText('Cuándo se canceló la orden'),
-                            ]),
+                            ->helperText('Detalles de descuentos aplicados'),
                     ])
                     ->collapsible(),
 
                 Section::make('Productos y Servicios')
                     ->schema([
-                        Repeater::make('order_items')
+                        RichEditor::make('order_items')
                             ->label('Elementos de la Orden')
-                            ->schema([
-                                Grid::make(3)
-                                    ->schema([
-                                        TextInput::make('product_name')
-                                            ->label('Nombre del Producto')
-                                            ->required()
-                                            ->maxLength(255),
-                                        TextInput::make('quantity')
-                                            ->label('Cantidad')
-                                            ->numeric()
-                                            ->minValue(1)
-                                            ->step(1)
-                                            ->required(),
-                                        TextInput::make('unit_price')
-                                            ->label('Precio Unitario')
-                                            ->numeric()
-                                            ->prefix('$')
-                                            ->minValue(0)
-                                            ->step(0.01)
-                                            ->required(),
-                                    ]),
-                                Grid::make(2)
-                                    ->schema([
-                                        TextInput::make('total_price')
-                                            ->label('Precio Total')
-                                            ->numeric()
-                                            ->prefix('$')
-                                            ->minValue(0)
-                                            ->step(0.01)
-                                            ->required(),
-                                        TextInput::make('sku')
-                                            ->label('SKU')
-                                            ->maxLength(255),
-                                    ]),
-                                Textarea::make('item_notes')
-                                    ->label('Notas del Elemento')
-                                    ->rows(2)
-                                    ->maxLength(500),
-                            ])
-                            ->defaultItems(1)
-                            ->minItems(1)
-                            ->maxItems(100)
-                            ->reorderable()
-                            ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => $state['product_name'] ?? null),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Configuración del Sistema')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_active')
-                                    ->label('Activa')
-                                    ->default(true)
-                                    ->helperText('¿La orden está activa?'),
-                                Toggle::make('requires_approval')
-                                    ->label('Requiere Aprobación')
-                                    ->helperText('¿Se necesita aprobación?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_urgent')
-                                    ->label('Urgente')
-                                    ->helperText('¿Es una orden urgente?'),
-                                Toggle::make('is_bulk_order')
-                                    ->label('Orden Masiva')
-                                    ->helperText('¿Es parte de una orden masiva?'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Metadatos y Etiquetas')
-                    ->schema([
-                        TagsInput::make('tags')
-                            ->label('Etiquetas')
-                            ->separator(','),
-                        RichEditor::make('notes')
-                            ->label('Notas')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
                                 'underline',
                                 'bulletList',
                                 'orderedList',
-                            ]),
+                            ])
+                            ->helperText('Lista de productos o servicios incluidos'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Detalles Adicionales')
+                    ->schema([
+                        RichEditor::make('special_instructions')
+                            ->label('Instrucciones Especiales')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Instrucciones especiales para la orden'),
+                        RichEditor::make('internal_notes')
+                            ->label('Notas Internas')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Notas internas del equipo'),
+                        RichEditor::make('customer_notes')
+                            ->label('Notas del Cliente')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Notas proporcionadas por el cliente'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Información de Envío')
+                    ->schema([
+                        RichEditor::make('shipping_details')
+                            ->label('Detalles de Envío')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Información adicional sobre el envío'),
                     ])
                     ->collapsible(),
 
@@ -464,18 +407,25 @@ class SaleOrderResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('created_by')
-                                    ->label('Creado por')
-                                    ->relationship('createdBy', 'name')
-                                    ->required()
+                                Select::make('shipped_by')
+                                    ->label('Enviado por')
+                                    ->relationship('shippedBy', 'name')
                                     ->searchable()
                                     ->preload(),
-                                Select::make('approved_by')
-                                    ->label('Aprobado por')
-                                    ->relationship('approvedBy', 'name')
+                                Select::make('delivered_by')
+                                    ->label('Entregado por')
+                                    ->relationship('deliveredBy', 'name')
                                     ->searchable()
                                     ->preload(),
                             ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Metadatos')
+                    ->schema([
+                        TagsInput::make('tags')
+                            ->label('Etiquetas')
+                            ->separator(','),
                     ])
                     ->collapsible(),
             ]);
@@ -519,25 +469,6 @@ class SaleOrderResource extends Resource
                         'secondary' => 'other',
                     ])
                     ->formatStateUsing(fn (string $state): string => SaleOrder::getOrderTypes()[$state] ?? $state),
-                BadgeColumn::make('priority')
-                    ->label('Prioridad')
-                    ->colors([
-                        'success' => 'low',
-                        'warning' => 'medium',
-                        'danger' => 'high',
-                        'secondary' => 'urgent',
-                        'gray' => 'critical',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => SaleOrder::getPriorities()[$state] ?? $state),
-                TextColumn::make('total_amount')
-                    ->label('Total')
-                    ->money('USD')
-                    ->sortable()
-                    ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()
-                            ->label('Total')
-                            ->money('USD'),
-                    ]),
                 BadgeColumn::make('payment_status')
                     ->label('Pago')
                     ->colors([
@@ -560,8 +491,49 @@ class SaleOrderResource extends Resource
                         'gray' => 'returned',
                     ])
                     ->formatStateUsing(fn (string $state): string => SaleOrder::getShippingStatuses()[$state] ?? $state),
-                TextColumn::make('order_date')
-                    ->label('Fecha')
+                TextColumn::make('total_amount')
+                    ->label('Total')
+                    ->money('USD')
+                    ->sortable()
+                    ->summarize([
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Total')
+                            ->money('USD'),
+                    ]),
+                TextColumn::make('paid_amount')
+                    ->label('Pagado')
+                    ->money('USD')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('outstanding_amount')
+                    ->label('Pendiente')
+                    ->money('USD')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state > 0 => 'danger',
+                        $state == 0 => 'success',
+                        default => 'gray',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('currency')
+                    ->label('Moneda')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('affiliate.name')
+                    ->label('Afiliado')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(20)
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('shipped_date')
+                    ->label('Enviado')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('expected_delivery_date')
+                    ->label('Entrega Est.')
                     ->dateTime()
                     ->sortable()
                     ->badge()
@@ -570,28 +542,8 @@ class SaleOrderResource extends Resource
                         str_contains($state, '2025') => 'warning',
                         str_contains($state, '2026') => 'danger',
                         default => 'gray',
-                    }),
-                TextColumn::make('estimated_delivery')
-                    ->label('Entrega Est.')
-                    ->dateTime()
-                    ->sortable()
+                    })
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('salesRepresentative.name')
-                    ->label('Vendedor')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(20)
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('affiliate.name')
-                    ->label('Afiliado')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(20)
-                    ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_active')
-                    ->label('Activa'),
-                ToggleColumn::make('is_urgent')
-                    ->label('Urgente'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -607,10 +559,6 @@ class SaleOrderResource extends Resource
                     ->label('Tipo de Orden')
                     ->options(SaleOrder::getOrderTypes())
                     ->multiple(),
-                SelectFilter::make('priority')
-                    ->label('Prioridad')
-                    ->options(SaleOrder::getPriorities())
-                    ->multiple(),
                 SelectFilter::make('payment_status')
                     ->label('Estado de Pago')
                     ->options(SaleOrder::getPaymentStatuses())
@@ -619,16 +567,18 @@ class SaleOrderResource extends Resource
                     ->label('Estado de Envío')
                     ->options(SaleOrder::getShippingStatuses())
                     ->multiple(),
-                SelectFilter::make('source')
-                    ->label('Origen')
-                    ->options(SaleOrder::getSources())
+                SelectFilter::make('currency')
+                    ->label('Moneda')
+                    ->options([
+                        'USD' => 'Dólar Estadounidense',
+                        'EUR' => 'Euro',
+                        'MXN' => 'Peso Mexicano',
+                        'CAD' => 'Dólar Canadiense',
+                        'GBP' => 'Libra Esterlina',
+                        'JPY' => 'Yen Japonés',
+                        'other' => 'Otra',
+                    ])
                     ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
-                    ->label('Solo Activas'),
-                Filter::make('urgent')
-                    ->query(fn (Builder $query): Builder => $query->where('is_urgent', true))
-                    ->label('Solo Urgentes'),
                 Filter::make('high_value')
                     ->query(fn (Builder $query): Builder => $query->where('total_amount', '>=', 1000))
                     ->label('Alto Valor (≥$1000)'),
@@ -641,25 +591,28 @@ class SaleOrderResource extends Resource
                 Filter::make('pending_shipping')
                     ->query(fn (Builder $query): Builder => $query->where('shipping_status', 'pending'))
                     ->label('Envío Pendiente'),
+                Filter::make('outstanding_payment')
+                    ->query(fn (Builder $query): Builder => $query->where('outstanding_amount', '>', 0))
+                    ->label('Con Saldo Pendiente'),
                 Filter::make('date_range')
                     ->form([
-                        DateTimePicker::make('order_from')
-                            ->label('Orden desde'),
-                        DateTimePicker::make('order_until')
-                            ->label('Orden hasta'),
+                        DateTimePicker::make('shipped_from')
+                            ->label('Enviado desde'),
+                        DateTimePicker::make('shipped_until')
+                            ->label('Enviado hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['order_from'],
-                                fn (Builder $query, $date): Builder => $query->where('order_date', '>=', $date),
+                                $data['shipped_from'],
+                                fn (Builder $query, $date): Builder => $query->where('shipped_date', '>=', $date),
                             )
                             ->when(
-                                $data['order_until'],
-                                fn (Builder $query, $date): Builder => $query->where('order_date', '<=', $date),
+                                $data['shipped_until'],
+                                fn (Builder $query, $date): Builder => $query->where('shipped_date', '<=', $date),
                             );
                     })
-                    ->label('Rango de Fechas'),
+                    ->label('Rango de Fechas de Envío'),
                 Filter::make('amount_range')
                     ->form([
                         TextInput::make('min_amount')
@@ -691,59 +644,39 @@ class SaleOrderResource extends Resource
                     ->color('warning'),
                 Tables\Actions\DeleteAction::make()
                     ->color('danger'),
-                Tables\Actions\Action::make('confirm_order')
-                    ->label('Confirmar')
-                    ->icon('heroicon-o-check')
-                    ->color('success')
-                    ->visible(fn (SaleOrder $record) => $record->status === 'pending')
-                    ->action(function (SaleOrder $record) {
-                        $record->update([
-                            'status' => 'confirmed',
-                            'confirmed_at' => now(),
-                        ]);
-                    }),
-                Tables\Actions\Action::make('process_order')
-                    ->label('Procesar')
-                    ->icon('heroicon-o-cog')
-                    ->color('warning')
-                    ->visible(fn (SaleOrder $record) => $record->status === 'confirmed')
-                    ->action(function (SaleOrder $record) {
-                        $record->update([
-                            'status' => 'processing',
-                            'processing_at' => now(),
-                        ]);
-                    }),
-                Tables\Actions\Action::make('ship_order')
-                    ->label('Enviar')
+                Tables\Actions\Action::make('mark_shipped')
+                    ->label('Marcar Enviado')
                     ->icon('heroicon-o-truck')
                     ->color('info')
-                    ->visible(fn (SaleOrder $record) => $record->status === 'processing')
+                    ->visible(fn (SaleOrder $record) => $record->shipping_status === 'pending')
                     ->action(function (SaleOrder $record) {
                         $record->update([
-                            'status' => 'shipped',
-                            'shipped_at' => now(),
+                            'shipping_status' => 'shipped',
+                            'shipped_date' => now(),
                         ]);
                     }),
-                Tables\Actions\Action::make('deliver_order')
-                    ->label('Entregar')
+                Tables\Actions\Action::make('mark_delivered')
+                    ->label('Marcar Entregado')
                     ->icon('heroicon-o-home')
                     ->color('success')
-                    ->visible(fn (SaleOrder $record) => $record->status === 'shipped')
+                    ->visible(fn (SaleOrder $record) => $record->shipping_status === 'shipped')
                     ->action(function (SaleOrder $record) {
                         $record->update([
-                            'status' => 'delivered',
-                            'delivered_at' => now(),
+                            'shipping_status' => 'delivered',
+                            'delivered_date' => now(),
                         ]);
                     }),
-                Tables\Actions\Action::make('cancel_order')
-                    ->label('Cancelar')
-                    ->icon('heroicon-o-x-mark')
-                    ->color('danger')
-                    ->visible(fn (SaleOrder $record) => !in_array($record->status, ['cancelled', 'delivered']))
+                Tables\Actions\Action::make('mark_paid')
+                    ->label('Marcar Pagado')
+                    ->icon('heroicon-o-credit-card')
+                    ->color('success')
+                    ->visible(fn (SaleOrder $record) => $record->payment_status === 'pending')
                     ->action(function (SaleOrder $record) {
                         $record->update([
-                            'status' => 'cancelled',
-                            'cancelled_at' => now(),
+                            'payment_status' => 'paid',
+                            'payment_date' => now(),
+                            'paid_amount' => $record->total_amount,
+                            'outstanding_amount' => 0,
                         ]);
                     }),
                 Tables\Actions\Action::make('duplicate')
@@ -756,47 +689,57 @@ class SaleOrderResource extends Resource
                         $newRecord->status = 'pending';
                         $newRecord->payment_status = 'pending';
                         $newRecord->shipping_status = 'pending';
-                        $newRecord->confirmed_at = null;
-                        $newRecord->shipped_at = null;
-                        $newRecord->delivered_at = null;
-                        $newRecord->cancelled_at = null;
+                        $newRecord->paid_amount = 0;
+                        $newRecord->refunded_amount = 0;
+                        $newRecord->outstanding_amount = $newRecord->total_amount;
+                        $newRecord->shipped_date = null;
+                        $newRecord->delivered_date = null;
+                        $newRecord->payment_date = null;
                         $newRecord->save();
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('confirm_all')
-                        ->label('Confirmar Todas')
-                        ->icon('heroicon-o-check')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
-                                $record->update([
-                                    'status' => 'confirmed',
-                                    'confirmed_at' => now(),
-                                ]);
-                            });
-                        }),
-                    Tables\Actions\BulkAction::make('process_all')
-                        ->label('Procesar Todas')
-                        ->icon('heroicon-o-cog')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
-                                $record->update([
-                                    'status' => 'processing',
-                                    'processing_at' => now(),
-                                ]);
-                            });
-                        }),
-                    Tables\Actions\BulkAction::make('ship_all')
-                        ->label('Enviar Todas')
+                    Tables\Actions\BulkAction::make('mark_shipped_all')
+                        ->label('Marcar Enviadas Todas')
                         ->icon('heroicon-o-truck')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update([
-                                    'status' => 'shipped',
-                                    'shipped_at' => now(),
-                                ]);
+                                if ($record->shipping_status === 'pending') {
+                                    $record->update([
+                                        'shipping_status' => 'shipped',
+                                        'shipped_date' => now(),
+                                    ]);
+                                }
+                            });
+                        }),
+                    Tables\Actions\BulkAction::make('mark_delivered_all')
+                        ->label('Marcar Entregadas Todas')
+                        ->icon('heroicon-o-home')
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                if ($record->shipping_status === 'shipped') {
+                                    $record->update([
+                                        'shipping_status' => 'delivered',
+                                        'delivered_date' => now(),
+                                    ]);
+                                }
+                            });
+                        }),
+                    Tables\Actions\BulkAction::make('mark_paid_all')
+                        ->label('Marcar Pagadas Todas')
+                        ->icon('heroicon-o-credit-card')
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                if ($record->payment_status === 'pending') {
+                                    $record->update([
+                                        'payment_status' => 'paid',
+                                        'payment_date' => now(),
+                                        'paid_amount' => $record->total_amount,
+                                        'outstanding_amount' => 0,
+                                    ]);
+                                }
                             });
                         }),
                     Tables\Actions\BulkAction::make('update_status')
@@ -813,18 +756,18 @@ class SaleOrderResource extends Resource
                                 $record->update(['status' => $data['status']]);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('update_priority')
-                        ->label('Actualizar Prioridad')
-                        ->icon('heroicon-o-flag')
+                    Tables\Actions\BulkAction::make('update_payment_status')
+                        ->label('Actualizar Estado de Pago')
+                        ->icon('heroicon-o-credit-card')
                         ->form([
-                            Select::make('priority')
-                                ->label('Prioridad')
-                                ->options(SaleOrder::getPriorities())
+                            Select::make('payment_status')
+                                ->label('Estado de Pago')
+                                ->options(SaleOrder::getPaymentStatuses())
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
-                                $record->update(['priority' => $data['priority']]);
+                                $record->update(['payment_status' => $data['payment_status']]);
                             });
                         }),
                 ]),
@@ -852,7 +795,7 @@ class SaleOrderResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -862,16 +805,16 @@ class SaleOrderResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $urgentCount = static::getModel()::where('is_urgent', true)->count();
+        $pendingPaymentCount = static::getModel()::where('payment_status', 'pending')->count();
         
-        if ($urgentCount > 0) {
-            return 'danger';
+        if ($pendingPaymentCount > 0) {
+            return 'warning';
         }
         
-        $pendingCount = static::getModel()::where('status', 'pending')->count();
+        $pendingShippingCount = static::getModel()::where('shipping_status', 'pending')->count();
         
-        if ($pendingCount > 0) {
-            return 'warning';
+        if ($pendingShippingCount > 0) {
+            return 'info';
         }
         
         return 'success';
