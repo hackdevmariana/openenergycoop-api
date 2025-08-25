@@ -720,13 +720,13 @@ class DiscountCodeResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $expiredCount = static::getModel()::where('valid_to', '<', now())->count();
+        $expiredCount = static::getModel()::where('end_date', '<', now())->count();
         
         if ($expiredCount > 0) {
             return 'danger';
         }
         
-        $expiringSoonCount = static::getModel()::where('valid_to', '<=', now()->addDays(7))->count();
+        $expiringSoonCount = static::getModel()::where('end_date', '<=', now()->addDays(7))->count();
         
         if ($expiringSoonCount > 0) {
             return 'warning';
