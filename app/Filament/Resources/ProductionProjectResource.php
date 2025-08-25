@@ -20,7 +20,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
@@ -30,7 +29,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
-
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductionProjectResource extends Resource
 {
@@ -56,16 +55,16 @@ class ProductionProjectResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                TextInput::make('project_number')
+                                    ->label('Número de Proyecto')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Número único de identificación'),
                                 TextInput::make('name')
                                     ->label('Nombre')
                                     ->required()
                                     ->maxLength(255)
                                     ->helperText('Nombre del proyecto'),
-                                TextInput::make('slug')
-                                    ->label('Slug')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->helperText('URL amigable del proyecto'),
                             ]),
                         Textarea::make('description')
                             ->label('Descripción')
@@ -79,53 +78,76 @@ class ProductionProjectResource extends Resource
                                     ->options(ProductionProject::getProjectTypes())
                                     ->required()
                                     ->searchable(),
-                                Select::make('technology_type')
-                                    ->label('Tipo de Tecnología')
-                                    ->options(ProductionProject::getTechnologyTypes())
-                                    ->required()
-                                    ->searchable(),
                                 Select::make('status')
                                     ->label('Estado')
                                     ->options(ProductionProject::getStatuses())
+                                    ->required()
+                                    ->searchable(),
+                                Select::make('priority')
+                                    ->label('Prioridad')
+                                    ->options(ProductionProject::getPriorities())
                                     ->required()
                                     ->searchable(),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Relaciones y Asignaciones')
+                Section::make('Fechas del Proyecto')
                     ->schema([
-                        Grid::make(2)
+                        Grid::make(3)
                             ->schema([
-                                Select::make('organization_id')
-                                    ->label('Organización')
-                                    ->relationship('organization', 'name')
+                                DatePicker::make('start_date')
+                                    ->label('Fecha de Inicio')
                                     ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Organización responsable'),
-                                Select::make('owner_user_id')
-                                    ->label('Propietario')
-                                    ->relationship('ownerUser', 'name')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload(),
+                                    ->helperText('Cuándo comenzó el proyecto'),
+                                DatePicker::make('expected_completion_date')
+                                    ->label('Fecha de Finalización Esperada')
+                                    ->helperText('Cuándo se espera que termine'),
+                                DatePicker::make('actual_completion_date')
+                                    ->label('Fecha de Finalización Real')
+                                    ->helperText('Cuándo terminó realmente'),
                             ]),
-                        Grid::make(2)
+                    ])
+                    ->collapsible(),
+
+                Section::make('Presupuesto y Financiamiento')
+                    ->schema([
+                        Grid::make(3)
                             ->schema([
-                                Select::make('energy_source_id')
-                                    ->label('Fuente de Energía')
-                                    ->relationship('energySource', 'name')
+                                TextInput::make('budget')
+                                    ->label('Presupuesto Total')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
                                     ->required()
-                                    ->searchable()
-                                    ->preload(),
-                                Select::make('created_by')
-                                    ->label('Creado por')
-                                    ->relationship('createdBy', 'name')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload(),
+                                    ->helperText('Presupuesto total del proyecto'),
+                                TextInput::make('spent_amount')
+                                    ->label('Monto Gastado')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->default(0)
+                                    ->helperText('Monto ya gastado'),
+                                TextInput::make('remaining_budget')
+                                    ->label('Presupuesto Restante')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->helperText('Presupuesto disponible'),
                             ]),
+                        Placeholder::make('budget_status')
+                            ->content(function ($get) {
+                                $budget = $get('budget') ?: 0;
+                                $spent = $get('spent_amount') ?: 0;
+                                $remaining = $get('remaining_budget') ?: 0;
+                                $percentage = $budget > 0 ? ($spent / $budget) * 100 : 0;
+                                
+                                return "**Gastado: " . number_format($percentage, 1) . "% del presupuesto**";
+                            })
+                            ->visible(fn ($get) => $get('budget') > 0),
                     ])
                     ->collapsible(),
 
@@ -133,19 +155,19 @@ class ProductionProjectResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('capacity_kw')
-                                    ->label('Capacidad (kW)')
+                                TextInput::make('planned_capacity_mw')
+                                    ->label('Capacidad Planificada (MW)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
                                     ->required()
-                                    ->helperText('Capacidad instalada en kilovatios'),
-                                TextInput::make('estimated_annual_production')
-                                    ->label('Producción Anual Estimada (kWh)')
+                                    ->helperText('Capacidad planificada en megavatios'),
+                                TextInput::make('actual_capacity_mw')
+                                    ->label('Capacidad Real (MW)')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->step(1)
-                                    ->helperText('Producción anual estimada'),
+                                    ->step(0.01)
+                                    ->helperText('Capacidad real instalada'),
                                 TextInput::make('efficiency_rating')
                                     ->label('Eficiencia (%)')
                                     ->numeric()
@@ -155,22 +177,34 @@ class ProductionProjectResource extends Resource
                                     ->suffix('%')
                                     ->helperText('Factor de eficiencia'),
                             ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Ubicación')
+                    ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('peak_power_kw')
-                                    ->label('Potencia Pico (kW)')
+                                TextInput::make('location_address')
+                                    ->label('Dirección')
+                                    ->maxLength(255)
+                                    ->helperText('Dirección física del proyecto'),
+                                TextInput::make('latitude')
+                                    ->label('Latitud')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Potencia máxima en condiciones óptimas'),
-                                TextInput::make('capacity_factor')
-                                    ->label('Factor de Capacidad (%)')
+                                    ->step(0.000001)
+                                    ->minValue(-90)
+                                    ->maxValue(90)
+                                    ->helperText('Coordenada de latitud'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('longitude')
+                                    ->label('Longitud')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Factor de utilización de la capacidad'),
+                                    ->step(0.000001)
+                                    ->minValue(-180)
+                                    ->maxValue(180)
+                                    ->helperText('Coordenada de longitud'),
                             ]),
                     ])
                     ->collapsible(),
@@ -188,396 +222,172 @@ class ProductionProjectResource extends Resource
                                 'codeBlock',
                             ])
                             ->helperText('Especificaciones técnicas detalladas'),
-                        RichEditor::make('equipment_details')
-                            ->label('Detalles del Equipamiento')
+                        RichEditor::make('environmental_impact')
+                            ->label('Impacto Ambiental')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
                                 'underline',
                                 'bulletList',
                                 'orderedList',
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('manufacturer')
-                                    ->label('Fabricante')
-                                    ->maxLength(255)
-                                    ->helperText('Fabricante principal del equipamiento'),
-                                TextInput::make('model')
-                                    ->label('Modelo')
-                                    ->maxLength(255)
-                                    ->helperText('Modelo del equipamiento'),
-                            ]),
+                            ])
+                            ->helperText('Evaluación del impacto ambiental'),
+                        RichEditor::make('regulatory_compliance')
+                            ->label('Cumplimiento Regulatorio')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Requisitos regulatorios y cumplimiento'),
+                        RichEditor::make('safety_measures')
+                            ->label('Medidas de Seguridad')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Medidas de seguridad implementadas'),
                     ])
                     ->collapsible(),
 
-                Section::make('Ubicación')
+                Section::make('Equipo y Stakeholders')
+                    ->schema([
+                        RichEditor::make('project_team')
+                            ->label('Equipo del Proyecto')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Miembros del equipo del proyecto'),
+                        RichEditor::make('stakeholders')
+                            ->label('Stakeholders')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Partes interesadas en el proyecto'),
+                        RichEditor::make('contractors')
+                            ->label('Contratistas')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Contratistas involucrados'),
+                        RichEditor::make('suppliers')
+                            ->label('Proveedores')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Proveedores de materiales y servicios'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Gestión del Proyecto')
+                    ->schema([
+                        RichEditor::make('milestones')
+                            ->label('Hitos del Proyecto')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Hitos importantes del proyecto'),
+                        RichEditor::make('risks')
+                            ->label('Riesgos Identificados')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Riesgos identificados en el proyecto'),
+                        RichEditor::make('mitigation_strategies')
+                            ->label('Estrategias de Mitigación')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Estrategias para mitigar riesgos'),
+                        RichEditor::make('quality_standards')
+                            ->label('Estándares de Calidad')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Estándares de calidad aplicados'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Documentación')
+                    ->schema([
+                        RichEditor::make('documentation')
+                            ->label('Documentación del Proyecto')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Documentación técnica y administrativa'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Gestión y Aprobación')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('location_address')
-                                    ->label('Dirección')
+                                TextInput::make('project_manager')
+                                    ->label('Gerente del Proyecto')
                                     ->maxLength(255)
-                                    ->helperText('Dirección física del proyecto'),
-                                TextInput::make('location_city')
-                                    ->label('Ciudad')
-                                    ->maxLength(255)
-                                    ->helperText('Ciudad donde se ubica'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('location_region')
-                                    ->label('Región/Estado')
-                                    ->maxLength(255)
-                                    ->helperText('Región o estado'),
-                                TextInput::make('location_country')
-                                    ->label('País')
-                                    ->maxLength(2)
-                                    ->default('ES')
+                                    ->helperText('Persona responsable del proyecto'),
+                                TextInput::make('created_by')
+                                    ->label('Creado por')
+                                    ->numeric()
                                     ->required()
-                                    ->helperText('Código de país (ISO 3166-1 alpha-2)'),
-                                TextInput::make('location_postal_code')
-                                    ->label('Código Postal')
-                                    ->maxLength(20)
-                                    ->helperText('Código postal'),
+                                    ->helperText('ID del usuario que creó'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('latitude')
-                                    ->label('Latitud')
+                                TextInput::make('approved_by')
+                                    ->label('Aprobado por')
                                     ->numeric()
-                                    ->step(0.000001)
-                                    ->minValue(-90)
-                                    ->maxValue(90)
-                                    ->helperText('Coordenada de latitud'),
-                                TextInput::make('longitude')
-                                    ->label('Longitud')
-                                    ->numeric()
-                                    ->step(0.000001)
-                                    ->minValue(-180)
-                                    ->maxValue(180)
-                                    ->helperText('Coordenada de longitud'),
-                            ]),
-                        RichEditor::make('location_metadata')
-                            ->label('Metadatos de Ubicación')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Información adicional sobre la ubicación'),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Cronograma del Proyecto')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                DatePicker::make('planning_start_date')
-                                    ->label('Inicio de Planificación')
-                                    ->helperText('Cuándo comenzó la planificación'),
-                                DatePicker::make('construction_start_date')
-                                    ->label('Inicio de Construcción')
-                                    ->helperText('Cuándo comenzó la construcción'),
-                                DatePicker::make('construction_end_date')
-                                    ->label('Fin de Construcción')
-                                    ->helperText('Cuándo terminó la construcción'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                DatePicker::make('operational_start_date')
-                                    ->label('Inicio Operacional')
-                                    ->helperText('Cuándo comenzó a operar'),
-                                DatePicker::make('expected_end_date')
-                                    ->label('Fecha de Finalización Esperada')
-                                    ->helperText('Cuándo se espera que termine'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('completion_percentage')
-                                    ->label('Porcentaje de Completado (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->default(0)
-                                    ->required()
-                                    ->helperText('Porcentaje de avance del proyecto'),
-                                TextInput::make('estimated_duration_months')
-                                    ->label('Duración Estimada (meses)')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->step(1)
-                                    ->helperText('Duración estimada en meses'),
+                                    ->helperText('ID del usuario que aprobó'),
+                                DatePicker::make('approved_at')
+                                    ->label('Fecha de Aprobación')
+                                    ->helperText('Cuándo fue aprobado'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Aspectos Financieros')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('total_investment')
-                                    ->label('Inversión Total')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Inversión total del proyecto'),
-                                TextInput::make('cost_per_kw')
-                                    ->label('Costo por kW')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Costo por kilovatio instalado'),
-                                TextInput::make('estimated_roi_percentage')
-                                    ->label('ROI Estimado (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(1000)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Retorno de inversión estimado'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('payback_period_years')
-                                    ->label('Período de Recuperación (años)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.1)
-                                    ->helperText('Tiempo para recuperar la inversión'),
-                                TextInput::make('annual_operating_cost')
-                                    ->label('Costo Operativo Anual')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Costo operativo anual'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Crowdfunding e Inversión')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('accepts_crowdfunding')
-                                    ->label('Acepta Crowdfunding')
-                                    ->helperText('¿El proyecto acepta financiamiento colectivo?'),
-                                Toggle::make('is_investment_ready')
-                                    ->label('Listo para Inversión')
-                                    ->helperText('¿El proyecto está listo para recibir inversiones?'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('crowdfunding_target')
-                                    ->label('Meta de Crowdfunding')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Meta de financiamiento colectivo'),
-                                TextInput::make('crowdfunding_raised')
-                                    ->label('Crowdfunding Recaudado')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->default(0)
-                                    ->required()
-                                    ->helperText('Monto ya recaudado'),
-                                TextInput::make('min_investment')
-                                    ->label('Inversión Mínima')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Inversión mínima permitida'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('max_investment')
-                                    ->label('Inversión Máxima')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Inversión máxima permitida'),
-                                TextInput::make('investment_terms')
-                                    ->label('Términos de Inversión')
-                                    ->maxLength(255)
-                                    ->helperText('Términos y condiciones de inversión'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Impacto Ambiental')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('co2_avoided_tons_year')
-                                    ->label('CO2 Evitado (ton/año)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Toneladas de CO2 evitadas por año'),
-                                TextInput::make('renewable_percentage')
-                                    ->label('Porcentaje Renovable (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Porcentaje de energía renovable'),
-                                TextInput::make('environmental_score')
-                                    ->label('Puntuación Ambiental')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->helperText('Puntuación ambiental del proyecto'),
-                            ]),
-                        RichEditor::make('environmental_certifications')
-                            ->label('Certificaciones Ambientales')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Certificaciones ambientales obtenidas'),
-                        RichEditor::make('sustainability_metrics')
-                            ->label('Métricas de Sostenibilidad')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Permisos y Regulaciones')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('regulatory_approved')
-                                    ->label('Aprobado Regulatoriamente')
-                                    ->helperText('¿El proyecto tiene aprobación regulatoria?'),
-                                Toggle::make('permits_complete')
-                                    ->label('Permisos Completos')
-                                    ->helperText('¿Todos los permisos están completos?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                DatePicker::make('regulatory_approval_date')
-                                    ->label('Fecha de Aprobación Regulatoria')
-                                    ->helperText('Cuándo se obtuvo la aprobación'),
-                                TextInput::make('regulatory_authority')
-                                    ->label('Autoridad Regulatoria')
-                                    ->maxLength(255)
-                                    ->helperText('Autoridad que aprobó el proyecto'),
-                            ]),
-                        RichEditor::make('permits_required')
-                            ->label('Permisos Requeridos')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Lista de permisos requeridos'),
-                        RichEditor::make('permits_obtained')
-                            ->label('Permisos Obtenidos')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Permisos ya obtenidos'),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Mantenimiento')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('annual_maintenance_cost')
-                                    ->label('Costo de Mantenimiento Anual')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->helperText('Costo anual de mantenimiento'),
-                                TextInput::make('maintenance_interval_months')
-                                    ->label('Intervalo de Mantenimiento (meses)')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->step(1)
-                                    ->helperText('Cada cuántos meses se realiza mantenimiento'),
-                                TextInput::make('maintenance_provider')
-                                    ->label('Proveedor de Mantenimiento')
-                                    ->maxLength(255)
-                                    ->helperText('Empresa responsable del mantenimiento'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                DatePicker::make('last_maintenance_date')
-                                    ->label('Última Fecha de Mantenimiento')
-                                    ->helperText('Cuándo se realizó el último mantenimiento'),
-                                DatePicker::make('next_maintenance_date')
-                                    ->label('Próxima Fecha de Mantenimiento')
-                                    ->helperText('Cuándo se realizará el próximo mantenimiento'),
-                            ]),
-                        RichEditor::make('maintenance_requirements')
-                            ->label('Requisitos de Mantenimiento')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Requisitos específicos de mantenimiento'),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Configuración del Sistema')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_public')
-                                    ->label('Público')
-                                    ->helperText('¿El proyecto es visible públicamente?'),
-                                Toggle::make('is_active')
-                                    ->label('Activo')
-                                    ->default(true)
-                                    ->required()
-                                    ->helperText('¿El proyecto está activo?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_featured')
-                                    ->label('Destacado')
-                                    ->helperText('¿Mostrar como proyecto destacado?'),
-                                Toggle::make('requires_approval')
-                                    ->label('Requiere Aprobación')
-                                    ->helperText('¿Se necesita aprobación para cambios?'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Metadatos y Etiquetas')
+                Section::make('Metadatos')
                     ->schema([
                         TagsInput::make('tags')
                             ->label('Etiquetas')
@@ -593,26 +403,6 @@ class ProductionProjectResource extends Resource
                             ]),
                     ])
                     ->collapsible(),
-
-                Section::make('Documentos y Archivos')
-                    ->schema([
-                        FileUpload::make('images')
-                            ->label('Imágenes')
-                            ->multiple()
-                            ->image()
-                            ->directory('production-projects')
-                            ->maxFiles(20)
-                            ->maxSize(5120)
-                            ->helperText('Máximo 20 imágenes de 5MB cada una'),
-                        FileUpload::make('documents')
-                            ->label('Documentos')
-                            ->multiple()
-                            ->directory('production-projects/documents')
-                            ->maxFiles(50)
-                            ->maxSize(10240)
-                            ->helperText('Máximo 50 documentos de 10MB cada uno'),
-                    ])
-                    ->collapsible(),
             ]);
     }
 
@@ -620,80 +410,72 @@ class ProductionProjectResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('project_number')
+                    ->label('Número')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(15),
                 TextColumn::make('name')
                     ->label('Nombre')
                     ->searchable()
                     ->sortable()
                     ->limit(30),
-                TextColumn::make('organization.name')
-                    ->label('Organización')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(20),
                 BadgeColumn::make('project_type')
                     ->label('Tipo')
                     ->colors([
-                        'primary' => 'solar',
-                        'success' => 'wind',
-                        'warning' => 'hydro',
+                        'primary' => 'solar_farm',
+                        'success' => 'wind_farm',
+                        'warning' => 'hydroelectric',
                         'danger' => 'biomass',
                         'info' => 'geothermal',
-                        'secondary' => 'nuclear',
+                        'secondary' => 'hybrid',
+                        'purple' => 'storage',
                         'gray' => 'other',
                     ])
                     ->formatStateUsing(fn (string $state): string => ProductionProject::getProjectTypes()[$state] ?? $state),
                 BadgeColumn::make('status')
                     ->label('Estado')
                     ->colors([
-                        'success' => 'completed',
+                        'gray' => 'planning',
+                        'success' => 'approved',
                         'warning' => 'in_progress',
+                        'info' => 'on_hold',
+                        'primary' => 'completed',
                         'danger' => 'cancelled',
-                        'info' => 'planning',
-                        'secondary' => 'on_hold',
-                        'gray' => 'maintenance',
+                        'secondary' => 'maintenance',
                     ])
                     ->formatStateUsing(fn (string $state): string => ProductionProject::getStatuses()[$state] ?? $state),
-                BadgeColumn::make('technology_type')
-                    ->label('Tecnología')
+                BadgeColumn::make('priority')
+                    ->label('Prioridad')
                     ->colors([
-                        'primary' => 'photovoltaic',
-                        'success' => 'concentrated_solar',
-                        'warning' => 'wind_turbine',
-                        'danger' => 'hydroelectric',
-                        'info' => 'biomass_plant',
-                        'secondary' => 'geothermal_plant',
-                        'gray' => 'other',
+                        'gray' => 'low',
+                        'warning' => 'medium',
+                        'danger' => 'high',
                     ])
-                    ->formatStateUsing(fn (string $state): string => ProductionProject::getTechnologyTypes()[$state] ?? $state),
-                TextColumn::make('capacity_kw')
-                    ->label('Capacidad (kW)')
+                    ->formatStateUsing(fn (string $state): string => ProductionProject::getPriorities()[$state] ?? $state),
+                TextColumn::make('planned_capacity_mw')
+                    ->label('Capacidad Planificada (MW)')
                     ->numeric()
                     ->sortable()
-                    ->suffix(' kW')
+                    ->suffix(' MW')
                     ->summarize([
                         Tables\Columns\Summarizers\Sum::make()
                             ->label('Total')
-                            ->suffix(' kW'),
+                            ->suffix(' MW'),
                     ]),
-                TextColumn::make('completion_percentage')
-                    ->label('Completado (%)')
+                TextColumn::make('actual_capacity_mw')
+                    ->label('Capacidad Real (MW)')
+                    ->numeric()
+                    ->sortable()
+                    ->suffix(' MW')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('efficiency_rating')
+                    ->label('Eficiencia (%)')
                     ->suffix('%')
                     ->sortable()
-                    ->numeric(
-                        decimalPlaces: 1,
-                        decimalSeparator: '.',
-                        thousandsSeparator: ',',
-                    )
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 100 => 'success',
-                        $state >= 75 => 'primary',
-                        $state >= 50 => 'warning',
-                        $state >= 25 => 'info',
-                        default => 'danger',
-                    }),
-                TextColumn::make('total_investment')
-                    ->label('Inversión Total')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('budget')
+                    ->label('Presupuesto Total')
                     ->money('USD')
                     ->sortable()
                     ->summarize([
@@ -702,45 +484,39 @@ class ProductionProjectResource extends Resource
                             ->money('USD'),
                     ])
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('estimated_annual_production')
-                    ->label('Producción Anual (kWh)')
-                    ->numeric()
-                    ->sortable()
-                    ->suffix(' kWh')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('efficiency_rating')
-                    ->label('Eficiencia (%)')
-                    ->suffix('%')
+                TextColumn::make('spent_amount')
+                    ->label('Gastado')
+                    ->money('USD')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('location_city')
-                    ->label('Ciudad')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('location_country')
-                    ->label('País')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('construction_start_date')
-                    ->label('Inicio Construcción')
+                TextColumn::make('start_date')
+                    ->label('Fecha de Inicio')
                     ->date()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('operational_start_date')
-                    ->label('Inicio Operacional')
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        str_contains($state, '2024') => 'success',
+                        str_contains($state, '2025') => 'warning',
+                        str_contains($state, '2026') => 'danger',
+                        default => 'gray',
+                    }),
+                TextColumn::make('expected_completion_date')
+                    ->label('Finalización Esperada')
                     ->date()
                     ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        str_contains($state, '2024') => 'success',
+                        str_contains($state, '2025') => 'warning',
+                        str_contains($state, '2026') => 'danger',
+                        default => 'gray',
+                    }),
+                TextColumn::make('location_address')
+                    ->label('Ubicación')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(20)
                     ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_active')
-                    ->label('Activo'),
-                ToggleColumn::make('is_public')
-                    ->label('Público'),
-                ToggleColumn::make('accepts_crowdfunding')
-                    ->label('Crowdfunding'),
-                ToggleColumn::make('regulatory_approved')
-                    ->label('Aprobado'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -752,65 +528,56 @@ class ProductionProjectResource extends Resource
                     ->label('Tipo de Proyecto')
                     ->options(ProductionProject::getProjectTypes())
                     ->multiple(),
-                SelectFilter::make('technology_type')
-                    ->label('Tipo de Tecnología')
-                    ->options(ProductionProject::getTechnologyTypes())
-                    ->multiple(),
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options(ProductionProject::getStatuses())
                     ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
-                    ->label('Solo Activos'),
-                Filter::make('public')
-                    ->query(fn (Builder $query): Builder => $query->where('is_public', true))
-                    ->label('Solo Públicos'),
-                Filter::make('crowdfunding')
-                    ->query(fn (Builder $query): Builder => $query->where('accepts_crowdfunding', true))
-                    ->label('Aceptan Crowdfunding'),
-                Filter::make('regulatory_approved')
-                    ->query(fn (Builder $query): Builder => $query->where('regulatory_approved', true))
-                    ->label('Aprobados Regulatoriamente'),
+                SelectFilter::make('priority')
+                    ->label('Prioridad')
+                    ->options(ProductionProject::getPriorities())
+                    ->multiple(),
                 Filter::make('high_capacity')
-                    ->query(fn (Builder $query): Builder => $query->where('capacity_kw', '>=', 1000))
-                    ->label('Alta Capacidad (≥1000 kW)'),
+                    ->query(fn (Builder $query): Builder => $query->where('planned_capacity_mw', '>=', 100))
+                    ->label('Alta Capacidad (≥100 MW)'),
                 Filter::make('low_capacity')
-                    ->query(fn (Builder $query): Builder => $query->where('capacity_kw', '<', 100))
-                    ->label('Baja Capacidad (<100 kW)'),
-                Filter::make('high_completion')
-                    ->query(fn (Builder $query): Builder => $query->where('completion_percentage', '>=', 75))
-                    ->label('Alto Completado (≥75%)'),
-                Filter::make('low_completion')
-                    ->query(fn (Builder $query): Builder => $query->where('completion_percentage', '<', 25))
-                    ->label('Bajo Completado (<25%)'),
+                    ->query(fn (Builder $query): Builder => $query->where('planned_capacity_mw', '<', 10))
+                    ->label('Baja Capacidad (<10 MW)'),
+                Filter::make('high_budget')
+                    ->query(fn (Builder $query): Builder => $query->where('budget', '>=', 1000000))
+                    ->label('Alto Presupuesto (≥$1M)'),
+                Filter::make('low_budget')
+                    ->query(fn (Builder $query): Builder => $query->where('budget', '<', 100000))
+                    ->label('Bajo Presupuesto (<$100K)'),
+                Filter::make('over_budget')
+                    ->query(fn (Builder $query): Builder => $query->where('spent_amount', '>', 'budget'))
+                    ->label('Sobre Presupuesto'),
                 Filter::make('date_range')
                     ->form([
-                        DatePicker::make('construction_from')
-                            ->label('Construcción desde'),
-                        DatePicker::make('construction_until')
-                            ->label('Construcción hasta'),
+                        DatePicker::make('start_from')
+                            ->label('Inicio desde'),
+                        DatePicker::make('start_until')
+                            ->label('Inicio hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['construction_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('construction_start_date', '>=', $date),
+                                $data['start_from'],
+                                fn (Builder $query, $date): Builder => $query->where('start_date', '>=', $date),
                             )
                             ->when(
-                                $data['construction_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('construction_start_date', '<=', $date),
+                                $data['start_until'],
+                                fn (Builder $query, $date): Builder => $query->where('start_date', '<=', $date),
                             );
                     })
-                    ->label('Rango de Fechas de Construcción'),
+                    ->label('Rango de Fechas de Inicio'),
                 Filter::make('capacity_range')
                     ->form([
                         TextInput::make('min_capacity')
-                            ->label('Capacidad mínima (kW)')
+                            ->label('Capacidad mínima (MW)')
                             ->numeric()
                             ->minValue(0),
                         TextInput::make('max_capacity')
-                            ->label('Capacidad máxima (kW)')
+                            ->label('Capacidad máxima (MW)')
                             ->numeric()
                             ->minValue(0),
                     ])
@@ -818,37 +585,37 @@ class ProductionProjectResource extends Resource
                         return $query
                             ->when(
                                 $data['min_capacity'],
-                                fn (Builder $query, $capacity): Builder => $query->where('capacity_kw', '>=', $capacity),
+                                fn (Builder $query, $capacity): Builder => $query->where('planned_capacity_mw', '>=', $capacity),
                             )
                             ->when(
                                 $data['max_capacity'],
-                                fn (Builder $query, $capacity): Builder => $query->where('capacity_kw', '<=', $capacity),
+                                fn (Builder $query, $capacity): Builder => $query->where('planned_capacity_mw', '<=', $capacity),
                             );
                     })
                     ->label('Rango de Capacidad'),
-                Filter::make('investment_range')
+                Filter::make('budget_range')
                     ->form([
-                        TextInput::make('min_investment')
-                            ->label('Inversión mínima')
+                        TextInput::make('min_budget')
+                            ->label('Presupuesto mínimo')
                             ->numeric()
                             ->minValue(0),
-                        TextInput::make('max_investment')
-                            ->label('Inversión máxima')
+                        TextInput::make('max_budget')
+                            ->label('Presupuesto máximo')
                             ->numeric()
                             ->minValue(0),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['min_investment'],
-                                fn (Builder $query, $investment): Builder => $query->where('total_investment', '>=', $investment),
+                                $data['min_budget'],
+                                fn (Builder $query, $budget): Builder => $query->where('budget', '>=', $budget),
                             )
                             ->when(
-                                $data['max_investment'],
-                                fn (Builder $query, $investment): Builder => $query->where('total_investment', '<=', $investment),
+                                $data['max_budget'],
+                                fn (Builder $query, $budget): Builder => $query->where('budget', '<=', $budget),
                             );
                     })
-                    ->label('Rango de Inversión'),
+                    ->label('Rango de Presupuesto'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -857,29 +624,29 @@ class ProductionProjectResource extends Resource
                     ->color('warning'),
                 Tables\Actions\DeleteAction::make()
                     ->color('danger'),
-                Tables\Actions\Action::make('activate')
-                    ->label('Activar')
+                Tables\Actions\Action::make('mark_approved')
+                    ->label('Aprobar')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->visible(fn (ProductionProject $record) => $record->status === 'planning')
+                    ->action(function (ProductionProject $record) {
+                        $record->update(['status' => 'approved']);
+                    }),
+                Tables\Actions\Action::make('start_project')
+                    ->label('Iniciar')
                     ->icon('heroicon-o-play')
                     ->color('success')
-                    ->visible(fn (ProductionProject $record) => !$record->is_active)
+                    ->visible(fn (ProductionProject $record) => $record->status === 'approved')
                     ->action(function (ProductionProject $record) {
-                        $record->update(['is_active' => true]);
+                        $record->update(['status' => 'in_progress']);
                     }),
-                Tables\Actions\Action::make('deactivate')
-                    ->label('Desactivar')
-                    ->icon('heroicon-o-pause')
-                    ->color('warning')
-                    ->visible(fn (ProductionProject $record) => $record->is_active)
+                Tables\Actions\Action::make('complete_project')
+                    ->label('Completar')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (ProductionProject $record) => $record->status === 'in_progress')
                     ->action(function (ProductionProject $record) {
-                        $record->update(['is_active' => false]);
-                    }),
-                Tables\Actions\Action::make('mark_public')
-                    ->label('Hacer Público')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->visible(fn (ProductionProject $record) => !$record->is_public)
-                    ->action(function (ProductionProject $record) {
-                        $record->update(['is_public' => true]);
+                        $record->update(['status' => 'completed']);
                     }),
                 Tables\Actions\Action::make('duplicate')
                     ->label('Duplicar')
@@ -887,41 +654,35 @@ class ProductionProjectResource extends Resource
                     ->color('secondary')
                     ->action(function (ProductionProject $record) {
                         $newRecord = $record->replicate();
+                        $newRecord->project_number = $newRecord->project_number . '-COPY';
                         $newRecord->name = $newRecord->name . ' (Copia)';
-                        $newRecord->slug = $newRecord->slug . '-copy';
                         $newRecord->status = 'planning';
-                        $newRecord->completion_percentage = 0;
-                        $newRecord->is_active = false;
-                        $newRecord->is_public = false;
-                        $newRecord->crowdfunding_raised = 0;
+                        $newRecord->spent_amount = 0;
+                        $newRecord->actual_capacity_mw = 0;
                         $newRecord->save();
                     }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('activate_all')
-                        ->label('Activar Todos')
+                    Tables\Actions\BulkAction::make('approve_all')
+                        ->label('Aprobar Todos')
+                        ->icon('heroicon-o-check')
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                if ($record->status === 'planning') {
+                                    $record->update(['status' => 'approved']);
+                                }
+                            });
+                        }),
+                    Tables\Actions\BulkAction::make('start_all')
+                        ->label('Iniciar Todos')
                         ->icon('heroicon-o-play')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => true]);
-                            });
-                        }),
-                    Tables\Actions\BulkAction::make('deactivate_all')
-                        ->label('Desactivar Todos')
-                        ->icon('heroicon-o-pause')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
-                                $record->update(['is_active' => false]);
-                            });
-                        }),
-                    Tables\Actions\BulkAction::make('mark_public_all')
-                        ->label('Hacer Públicos Todos')
-                        ->icon('heroicon-o-eye')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
-                                $record->update(['is_public' => true]);
+                                if ($record->status === 'approved') {
+                                    $record->update(['status' => 'in_progress']);
+                                }
                             });
                         }),
                     Tables\Actions\BulkAction::make('update_status')
@@ -938,18 +699,18 @@ class ProductionProjectResource extends Resource
                                 $record->update(['status' => $data['status']]);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('update_project_type')
-                        ->label('Actualizar Tipo de Proyecto')
-                        ->icon('heroicon-o-cog')
+                    Tables\Actions\BulkAction::make('update_priority')
+                        ->label('Actualizar Prioridad')
+                        ->icon('heroicon-o-flag')
                         ->form([
-                            Select::make('project_type')
-                                ->label('Tipo de Proyecto')
-                                ->options(ProductionProject::getProjectTypes())
+                            Select::make('priority')
+                                ->label('Prioridad')
+                                ->options(ProductionProject::getPriorities())
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
-                                $record->update(['project_type' => $data['project_type']]);
+                                $record->update(['priority' => $data['priority']]);
                             });
                         }),
                 ]),
@@ -977,7 +738,7 @@ class ProductionProjectResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -987,15 +748,15 @@ class ProductionProjectResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $inactiveCount = static::getModel()::where('is_active', false)->count();
-        
-        if ($inactiveCount > 0) {
-            return 'warning';
-        }
-        
         $planningCount = static::getModel()::where('status', 'planning')->count();
         
         if ($planningCount > 0) {
+            return 'warning';
+        }
+        
+        $inProgressCount = static::getModel()::where('status', 'in_progress')->count();
+        
+        if ($inProgressCount > 0) {
             return 'info';
         }
         
