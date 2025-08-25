@@ -404,7 +404,6 @@ class DashboardViewResource extends Resource
             'index' => Pages\ListDashboardViews::route('/'),
             'create' => Pages\CreateDashboardView::route('/create'),
             'edit' => Pages\EditDashboardView::route('/{record}/edit'),
-            'view' => Pages\ViewDashboardView::route('/{record}'),
         ];
     }
 
