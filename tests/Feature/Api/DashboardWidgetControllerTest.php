@@ -11,7 +11,7 @@ use Laravel\Sanctum\Sanctum;
 
 class DashboardWidgetControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use DatabaseTransactions, WithFaker;
 
     protected $user;
     protected $widget;
