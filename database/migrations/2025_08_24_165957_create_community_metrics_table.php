@@ -17,7 +17,6 @@ return new class extends Migration
             $table->integer('total_users')->default(0);
             $table->decimal('total_kwh_produced', 15, 4)->default(0);
             $table->decimal('total_co2_avoided', 15, 4)->default(0);
-            $table->timestamp('updated_at')->useCurrent();
             $table->timestamps();
             $table->softDeletes();
 
