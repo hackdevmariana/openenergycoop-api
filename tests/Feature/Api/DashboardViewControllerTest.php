@@ -12,7 +12,7 @@ use Laravel\Sanctum\Sanctum;
 
 class DashboardViewControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use DatabaseTransactions, WithFaker;
 
     protected $user;
     protected $dashboardView;
