@@ -740,9 +740,8 @@ class AutomationRuleResource extends Resource
                         ->action(function ($records) {
                             $records->each(function ($record) {
                                 $record->update([
-                                    'error_count' => 0,
-                                    'consecutive_error_count' => 0,
-                                    'last_error' => null,
+                                    'failure_count' => 0,
+                                    'last_error_message' => null,
                                 ]);
                             });
                         }),
@@ -818,7 +817,7 @@ class AutomationRuleResource extends Resource
             return 'warning';
         }
         
-        $errorProneCount = static::getModel()::where('error_count', '>', 10)->count();
+        $errorProneCount = static::getModel()::where('failure_count', '>', 10)->count();
         
         if ($errorProneCount > 0) {
             return 'danger';
