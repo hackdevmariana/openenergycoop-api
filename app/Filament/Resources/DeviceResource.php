@@ -390,7 +390,6 @@ class DeviceResource extends Resource
             'index' => Pages\ListDevices::route('/'),
             'create' => Pages\CreateDevice::route('/create'),
             'edit' => Pages\EditDevice::route('/{record}/edit'),
-            'view' => Pages\ViewDevice::route('/{record}'),
         ];
     }
 
