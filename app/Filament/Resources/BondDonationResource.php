@@ -218,18 +218,18 @@ class BondDonationResource extends Resource
                                     ->required()
                                     ->default(now())
                                     ->displayFormat('d/m/Y H:i'),
-                                DateTimePicker::make('effective_until')
-                                    ->label('Efectivo hasta')
-                                    ->helperText('Cuándo termina de ser efectiva'),
+                                DateTimePicker::make('completion_date')
+                                    ->label('Fecha de Completado')
+                                    ->displayFormat('d/m/Y H:i'),
                             ]),
                         Grid::make(2)
                             ->schema([
                                 DateTimePicker::make('approval_date')
                                     ->label('Fecha de Aprobación')
                                     ->displayFormat('d/m/Y H:i'),
-                                DateTimePicker::make('processed_at')
-                                    ->label('Procesado el')
-                                    ->helperText('Cuándo se procesó la donación'),
+                                DateTimePicker::make('expiry_date')
+                                    ->label('Fecha de Expiración')
+                                    ->displayFormat('d/m/Y H:i'),
                             ]),
                     ])
                     ->collapsible(),
@@ -480,14 +480,14 @@ class BondDonationResource extends Resource
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('effective_from')
-                    ->label('Efectivo desde')
-                    ->dateTime()
+                TextColumn::make('completion_date')
+                    ->label('Fecha de Completado')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('effective_until')
-                    ->label('Efectivo hasta')
-                    ->dateTime()
+                TextColumn::make('approval_date')
+                    ->label('Fecha de Aprobación')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 ToggleColumn::make('is_active')
@@ -599,7 +599,7 @@ class BondDonationResource extends Resource
                     ->action(function (BondDonation $record) {
                         $record->update([
                             'status' => 'approved',
-                            'approved_at' => now(),
+                            'approval_date' => now(),
                         ]);
                     }),
                 Tables\Actions\Action::make('process_donation')
@@ -610,7 +610,6 @@ class BondDonationResource extends Resource
                     ->action(function (BondDonation $record) {
                         $record->update([
                             'status' => 'processing',
-                            'processed_at' => now(),
                         ]);
                     }),
                 Tables\Actions\Action::make('complete_donation')
@@ -658,7 +657,7 @@ class BondDonationResource extends Resource
                                 if ($record->status === 'pending') {
                                     $record->update([
                                         'status' => 'approved',
-                                        'approved_at' => now(),
+                                        'approval_date' => now(),
                                     ]);
                                 }
                             });
@@ -671,7 +670,6 @@ class BondDonationResource extends Resource
                                 if ($record->status === 'approved') {
                                     $record->update([
                                         'status' => 'processing',
-                                        'processed_at' => now(),
                                     ]);
                                 }
                             });
