@@ -18,7 +18,7 @@ class PlantResource extends Resource
 {
     protected static ?string $model = Plant::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-leaf';
+    protected static ?string $navigationIcon = 'heroicon-o-sun';
     
     protected static ?string $navigationGroup = 'Gamificación';
     
