@@ -31,6 +31,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EnergyMeterResource extends Resource
 {
@@ -56,23 +57,29 @@ class EnergyMeterResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                TextInput::make('meter_number')
+                                    ->label('Número de Medidor')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->unique(ignoreRecord: true)
+                                    ->helperText('Número único del medidor'),
                                 TextInput::make('name')
                                     ->label('Nombre')
                                     ->required()
                                     ->maxLength(255)
                                     ->helperText('Nombre del medidor'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
                                 TextInput::make('serial_number')
                                     ->label('Número de Serie')
-                                    ->required()
                                     ->maxLength(255)
-                                    ->unique(ignoreRecord: true)
-                                    ->helperText('Número de serie único del medidor'),
+                                    ->helperText('Número de serie del medidor'),
+                                TextInput::make('description')
+                                    ->label('Descripción')
+                                    ->maxLength(65535)
+                                    ->helperText('Descripción del medidor'),
                             ]),
-                        Textarea::make('description')
-                            ->label('Descripción')
-                            ->rows(3)
-                            ->maxLength(65535)
-                            ->helperText('Descripción del medidor'),
                         Grid::make(3)
                             ->schema([
                                 Select::make('meter_type')
@@ -80,9 +87,9 @@ class EnergyMeterResource extends Resource
                                     ->options(EnergyMeter::getMeterTypes())
                                     ->required()
                                     ->searchable(),
-                                Select::make('measurement_type')
-                                    ->label('Tipo de Medición')
-                                    ->options(EnergyMeter::getMeasurementTypes())
+                                Select::make('meter_category')
+                                    ->label('Categoría del Medidor')
+                                    ->options(EnergyMeter::getMeterCategories())
                                     ->required()
                                     ->searchable(),
                                 Select::make('status')
@@ -98,44 +105,39 @@ class EnergyMeterResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('energy_installation_id')
+                                Select::make('installation_id')
                                     ->label('Instalación de Energía')
-                                    ->relationship('energyInstallation', 'name')
+                                    ->relationship('installation', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->helperText('Instalación asociada'),
-                                Select::make('production_project_id')
-                                    ->label('Proyecto de Producción')
-                                    ->relationship('productionProject', 'name')
+                                Select::make('consumption_point_id')
+                                    ->label('Punto de Consumo')
+                                    ->relationship('consumptionPoint', 'name')
                                     ->searchable()
                                     ->preload()
-                                    ->helperText('Proyecto asociado'),
+                                    ->helperText('Punto de consumo asociado'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('owner_type')
-                                    ->label('Tipo de Propietario')
-                                    ->options([
-                                        'user' => 'Usuario',
-                                        'organization' => 'Organización',
-                                        'company' => 'Empresa',
-                                        'government' => 'Gobierno',
-                                        'other' => 'Otro',
-                                    ])
-                                    ->required()
-                                    ->searchable(),
-                                TextInput::make('owner_id')
-                                    ->label('ID del Propietario')
-                                    ->numeric()
-                                    ->required()
-                                    ->helperText('ID del propietario del medidor'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
+                                Select::make('customer_id')
+                                    ->label('Cliente')
+                                    ->relationship('customer', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Cliente propietario del medidor'),
                                 Select::make('created_by')
                                     ->label('Creado por')
                                     ->relationship('createdBy', 'name')
                                     ->required()
+                                    ->searchable()
+                                    ->preload(),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('installed_by')
+                                    ->label('Instalado por')
+                                    ->relationship('installedBy', 'name')
                                     ->searchable()
                                     ->preload(),
                                 Select::make('managed_by')
@@ -151,11 +153,6 @@ class EnergyMeterResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('technology')
-                                    ->label('Tecnología')
-                                    ->options(EnergyMeter::getTechnologies())
-                                    ->required()
-                                    ->searchable(),
                                 TextInput::make('manufacturer')
                                     ->label('Fabricante')
                                     ->maxLength(255)
@@ -164,13 +161,17 @@ class EnergyMeterResource extends Resource
                                     ->label('Modelo')
                                     ->maxLength(255)
                                     ->helperText('Modelo específico del medidor'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
                                 TextInput::make('firmware_version')
                                     ->label('Versión de Firmware')
                                     ->maxLength(255)
                                     ->helperText('Versión del firmware instalado'),
+                            ]),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('hardware_version')
+                                    ->label('Versión de Hardware')
+                                    ->maxLength(255)
+                                    ->helperText('Versión del hardware'),
                                 TextInput::make('accuracy_class')
                                     ->label('Clase de Precisión')
                                     ->numeric()
@@ -178,25 +179,6 @@ class EnergyMeterResource extends Resource
                                     ->maxValue(10)
                                     ->step(0.1)
                                     ->helperText('Clase de precisión del medidor'),
-                                TextInput::make('phases')
-                                    ->label('Fases')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(4)
-                                    ->step(1)
-                                    ->default(1)
-                                    ->required()
-                                    ->helperText('Número de fases que mide'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('max_current_amps')
-                                    ->label('Corriente Máxima (A)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.1)
-                                    ->suffix(' A')
-                                    ->helperText('Corriente máxima que puede medir'),
                                 TextInput::make('voltage_rating')
                                     ->label('Voltaje Nominal (V)')
                                     ->numeric()
@@ -205,6 +187,24 @@ class EnergyMeterResource extends Resource
                                     ->suffix(' V')
                                     ->helperText('Voltaje nominal del medidor'),
                             ]),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('current_rating')
+                                    ->label('Corriente Nominal (A)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.1)
+                                    ->suffix(' A')
+                                    ->helperText('Corriente nominal del medidor'),
+                                TextInput::make('phase_type')
+                                    ->label('Tipo de Fase')
+                                    ->maxLength(255)
+                                    ->helperText('Tipo de fase (monofásico, trifásico, etc.)'),
+                                TextInput::make('connection_type')
+                                    ->label('Tipo de Conexión')
+                                    ->maxLength(255)
+                                    ->helperText('Tipo de conexión del medidor'),
+                            ]),
                     ])
                     ->collapsible(),
 
@@ -212,10 +212,11 @@ class EnergyMeterResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('location_description')
-                                    ->label('Descripción de Ubicación')
-                                    ->maxLength(255)
-                                    ->helperText('Descripción de dónde está ubicado'),
+                                Textarea::make('location_address')
+                                    ->label('Dirección de Ubicación')
+                                    ->rows(3)
+                                    ->maxLength(65535)
+                                    ->helperText('Dirección donde está ubicado'),
                                 TextInput::make('latitude')
                                     ->label('Latitud')
                                     ->numeric()
@@ -233,12 +234,6 @@ class EnergyMeterResource extends Resource
                                     ->minValue(-180)
                                     ->maxValue(180)
                                     ->helperText('Coordenada de longitud'),
-                                TextInput::make('elevation_m')
-                                    ->label('Elevación (m)')
-                                    ->numeric()
-                                    ->step(0.01)
-                                    ->suffix(' m')
-                                    ->helperText('Elevación sobre el nivel del mar'),
                             ]),
                     ])
                     ->collapsible(),
@@ -249,76 +244,133 @@ class EnergyMeterResource extends Resource
                             ->schema([
                                 DatePicker::make('installation_date')
                                     ->label('Fecha de Instalación')
+                                    ->required()
                                     ->helperText('Cuándo se instaló el medidor'),
-                                DatePicker::make('calibration_date')
-                                    ->label('Fecha de Calibración')
+                                DatePicker::make('commissioning_date')
+                                    ->label('Fecha de Puesta en Marcha')
+                                    ->helperText('Cuándo se puso en marcha'),
+                                DatePicker::make('last_calibration_date')
+                                    ->label('Última Calibración')
                                     ->helperText('Cuándo se calibró por última vez'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
                                 DatePicker::make('next_calibration_date')
                                     ->label('Próxima Calibración')
                                     ->helperText('Cuándo se debe calibrar'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                DatePicker::make('warranty_end_date')
+                                DatePicker::make('warranty_expiry_date')
                                     ->label('Fin de Garantía')
                                     ->helperText('Cuándo termina la garantía'),
-                                DatePicker::make('last_maintenance_date')
-                                    ->label('Último Mantenimiento')
-                                    ->helperText('Cuándo se realizó el último mantenimiento'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Lecturas y Datos')
+                Section::make('Características del Medidor')
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                DateTimePicker::make('last_reading_at')
-                                    ->label('Última Lectura')
-                                    ->helperText('Cuándo se realizó la última lectura'),
-                                TextInput::make('last_reading_value')
-                                    ->label('Valor de Última Lectura')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->helperText('Valor de la última lectura'),
-                                Select::make('last_reading_unit')
-                                    ->label('Unidad de Lectura')
-                                    ->options([
-                                        'kWh' => 'kWh',
-                                        'MWh' => 'MWh',
-                                        'GWh' => 'GWh',
-                                        'W' => 'W',
-                                        'kW' => 'kW',
-                                        'MW' => 'MW',
-                                        'A' => 'A',
-                                        'V' => 'V',
-                                        'Hz' => 'Hz',
-                                        'PF' => 'PF',
-                                    ])
-                                    ->default('kWh')
-                                    ->required()
-                                    ->searchable(),
+                                Toggle::make('is_smart_meter')
+                                    ->label('Medidor Inteligente')
+                                    ->onIcon('heroicon-s-cpu-chip')
+                                    ->offIcon('heroicon-s-cpu-chip')
+                                    ->onColor('success')
+                                    ->offColor('gray')
+                                    ->helperText('¿Es un medidor inteligente?'),
+                                Toggle::make('has_remote_reading')
+                                    ->label('Lectura Remota')
+                                    ->onIcon('heroicon-s-signal')
+                                    ->offIcon('heroicon-s-signal')
+                                    ->onColor('success')
+                                    ->offColor('gray')
+                                    ->helperText('¿Tiene capacidad de lectura remota?'),
+                                Toggle::make('has_two_way_communication')
+                                    ->label('Comunicación Bidireccional')
+                                    ->onIcon('heroicon-s-arrow-path')
+                                    ->offIcon('heroicon-s-arrow-path')
+                                    ->onColor('success')
+                                    ->offColor('gray')
+                                    ->helperText('¿Tiene comunicación bidireccional?'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('reading_interval_minutes')
-                                    ->label('Intervalo de Lectura (minutos)')
+                                TextInput::make('communication_protocol')
+                                    ->label('Protocolo de Comunicación')
+                                    ->maxLength(255)
+                                    ->helperText('Protocolo usado para comunicación'),
+                                TextInput::make('communication_frequency')
+                                    ->label('Frecuencia de Comunicación')
+                                    ->maxLength(255)
+                                    ->helperText('Frecuencia de comunicación'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('data_logging_interval')
+                                    ->label('Intervalo de Registro de Datos')
+                                    ->maxLength(255)
+                                    ->helperText('Intervalo para registrar datos'),
+                                TextInput::make('data_retention_days')
+                                    ->label('Retención de Datos (días)')
                                     ->numeric()
                                     ->minValue(1)
-                                    ->maxValue(1440)
+                                    ->maxValue(3650)
                                     ->step(1)
-                                    ->default(15)
-                                    ->required()
-                                    ->helperText('Cada cuántos minutos se lee'),
-                                Toggle::make('auto_reading_enabled')
-                                    ->label('Lectura Automática Habilitada')
-                                    ->default(true)
-                                    ->required()
-                                    ->helperText('¿El medidor lee automáticamente?'),
+                                    ->helperText('Días que se retienen los datos'),
                             ]),
-                        RichEditor::make('reading_config')
-                            ->label('Configuración de Lectura')
+                    ])
+                    ->collapsible(),
+
+                Section::make('Especificaciones Técnicas Detalladas')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('measurement_range_min')
+                                    ->label('Rango Mínimo de Medición')
+                                    ->numeric()
+                                    ->step(0.01)
+                                    ->helperText('Valor mínimo que puede medir'),
+                                TextInput::make('measurement_range_max')
+                                    ->label('Rango Máximo de Medición')
+                                    ->numeric()
+                                    ->step(0.01)
+                                    ->helperText('Valor máximo que puede medir'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('measurement_unit')
+                                    ->label('Unidad de Medición')
+                                    ->maxLength(255)
+                                    ->helperText('Unidad de medida (kWh, m³, etc.)'),
+                                TextInput::make('pulse_constant')
+                                    ->label('Constante de Pulso')
+                                    ->numeric()
+                                    ->step(0.01)
+                                    ->helperText('Constante de pulso del medidor'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('pulse_unit')
+                                    ->label('Unidad de Pulso')
+                                    ->maxLength(255)
+                                    ->helperText('Unidad del pulso'),
+                                TextInput::make('voltage_unit')
+                                    ->label('Unidad de Voltaje')
+                                    ->maxLength(255)
+                                    ->helperText('Unidad de voltaje (V, kV)'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('current_unit')
+                                    ->label('Unidad de Corriente')
+                                    ->maxLength(255)
+                                    ->helperText('Unidad de corriente (A, kA)'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Configuración y Documentación')
+                    ->schema([
+                        RichEditor::make('technical_specifications')
+                            ->label('Especificaciones Técnicas')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -327,185 +379,62 @@ class EnergyMeterResource extends Resource
                                 'orderedList',
                                 'codeBlock',
                             ])
-                            ->helperText('Configuración específica para las lecturas'),
+                            ->helperText('Especificaciones técnicas detalladas'),
+                        RichEditor::make('calibration_requirements')
+                            ->label('Requisitos de Calibración')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Requisitos específicos de calibración'),
+                        RichEditor::make('maintenance_requirements')
+                            ->label('Requisitos de Mantenimiento')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Requisitos de mantenimiento'),
+                        RichEditor::make('safety_features')
+                            ->label('Características de Seguridad')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Características de seguridad del medidor'),
                     ])
                     ->collapsible(),
 
-                Section::make('Comunicación y Conectividad')
+                Section::make('Configuración Avanzada')
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                Select::make('communication_type')
-                                    ->label('Tipo de Comunicación')
-                                    ->options(EnergyMeter::getCommunicationTypes())
-                                    ->searchable(),
-                                TextInput::make('ip_address')
-                                    ->label('Dirección IP')
-                                    ->maxLength(255)
-                                    ->helperText('Dirección IP del medidor'),
-                                TextInput::make('mac_address')
-                                    ->label('Dirección MAC')
-                                    ->maxLength(255)
-                                    ->helperText('Dirección MAC del medidor'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('port_number')
-                                    ->label('Número de Puerto')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(65535)
-                                    ->step(1)
-                                    ->helperText('Puerto de comunicación'),
-                                TextInput::make('baud_rate')
-                                    ->label('Velocidad de Baudios')
-                                    ->numeric()
-                                    ->minValue(1200)
-                                    ->maxValue(115200)
-                                    ->step(1200)
-                                    ->helperText('Velocidad de comunicación serial'),
-                            ]),
-                        RichEditor::make('communication_config')
+                        KeyValue::make('meter_features')
+                            ->label('Características del Medidor')
+                            ->keyLabel('Característica')
+                            ->valueLabel('Valor')
+                            ->helperText('Características específicas del medidor'),
+                        KeyValue::make('communication_settings')
                             ->label('Configuración de Comunicación')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                                'codeBlock',
-                            ])
-                            ->helperText('Configuración específica de comunicación'),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('remote_access_enabled')
-                                    ->label('Acceso Remoto Habilitado')
-                                    ->helperText('¿Se puede acceder remotamente?'),
-                                Toggle::make('data_encryption_enabled')
-                                    ->label('Encriptación de Datos Habilitada')
-                                    ->helperText('¿Los datos están encriptados?'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Tarifas y Facturación')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('tariff_type')
-                                    ->label('Tipo de Tarifa')
-                                    ->maxLength(255)
-                                    ->helperText('Tipo de tarifa que aplica'),
-                                TextInput::make('billing_cycle_days')
-                                    ->label('Ciclo de Facturación (días)')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(365)
-                                    ->step(1)
-                                    ->helperText('Duración del ciclo de facturación'),
-                            ]),
-                        RichEditor::make('tariff_periods')
-                            ->label('Períodos Tarifarios')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Configuración de períodos tarifarios'),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('net_metering_enabled')
-                                    ->label('Medición Neta Habilitada')
-                                    ->helperText('¿Permite medición neta?'),
-                                Toggle::make('billing_enabled')
-                                    ->label('Facturación Habilitada')
-                                    ->default(true)
-                                    ->helperText('¿Genera facturas automáticamente?'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Certificaciones y Calidad')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_certified')
-                                    ->label('Certificado')
-                                    ->helperText('¿El medidor está certificado?'),
-                                Toggle::make('calibration_required')
-                                    ->label('Requiere Calibración')
-                                    ->default(true)
-                                    ->helperText('¿Necesita calibración periódica?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('certification_number')
-                                    ->label('Número de Certificación')
-                                    ->maxLength(255)
-                                    ->helperText('Número de certificación oficial'),
-                                TextInput::make('calibration_interval_months')
-                                    ->label('Intervalo de Calibración (meses)')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(120)
-                                    ->step(1)
-                                    ->helperText('Cada cuántos meses se debe calibrar'),
-                            ]),
-                        RichEditor::make('certifications')
-                            ->label('Certificaciones')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Lista de certificaciones obtenidas'),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Configuración del Sistema')
-                    ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_active')
-                                    ->label('Activo')
-                                    ->default(true)
-                                    ->required()
-                                    ->helperText('¿El medidor está activo?'),
-                                Toggle::make('requires_approval')
-                                    ->label('Requiere Aprobación')
-                                    ->helperText('¿Se necesita aprobación para cambios?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_public')
-                                    ->label('Público')
-                                    ->helperText('¿Visible públicamente?'),
-                                Toggle::make('is_featured')
-                                    ->label('Destacado')
-                                    ->helperText('¿Mostrar como medidor destacado?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('priority')
-                                    ->label('Prioridad')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->maxValue(10)
-                                    ->step(1)
-                                    ->default(5)
-                                    ->helperText('Prioridad del medidor (1-10)'),
-                                TextInput::make('sort_order')
-                                    ->label('Orden de Clasificación')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(1)
-                                    ->default(0)
-                                    ->helperText('Orden para mostrar en listas'),
-                            ]),
+                            ->keyLabel('Configuración')
+                            ->valueLabel('Valor')
+                            ->helperText('Configuración de comunicación'),
+                        KeyValue::make('alarm_settings')
+                            ->label('Configuración de Alarmas')
+                            ->keyLabel('Alarma')
+                            ->valueLabel('Valor')
+                            ->helperText('Configuración de alarmas'),
+                        KeyValue::make('data_formats')
+                            ->label('Formatos de Datos')
+                            ->keyLabel('Formato')
+                            ->valueLabel('Valor')
+                            ->helperText('Formatos de datos soportados'),
                     ])
                     ->collapsible(),
 
@@ -525,25 +454,6 @@ class EnergyMeterResource extends Resource
                             ]),
                     ])
                     ->collapsible(),
-
-                Section::make('Documentos y Archivos')
-                    ->schema([
-                        FileUpload::make('documents')
-                            ->label('Documentos')
-                            ->multiple()
-                            ->directory('energy-meters')
-                            ->maxFiles(50)
-                            ->maxSize(10240)
-                            ->helperText('Máximo 50 documentos de 10MB cada uno'),
-                        FileUpload::make('firmware_files')
-                            ->label('Archivos de Firmware')
-                            ->multiple()
-                            ->directory('energy-meters/firmware')
-                            ->maxFiles(20)
-                            ->maxSize(51200)
-                            ->helperText('Máximo 20 archivos de firmware de 50MB cada uno'),
-                    ])
-                    ->collapsible(),
             ]);
     }
 
@@ -551,6 +461,13 @@ class EnergyMeterResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('meter_number')
+                    ->label('Número de Medidor')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(20)
+                    ->copyable()
+                    ->tooltip('Haz clic para copiar'),
                 TextColumn::make('name')
                     ->label('Nombre')
                     ->searchable()
@@ -566,12 +483,12 @@ class EnergyMeterResource extends Resource
                 BadgeColumn::make('meter_type')
                     ->label('Tipo')
                     ->colors([
-                        'primary' => 'electricity',
-                        'success' => 'gas',
-                        'warning' => 'water',
-                        'danger' => 'steam',
-                        'info' => 'heat',
-                        'secondary' => 'renewable',
+                        'primary' => 'smart_meter',
+                        'success' => 'digital_meter',
+                        'warning' => 'analog_meter',
+                        'danger' => 'prepaid_meter',
+                        'info' => 'postpaid_meter',
+                        'secondary' => 'bi_directional',
                         'gray' => 'other',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyMeter::getMeterTypes()[$state] ?? $state),
@@ -581,23 +498,31 @@ class EnergyMeterResource extends Resource
                         'success' => 'active',
                         'warning' => 'maintenance',
                         'danger' => 'faulty',
-                        'info' => 'calibrating',
-                        'secondary' => 'offline',
-                        'gray' => 'inactive',
+                        'secondary' => 'inactive',
+                        'gray' => 'decommissioned',
                     ])
-                    ->formatStateUsing(fn (string $state): string => EnergyMeter::getStatuses()[$state] ?? $state),
-                BadgeColumn::make('technology')
-                    ->label('Tecnología')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'Activo',
+                        'inactive' => 'Inactivo',
+                        'maintenance' => 'Mantenimiento',
+                        'faulty' => 'Defectuoso',
+                        'replaced' => 'Reemplazado',
+                        'decommissioned' => 'Desmantelado',
+                        'calibrating' => 'Calibrando',
+                        default => $state,
+                    }),
+                BadgeColumn::make('meter_category')
+                    ->label('Categoría')
                     ->colors([
-                        'primary' => 'digital',
-                        'success' => 'smart',
-                        'warning' => 'analog',
-                        'danger' => 'mechanical',
-                        'info' => 'hybrid',
-                        'secondary' => 'wireless',
+                        'primary' => 'electricity',
+                        'success' => 'water',
+                        'warning' => 'gas',
+                        'danger' => 'heat',
+                        'info' => 'steam',
+                        'secondary' => 'compressed_air',
                         'gray' => 'other',
                     ])
-                    ->formatStateUsing(fn (string $state): string => EnergyMeter::getTechnologies()[$state] ?? $state),
+                    ->formatStateUsing(fn (string $state): string => EnergyMeter::getMeterCategories()[$state] ?? $state),
                 TextColumn::make('manufacturer')
                     ->label('Fabricante')
                     ->searchable()
@@ -608,16 +533,6 @@ class EnergyMeterResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(20),
-                TextColumn::make('phases')
-                    ->label('Fases')
-                    ->numeric()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 3 => 'success',
-                        $state >= 2 => 'warning',
-                        default => 'info',
-                    }),
                 TextColumn::make('accuracy_class')
                     ->label('Precisión')
                     ->numeric()
@@ -630,41 +545,27 @@ class EnergyMeterResource extends Resource
                         default => 'danger',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('last_reading_value')
-                    ->label('Última Lectura')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('last_reading_at')
-                    ->label('Última Lectura')
-                    ->dateTime()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        str_contains($state, '2024') => 'success',
-                        str_contains($state, '2025') => 'warning',
-                        str_contains($state, '2026') => 'danger',
-                        default => 'gray',
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('reading_interval_minutes')
-                    ->label('Intervalo (min)')
-                    ->numeric()
-                    ->sortable()
-                    ->suffix(' min')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('auto_reading_enabled')
-                    ->label('Lectura Auto'),
-                ToggleColumn::make('net_metering_enabled')
-                    ->label('Medición Neta'),
-                ToggleColumn::make('is_certified')
-                    ->label('Certificado'),
-                ToggleColumn::make('is_active')
-                    ->label('Activo'),
+                ToggleColumn::make('is_smart_meter')
+                    ->label('Medidor Inteligente'),
+                ToggleColumn::make('has_remote_reading')
+                    ->label('Lectura Remota'),
+                ToggleColumn::make('has_two_way_communication')
+                    ->label('Comunicación Bidireccional'),
                 TextColumn::make('installation_date')
                     ->label('Instalación')
                     ->date()
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('next_calibration_date')
+                    ->label('Próxima Calibración')
+                    ->date()
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state < now() => 'danger',
+                        $state <= now()->addDays(30) => 'warning',
+                        default => 'success',
+                    })
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('Creado')
@@ -677,54 +578,37 @@ class EnergyMeterResource extends Resource
                     ->label('Tipo de Medidor')
                     ->options(EnergyMeter::getMeterTypes())
                     ->multiple(),
-                SelectFilter::make('measurement_type')
-                    ->label('Tipo de Medición')
-                    ->options(EnergyMeter::getMeasurementTypes())
+                SelectFilter::make('meter_category')
+                    ->label('Categoría del Medidor')
+                    ->options(EnergyMeter::getMeterCategories())
                     ->multiple(),
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options(EnergyMeter::getStatuses())
                     ->multiple(),
-                SelectFilter::make('technology')
-                    ->label('Tecnología')
-                    ->options(EnergyMeter::getTechnologies())
-                    ->multiple(),
-                SelectFilter::make('communication_type')
-                    ->label('Tipo de Comunicación')
-                    ->options(EnergyMeter::getCommunicationTypes())
-                    ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
+                Filter::make('active_meters')
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'active'))
                     ->label('Solo Activos'),
-                Filter::make('certified')
-                    ->query(fn (Builder $query): Builder => $query->where('is_certified', true))
-                    ->label('Solo Certificados'),
                 Filter::make('smart_meters')
-                    ->query(fn (Builder $query): Builder => $query->where('technology', 'smart'))
+                    ->query(fn (Builder $query): Builder => $query->where('is_smart_meter', true))
                     ->label('Solo Medidores Inteligentes'),
-                Filter::make('auto_reading')
-                    ->query(fn (Builder $query): Builder => $query->where('auto_reading_enabled', true))
-                    ->label('Con Lectura Automática'),
-                Filter::make('net_metering')
-                    ->query(fn (Builder $query): Builder => $query->where('net_metering_enabled', true))
-                    ->label('Con Medición Neta'),
+                Filter::make('remote_reading')
+                    ->query(fn (Builder $query): Builder => $query->where('has_remote_reading', true))
+                    ->label('Solo con Lectura Remota'),
+                Filter::make('two_way_communication')
+                    ->query(fn (Builder $query): Builder => $query->where('has_two_way_communication', true))
+                    ->label('Solo con Comunicación Bidireccional'),
                 Filter::make('high_accuracy')
                     ->query(fn (Builder $query): Builder => $query->where('accuracy_class', '<=', 1.0))
-                    ->label('Alta Precisión (≤1.0)'),
+                    ->label('Alta Precisión'),
                 Filter::make('low_accuracy')
                     ->query(fn (Builder $query): Builder => $query->where('accuracy_class', '>', 2.0))
                     ->label('Baja Precisión (>2.0)'),
-                Filter::make('multi_phase')
-                    ->query(fn (Builder $query): Builder => $query->where('phases', '>=', 3))
-                    ->label('Multifase (≥3)'),
-                Filter::make('single_phase')
-                    ->query(fn (Builder $query): Builder => $query->where('phases', '=', 1))
-                    ->label('Monofásico'),
                 Filter::make('needs_calibration')
                     ->query(fn (Builder $query): Builder => $query->where('next_calibration_date', '<=', now()->addDays(30)))
                     ->label('Necesita Calibración (≤30 días)'),
                 Filter::make('warranty_expired')
-                    ->query(fn (Builder $query): Builder => $query->where('warranty_end_date', '<', now()))
+                    ->query(fn (Builder $query): Builder => $query->where('warranty_expiry_date', '<', now()))
                     ->label('Garantía Expirada'),
                 Filter::make('date_range')
                     ->form([
@@ -780,35 +664,35 @@ class EnergyMeterResource extends Resource
                     ->color('danger'),
                 Tables\Actions\Action::make('activate')
                     ->label('Activar')
-                    ->icon('heroicon-o-play')
+                    ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (EnergyMeter $record) => !$record->is_active)
+                    ->visible(fn (EnergyMeter $record) => $record->status !== 'active')
                     ->action(function (EnergyMeter $record) {
-                        $record->update(['is_active' => true]);
+                        $record->update(['status' => 'active']);
                     }),
                 Tables\Actions\Action::make('deactivate')
                     ->label('Desactivar')
-                    ->icon('heroicon-o-pause')
-                    ->color('warning')
-                    ->visible(fn (EnergyMeter $record) => $record->is_active)
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn (EnergyMeter $record) => $record->status === 'active')
                     ->action(function (EnergyMeter $record) {
-                        $record->update(['is_active' => false]);
+                        $record->update(['status' => 'inactive']);
                     }),
-                Tables\Actions\Action::make('enable_auto_reading')
-                    ->label('Habilitar Lectura Auto')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('info')
-                    ->visible(fn (EnergyMeter $record) => !$record->auto_reading_enabled)
-                    ->action(function (EnergyMeter $record) {
-                        $record->update(['auto_reading_enabled' => true]);
-                    }),
-                Tables\Actions\Action::make('mark_certified')
-                    ->label('Marcar como Certificado')
-                    ->icon('heroicon-o-check-badge')
+                Tables\Actions\Action::make('enable_remote_reading')
+                    ->label('Habilitar Lectura Remota')
+                    ->icon('heroicon-o-signal')
                     ->color('success')
-                    ->visible(fn (EnergyMeter $record) => !$record->is_certified)
+                    ->visible(fn (EnergyMeter $record) => !$record->has_remote_reading)
                     ->action(function (EnergyMeter $record) {
-                        $record->update(['is_certified' => true]);
+                        $record->update(['has_remote_reading' => true]);
+                    }),
+                Tables\Actions\Action::make('enable_two_way_communication')
+                    ->label('Habilitar Comunicación Bidireccional')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('success')
+                    ->visible(fn (EnergyMeter $record) => !$record->has_two_way_communication)
+                    ->action(function (EnergyMeter $record) {
+                        $record->update(['has_two_way_communication' => true]);
                     }),
                 Tables\Actions\Action::make('duplicate')
                     ->label('Duplicar')
@@ -816,10 +700,14 @@ class EnergyMeterResource extends Resource
                     ->color('secondary')
                     ->action(function (EnergyMeter $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->name = $newRecord->name . ' (Copia)';
-                        $newRecord->serial_number = $newRecord->serial_number . '_copy';
-                        $newRecord->is_active = false;
-                        $newRecord->last_reading_value = 0;
+                        $newRecord->meter_number = 'COPY-' . $record->meter_number;
+                        $newRecord->name = $record->name . ' (Copia)';
+                        $newRecord->status = 'inactive';
+                        $newRecord->serial_number = $record->serial_number . '_COPY';
+                        $newRecord->installation_date = now();
+                        $newRecord->commissioning_date = null;
+                        $newRecord->last_calibration_date = null;
+                        $newRecord->next_calibration_date = null;
                         $newRecord->save();
                     }),
             ])
@@ -828,34 +716,36 @@ class EnergyMeterResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\BulkAction::make('activate_all')
                         ->label('Activar Todos')
-                        ->icon('heroicon-o-play')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => true]);
+                                $record->update(['status' => 'active']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('deactivate_all')
                         ->label('Desactivar Todos')
-                        ->icon('heroicon-o-pause')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => false]);
+                                $record->update(['status' => 'inactive']);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('enable_auto_reading_all')
-                        ->label('Habilitar Lectura Auto')
+                    Tables\Actions\BulkAction::make('enable_remote_reading_all')
+                        ->label('Habilitar Lectura Remota')
+                        ->icon('heroicon-o-signal')
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['has_remote_reading' => true]);
+                            });
+                        }),
+                    Tables\Actions\BulkAction::make('enable_two_way_communication_all')
+                        ->label('Habilitar Comunicación Bidireccional')
                         ->icon('heroicon-o-arrow-path')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['auto_reading_enabled' => true]);
-                            });
-                        }),
-                    Tables\Actions\BulkAction::make('mark_certified_all')
-                        ->label('Marcar como Certificados')
-                        ->icon('heroicon-o-check-badge')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
-                                $record->update(['is_certified' => true]);
+                                $record->update(['has_two_way_communication' => true]);
                             });
                         }),
                     Tables\Actions\BulkAction::make('update_status')
@@ -911,7 +801,7 @@ class EnergyMeterResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -921,7 +811,7 @@ class EnergyMeterResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $inactiveCount = static::getModel()::where('is_active', false)->count();
+        $inactiveCount = static::getModel()::where('status', 'inactive')->count();
         
         if ($inactiveCount > 0) {
             return 'warning';
