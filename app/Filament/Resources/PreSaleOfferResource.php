@@ -15,12 +15,12 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
@@ -30,7 +30,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
-
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PreSaleOfferResource extends Resource
 {
@@ -56,16 +56,16 @@ class PreSaleOfferResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                TextInput::make('offer_number')
+                                    ->label('Número de Oferta')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Número único de identificación'),
                                 TextInput::make('title')
                                     ->label('Título')
                                     ->required()
                                     ->maxLength(255)
                                     ->helperText('Título atractivo de la oferta'),
-                                TextInput::make('slug')
-                                    ->label('Slug')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->helperText('URL amigable para la oferta'),
                             ]),
                         Textarea::make('description')
                             ->label('Descripción')
@@ -73,68 +73,53 @@ class PreSaleOfferResource extends Resource
                             ->maxLength(65535)
                             ->required()
                             ->helperText('Descripción detallada de la oferta'),
-                        Grid::make(3)
+                        Grid::make(2)
                             ->schema([
+                                Select::make('offer_type')
+                                    ->label('Tipo de Oferta')
+                                    ->options(PreSaleOffer::getOfferTypes())
+                                    ->required()
+                                    ->searchable(),
                                 Select::make('status')
                                     ->label('Estado')
                                     ->options(PreSaleOffer::getStatuses())
                                     ->required()
                                     ->searchable(),
-                                Select::make('visibility')
-                                    ->label('Visibilidad')
-                                    ->options(PreSaleOffer::getVisibilities())
-                                    ->required()
-                                    ->searchable(),
-                                Select::make('priority')
-                                    ->label('Prioridad')
-                                    ->options(PreSaleOffer::getPriorities())
-                                    ->required()
-                                    ->searchable(),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Relaciones y Asignaciones')
+                Section::make('Fechas y Programación')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('organization_id')
-                                    ->label('Organización')
-                                    ->relationship('organization', 'name')
+                                DatePicker::make('start_date')
+                                    ->label('Fecha de Inicio')
                                     ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Organización que ofrece la preventa'),
-                                Select::make('production_project_id')
-                                    ->label('Proyecto de Producción')
-                                    ->relationship('productionProject', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Proyecto asociado'),
+                                    ->helperText('Cuándo comienza la oferta'),
+                                DatePicker::make('end_date')
+                                    ->label('Fecha de Fin')
+                                    ->required()
+                                    ->helperText('Cuándo termina la oferta'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('created_by')
-                                    ->label('Creado por')
-                                    ->relationship('createdBy', 'name')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload(),
-                                Select::make('approved_by')
-                                    ->label('Aprobado por')
-                                    ->relationship('approvedBy', 'name')
-                                    ->searchable()
-                                    ->preload(),
+                                DatePicker::make('early_bird_end_date')
+                                    ->label('Fin Early Bird')
+                                    ->helperText('Cuándo termina el descuento early bird'),
+                                DatePicker::make('founder_end_date')
+                                    ->label('Fin Fundador')
+                                    ->helperText('Cuándo termina el descuento fundador'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Configuración de Unidades')
+                Section::make('Unidades y Disponibilidad')
                     ->schema([
                         Grid::make(3)
                             ->schema([
                                 TextInput::make('total_units_available')
-                                    ->label('Total de Unidades Disponibles')
+                                    ->label('Total de Unidades')
                                     ->numeric()
                                     ->minValue(1)
                                     ->step(1)
@@ -155,6 +140,15 @@ class PreSaleOfferResource extends Resource
                                     ->default(0)
                                     ->helperText('Unidades ya vendidas'),
                             ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('max_units_per_customer')
+                                    ->label('Máximo por Cliente')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->step(1)
+                                    ->helperText('Máximo de unidades por cliente'),
+                            ]),
                         Placeholder::make('units_remaining')
                             ->content(function ($get) {
                                 $total = $get('total_units_available') ?: 0;
@@ -168,83 +162,76 @@ class PreSaleOfferResource extends Resource
                     ])
                     ->collapsible(),
 
-                Section::make('Precios y Pagos')
+                Section::make('Precios y Descuentos')
                     ->schema([
-                        Grid::make(3)
+                        Grid::make(2)
                             ->schema([
-                                TextInput::make('price_per_unit')
-                                    ->label('Precio por Unidad')
+                                TextInput::make('early_bird_price')
+                                    ->label('Precio Early Bird')
                                     ->numeric()
                                     ->prefix('$')
                                     ->minValue(0)
                                     ->step(0.01)
-                                    ->helperText('Precio por unidad'),
-                                TextInput::make('reservation_amount')
-                                    ->label('Monto de Reserva')
+                                    ->required()
+                                    ->helperText('Precio durante el período early bird'),
+                                TextInput::make('founder_price')
+                                    ->label('Precio Fundador')
                                     ->numeric()
                                     ->prefix('$')
                                     ->minValue(0)
                                     ->step(0.01)
-                                    ->helperText('Monto para reservar'),
-                                TextInput::make('early_bird_discount')
-                                    ->label('Descuento Early Bird (%)')
+                                    ->helperText('Precio durante el período fundador'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('regular_price')
+                                    ->label('Precio Regular')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->required()
+                                    ->helperText('Precio regular de la oferta'),
+                                TextInput::make('final_price')
+                                    ->label('Precio Final')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->helperText('Precio final después de descuentos'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('savings_percentage')
+                                    ->label('Porcentaje de Ahorro')
                                     ->numeric()
                                     ->minValue(0)
                                     ->maxValue(100)
                                     ->step(0.01)
                                     ->suffix('%')
-                                    ->helperText('Descuento por compra anticipada'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('minimum_order_quantity')
-                                    ->label('Cantidad Mínima de Orden')
+                                    ->helperText('Porcentaje de descuento'),
+                                TextInput::make('savings_amount')
+                                    ->label('Monto de Ahorro')
                                     ->numeric()
-                                    ->minValue(1)
-                                    ->step(1)
-                                    ->default(1)
-                                    ->helperText('Cantidad mínima por orden'),
-                                TextInput::make('maximum_order_quantity')
-                                    ->label('Cantidad Máxima de Orden')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->step(1)
-                                    ->helperText('Cantidad máxima por orden'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('allows_partial_payment')
-                                    ->label('Permite Pago Parcial')
-                                    ->helperText('¿Se puede pagar en cuotas?'),
-                                Toggle::make('requires_full_payment')
-                                    ->label('Requiere Pago Completo')
-                                    ->default(true)
-                                    ->helperText('¿Se requiere pago completo?'),
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->helperText('Monto de descuento en dólares'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Fechas y Programación')
+                Section::make('Configuración del Sistema')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                DateTimePicker::make('starts_at')
-                                    ->label('Inicia el')
-                                    ->required()
-                                    ->helperText('Cuándo comienza la oferta'),
-                                DateTimePicker::make('ends_at')
-                                    ->label('Termina el')
-                                    ->required()
-                                    ->helperText('Cuándo termina la oferta'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                DateTimePicker::make('early_bird_ends')
-                                    ->label('Early Bird Termina el')
-                                    ->helperText('Cuándo termina el descuento early bird'),
-                                DateTimePicker::make('delivery_expected')
-                                    ->label('Entrega Esperada')
-                                    ->helperText('Cuándo se espera la entrega'),
+                                Toggle::make('is_featured')
+                                    ->label('Destacada')
+                                    ->helperText('¿Mostrar como destacada?'),
+                                Toggle::make('is_public')
+                                    ->label('Pública')
+                                    ->default(true)
+                                    ->helperText('¿La oferta es pública?'),
                             ]),
                     ])
                     ->collapsible(),
@@ -261,31 +248,8 @@ class PreSaleOfferResource extends Resource
                                 'orderedList',
                             ])
                             ->helperText('Términos legales de la oferta'),
-                        RichEditor::make('refund_policy')
-                            ->label('Política de Reembolso')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ]),
-                        RichEditor::make('delivery_terms')
-                            ->label('Términos de Entrega')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Marketing y Promoción')
-                    ->schema([
-                        RichEditor::make('marketing_copy')
-                            ->label('Texto de Marketing')
+                        RichEditor::make('delivery_timeline')
+                            ->label('Cronograma de Entrega')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -293,68 +257,114 @@ class PreSaleOfferResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
-                            ->helperText('Texto promocional para marketing'),
-                        RichEditor::make('features_benefits')
-                            ->label('Características y Beneficios')
+                            ->helperText('Cuándo se entregará el producto'),
+                        RichEditor::make('risk_disclosure')
+                            ->label('Divulgación de Riesgos')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
                                 'underline',
                                 'bulletList',
                                 'orderedList',
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('social_media_hashtags')
-                                    ->label('Hashtags de Redes Sociales')
-                                    ->maxLength(255)
-                                    ->helperText('Hashtags para promoción'),
-                                TextInput::make('marketing_budget')
-                                    ->label('Presupuesto de Marketing')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01),
-                            ]),
+                            ])
+                            ->helperText('Riesgos asociados con la inversión'),
                     ])
                     ->collapsible(),
 
-                Section::make('Configuración del Sistema')
+                Section::make('Características y Beneficios')
+                    ->schema([
+                        RichEditor::make('included_features')
+                            ->label('Características Incluidas')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Características incluidas en la oferta'),
+                        RichEditor::make('excluded_features')
+                            ->label('Características Excluidas')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Características NO incluidas'),
+                        RichEditor::make('bonus_items')
+                            ->label('Elementos Bonus')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Elementos adicionales incluidos'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Beneficios Especiales')
+                    ->schema([
+                        RichEditor::make('early_access_benefits')
+                            ->label('Beneficios de Acceso Anticipado')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Beneficios para compradores early bird'),
+                        RichEditor::make('founder_benefits')
+                            ->label('Beneficios de Fundador')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Beneficios para compradores fundadores'),
+                        RichEditor::make('marketing_materials')
+                            ->label('Materiales de Marketing')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Materiales promocionales disponibles'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Gestión y Aprobación')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Toggle::make('is_active')
-                                    ->label('Activa')
-                                    ->default(true)
-                                    ->helperText('¿La oferta está activa?'),
-                                Toggle::make('is_featured')
-                                    ->label('Destacada')
-                                    ->helperText('¿Mostrar como destacada?'),
+                                TextInput::make('created_by')
+                                    ->label('Creado por')
+                                    ->numeric()
+                                    ->required()
+                                    ->helperText('ID del usuario que creó'),
+                                TextInput::make('approved_by')
+                                    ->label('Aprobado por')
+                                    ->numeric()
+                                    ->helperText('ID del usuario que aprobó'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Toggle::make('requires_approval')
-                                    ->label('Requiere Aprobación')
-                                    ->helperText('¿Se necesita aprobación?'),
-                                Toggle::make('auto_activate')
-                                    ->label('Activación Automática')
-                                    ->helperText('¿Se activa automáticamente?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('send_notifications')
-                                    ->label('Enviar Notificaciones')
-                                    ->default(true)
-                                    ->helperText('¿Enviar notificaciones?'),
-                                Toggle::make('track_analytics')
-                                    ->label('Seguir Analíticas')
-                                    ->default(true)
-                                    ->helperText('¿Seguir métricas de rendimiento?'),
+                                DateTimePicker::make('approved_at')
+                                    ->label('Fecha de Aprobación')
+                                    ->helperText('Cuándo fue aprobado'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Metadatos y Etiquetas')
+                Section::make('Metadatos')
                     ->schema([
                         TagsInput::make('tags')
                             ->label('Etiquetas')
@@ -370,26 +380,6 @@ class PreSaleOfferResource extends Resource
                             ]),
                     ])
                     ->collapsible(),
-
-                Section::make('Documentos y Archivos')
-                    ->schema([
-                        FileUpload::make('images')
-                            ->label('Imágenes')
-                            ->multiple()
-                            ->image()
-                            ->directory('pre-sale-offers')
-                            ->maxFiles(10)
-                            ->maxSize(5120)
-                            ->helperText('Máximo 10 imágenes de 5MB cada una'),
-                        FileUpload::make('documents')
-                            ->label('Documentos')
-                            ->multiple()
-                            ->directory('pre-sale-offers/documents')
-                            ->maxFiles(20)
-                            ->maxSize(10240)
-                            ->helperText('Máximo 20 documentos de 10MB cada uno'),
-                    ])
-                    ->collapsible(),
             ]);
     }
 
@@ -397,47 +387,38 @@ class PreSaleOfferResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('offer_number')
+                    ->label('Número')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(15),
                 TextColumn::make('title')
                     ->label('Título')
                     ->searchable()
                     ->sortable()
                     ->limit(30),
-                TextColumn::make('organization.name')
-                    ->label('Organización')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(20),
+                BadgeColumn::make('offer_type')
+                    ->label('Tipo')
+                    ->colors([
+                        'warning' => 'early_bird',
+                        'purple' => 'founder',
+                        'danger' => 'limited_time',
+                        'indigo' => 'exclusive',
+                        'primary' => 'beta',
+                        'success' => 'pilot',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => PreSaleOffer::getOfferTypes()[$state] ?? $state),
                 BadgeColumn::make('status')
                     ->label('Estado')
                     ->colors([
+                        'gray' => 'draft',
                         'success' => 'active',
-                        'warning' => 'pending',
+                        'warning' => 'paused',
+                        'danger' => 'expired',
                         'danger' => 'cancelled',
-                        'info' => 'draft',
-                        'secondary' => 'expired',
-                        'gray' => 'suspended',
+                        'primary' => 'completed',
                     ])
                     ->formatStateUsing(fn (string $state): string => PreSaleOffer::getStatuses()[$state] ?? $state),
-                BadgeColumn::make('visibility')
-                    ->label('Visibilidad')
-                    ->colors([
-                        'primary' => 'public',
-                        'success' => 'members_only',
-                        'warning' => 'invite_only',
-                        'danger' => 'private',
-                        'info' => 'restricted',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => PreSaleOffer::getVisibilities()[$state] ?? $state),
-                BadgeColumn::make('priority')
-                    ->label('Prioridad')
-                    ->colors([
-                        'success' => 'low',
-                        'warning' => 'medium',
-                        'danger' => 'high',
-                        'secondary' => 'urgent',
-                        'gray' => 'critical',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => PreSaleOffer::getPriorities()[$state] ?? $state),
                 TextColumn::make('total_units_available')
                     ->label('Total Unidades')
                     ->numeric()
@@ -462,18 +443,23 @@ class PreSaleOfferResource extends Resource
                         Tables\Columns\Summarizers\Sum::make()
                             ->label('Total'),
                     ]),
-                TextColumn::make('price_per_unit')
-                    ->label('Precio/Unidad')
+                TextColumn::make('regular_price')
+                    ->label('Precio Regular')
                     ->money('USD')
                     ->sortable(),
-                TextColumn::make('reservation_amount')
-                    ->label('Monto Reserva')
+                TextColumn::make('early_bird_price')
+                    ->label('Precio Early Bird')
                     ->money('USD')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('starts_at')
+                TextColumn::make('founder_price')
+                    ->label('Precio Fundador')
+                    ->money('USD')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('start_date')
                     ->label('Inicia')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
@@ -482,9 +468,9 @@ class PreSaleOfferResource extends Resource
                         str_contains($state, '2026') => 'danger',
                         default => 'gray',
                     }),
-                TextColumn::make('ends_at')
+                TextColumn::make('end_date')
                     ->label('Termina')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
@@ -493,10 +479,10 @@ class PreSaleOfferResource extends Resource
                         str_contains($state, '2026') => 'danger',
                         default => 'gray',
                     }),
-                ToggleColumn::make('is_active')
-                    ->label('Activa'),
                 ToggleColumn::make('is_featured')
                     ->label('Destacada'),
+                ToggleColumn::make('is_public')
+                    ->label('Pública'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -504,30 +490,35 @@ class PreSaleOfferResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('offer_type')
+                    ->label('Tipo de Oferta')
+                    ->options(PreSaleOffer::getOfferTypes())
+                    ->multiple(),
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options(PreSaleOffer::getStatuses())
                     ->multiple(),
-                SelectFilter::make('visibility')
-                    ->label('Visibilidad')
-                    ->options(PreSaleOffer::getVisibilities())
-                    ->multiple(),
-                SelectFilter::make('priority')
-                    ->label('Prioridad')
-                    ->options(PreSaleOffer::getPriorities())
-                    ->multiple(),
                 Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'active'))
                     ->label('Solo Activas'),
                 Filter::make('featured')
                     ->query(fn (Builder $query): Builder => $query->where('is_featured', true))
                     ->label('Solo Destacadas'),
+                Filter::make('public')
+                    ->query(fn (Builder $query): Builder => $query->where('is_public', true))
+                    ->label('Solo Públicas'),
                 Filter::make('expired')
-                    ->query(fn (Builder $query): Builder => $query->where('ends_at', '<', now()))
+                    ->query(fn (Builder $query): Builder => $query->where('end_date', '<', now()))
                     ->label('Expiradas'),
                 Filter::make('expiring_soon')
-                    ->query(fn (Builder $query): Builder => $query->where('ends_at', '<=', now()->addDays(7)))
+                    ->query(fn (Builder $query): Builder => $query->where('end_date', '<=', now()->addDays(7)))
                     ->label('Expiran Pronto'),
+                Filter::make('early_bird_active')
+                    ->query(fn (Builder $query): Builder => $query->where('early_bird_end_date', '>=', now()))
+                    ->label('Early Bird Activo'),
+                Filter::make('founder_active')
+                    ->query(fn (Builder $query): Builder => $query->where('founder_end_date', '>=', now()))
+                    ->label('Fundador Activo'),
                 Filter::make('high_demand')
                     ->query(fn (Builder $query): Builder => $query->where('units_reserved', '>=', 50))
                     ->label('Alta Demanda (≥50)'),
@@ -536,20 +527,20 @@ class PreSaleOfferResource extends Resource
                     ->label('Baja Demanda (<10)'),
                 Filter::make('date_range')
                     ->form([
-                        DateTimePicker::make('starts_from')
+                        DatePicker::make('start_from')
                             ->label('Inicia desde'),
-                        DateTimePicker::make('starts_until')
+                        DatePicker::make('start_until')
                             ->label('Inicia hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['starts_from'],
-                                fn (Builder $query, $date): Builder => $query->where('starts_at', '>=', $date),
+                                $data['start_from'],
+                                fn (Builder $query, $date): Builder => $query->where('start_date', '>=', $date),
                             )
                             ->when(
-                                $data['starts_until'],
-                                fn (Builder $query, $date): Builder => $query->where('starts_at', '<=', $date),
+                                $data['start_until'],
+                                fn (Builder $query, $date): Builder => $query->where('start_date', '<=', $date),
                             );
                     })
                     ->label('Rango de Fechas de Inicio'),
@@ -568,11 +559,11 @@ class PreSaleOfferResource extends Resource
                         return $query
                             ->when(
                                 $data['min_price'],
-                                fn (Builder $query, $price): Builder => $query->where('price_per_unit', '>=', $price),
+                                fn (Builder $query, $price): Builder => $query->where('regular_price', '>=', $price),
                             )
                             ->when(
                                 $data['max_price'],
-                                fn (Builder $query, $price): Builder => $query->where('price_per_unit', '<=', $price),
+                                fn (Builder $query, $price): Builder => $query->where('regular_price', '<=', $price),
                             );
                     })
                     ->label('Rango de Precios'),
@@ -592,13 +583,13 @@ class PreSaleOfferResource extends Resource
                     ->action(function (PreSaleOffer $record) {
                         $record->update(['status' => 'active']);
                     }),
-                Tables\Actions\Action::make('deactivate')
-                    ->label('Desactivar')
+                Tables\Actions\Action::make('pause')
+                    ->label('Pausar')
                     ->icon('heroicon-o-pause')
                     ->color('warning')
                     ->visible(fn (PreSaleOffer $record) => $record->status === 'active')
                     ->action(function (PreSaleOffer $record) {
-                        $record->update(['status' => 'suspended']);
+                        $record->update(['status' => 'paused']);
                     }),
                 Tables\Actions\Action::make('mark_featured')
                     ->label('Destacar')
@@ -614,10 +605,9 @@ class PreSaleOfferResource extends Resource
                     ->color('secondary')
                     ->action(function (PreSaleOffer $record) {
                         $newRecord = $record->replicate();
+                        $newRecord->offer_number = $newRecord->offer_number . '-COPY';
                         $newRecord->title = $newRecord->title . ' (Copia)';
-                        $newRecord->slug = $newRecord->slug . '-copy';
                         $newRecord->status = 'draft';
-                        $newRecord->is_active = false;
                         $newRecord->units_reserved = 0;
                         $newRecord->units_sold = 0;
                         $newRecord->save();
@@ -634,12 +624,12 @@ class PreSaleOfferResource extends Resource
                                 $record->update(['status' => 'active']);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('deactivate_all')
-                        ->label('Desactivar Todas')
+                    Tables\Actions\BulkAction::make('pause_all')
+                        ->label('Pausar Todas')
                         ->icon('heroicon-o-pause')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['status' => 'suspended']);
+                                $record->update(['status' => 'paused']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('mark_featured_all')
@@ -664,18 +654,18 @@ class PreSaleOfferResource extends Resource
                                 $record->update(['status' => $data['status']]);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('update_visibility')
-                        ->label('Actualizar Visibilidad')
-                        ->icon('heroicon-o-eye')
+                    Tables\Actions\BulkAction::make('update_offer_type')
+                        ->label('Actualizar Tipo')
+                        ->icon('heroicon-o-tag')
                         ->form([
-                            Select::make('visibility')
-                                ->label('Visibilidad')
-                                ->options(PreSaleOffer::getVisibilities())
+                            Select::make('offer_type')
+                                ->label('Tipo de Oferta')
+                                ->options(PreSaleOffer::getOfferTypes())
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
-                                $record->update(['visibility' => $data['visibility']]);
+                                $record->update(['offer_type' => $data['offer_type']]);
                             });
                         }),
                 ]),
@@ -703,7 +693,7 @@ class PreSaleOfferResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -713,13 +703,13 @@ class PreSaleOfferResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $expiredCount = static::getModel()::where('ends_at', '<', now())->count();
+        $expiredCount = static::getModel()::where('end_date', '<', now())->count();
         
         if ($expiredCount > 0) {
             return 'danger';
         }
         
-        $expiringSoonCount = static::getModel()::where('ends_at', '<=', now()->addDays(7))->count();
+        $expiringSoonCount = static::getModel()::where('end_date', '<=', now()->addDays(7))->count();
         
         if ($expiringSoonCount > 0) {
             return 'warning';
@@ -728,3 +718,4 @@ class PreSaleOfferResource extends Resource
         return 'success';
     }
 }
+
