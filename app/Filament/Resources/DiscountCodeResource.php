@@ -79,19 +79,25 @@ class DiscountCodeResource extends Resource
                             ->schema([
                                 Select::make('discount_type')
                                     ->label('Tipo de Descuento')
-                                    ->options(DiscountCode::getDiscountTypes())
+                                    ->options([
+                                        'percentage' => 'Porcentaje',
+                                        'fixed_amount' => 'Monto Fijo',
+                                        'free_shipping' => 'Envío Gratis',
+                                        'buy_one_get_one' => 'Compra 1 Lleva 1',
+                                    ])
                                     ->required()
-                                    ->searchable(),
+                                    ->reactive(),
                                 Select::make('status')
                                     ->label('Estado')
-                                    ->options(DiscountCode::getStatuses())
+                                    ->options([
+                                        'draft' => 'Borrador',
+                                        'active' => 'Activo',
+                                        'inactive' => 'Inactivo',
+                                        'expired' => 'Expirado',
+                                        'suspended' => 'Suspendido',
+                                    ])
                                     ->required()
-                                    ->searchable(),
-                                Select::make('priority')
-                                    ->label('Prioridad')
-                                    ->options(DiscountCode::getPriorities())
-                                    ->required()
-                                    ->searchable(),
+                                    ->default('draft'),
                             ]),
                     ])
                     ->collapsible(),
@@ -156,14 +162,16 @@ class DiscountCodeResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                DateTimePicker::make('valid_from')
-                                    ->label('Válido Desde')
+                                DateTimePicker::make('start_date')
+                                    ->label('Fecha de Inicio de Validez')
                                     ->required()
-                                    ->helperText('Cuándo comienza a ser válido'),
-                                DateTimePicker::make('valid_to')
-                                    ->label('Válido Hasta')
+                                    ->default(now())
+                                    ->displayFormat('d/m/Y H:i'),
+                                DateTimePicker::make('end_date')
+                                    ->label('Fecha de Fin de Validez')
                                     ->required()
-                                    ->helperText('Cuándo expira'),
+                                    ->after('start_date')
+                                    ->displayFormat('d/m/Y H:i'),
                             ]),
                         Grid::make(3)
                             ->schema([
@@ -174,12 +182,12 @@ class DiscountCodeResource extends Resource
                                     ->step(1)
                                     ->helperText('Número máximo de usos'),
                                 TextInput::make('usage_count')
-                                    ->label('Usos Actuales')
+                                    ->label('Veces Usado')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->step(1)
                                     ->default(0)
-                                    ->helperText('Veces que se ha usado'),
+                                    ->disabled()
+                                    ->helperText('Número de veces que se ha usado este código'),
                                 TextInput::make('per_user_limit')
                                     ->label('Límite por Usuario')
                                     ->numeric()
@@ -415,47 +423,45 @@ class DiscountCodeResource extends Resource
                     ->label('Estado')
                     ->colors([
                         'success' => 'active',
-                        'warning' => 'pending',
-                        'danger' => 'expired',
-                        'info' => 'scheduled',
-                        'secondary' => 'disabled',
+                        'warning' => 'draft',
+                        'danger' => 'inactive',
+                        'secondary' => 'expired',
+                        'gray' => 'suspended',
                     ])
-                    ->formatStateUsing(fn (string $state): string => DiscountCode::getStatuses()[$state] ?? $state),
-                BadgeColumn::make('priority')
-                    ->label('Prioridad')
-                    ->colors([
-                        'success' => 'low',
-                        'warning' => 'medium',
-                        'danger' => 'high',
-                        'secondary' => 'urgent',
-                        'gray' => 'critical',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => DiscountCode::getPriorities()[$state] ?? $state),
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'draft' => 'Borrador',
+                        'active' => 'Activo',
+                        'inactive' => 'Inactivo',
+                        'expired' => 'Expirado',
+                        'suspended' => 'Suspendido',
+                        default => $state,
+                    }),
                 TextColumn::make('discount_value')
-                    ->label('Valor')
-                    ->numeric()
-                    ->sortable()
+                    ->label('Valor del Descuento')
                     ->formatStateUsing(function ($state, $record) {
                         if ($record->discount_type === 'percentage') {
                             return $state . '%';
+                        } elseif ($record->discount_type === 'fixed_amount') {
+                            return '$' . $state;
+                        } else {
+                            return $state;
                         }
-                        return '$' . number_format($state, 2);
-                    }),
+                    })
+                    ->sortable(),
                 TextColumn::make('minimum_order_amount')
                     ->label('Mínimo')
                     ->money('USD')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('usage_count')
-                    ->label('Usos')
+                    ->label('Veces Usado')
                     ->numeric()
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
                         $state >= 100 => 'success',
                         $state >= 50 => 'primary',
-                        $state >= 25 => 'warning',
-                        $state >= 10 => 'info',
+                        $state >= 10 => 'warning',
                         default => 'gray',
                     }),
                 TextColumn::make('usage_limit')
@@ -463,7 +469,7 @@ class DiscountCodeResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('valid_from')
+                TextColumn::make('start_date')
                     ->label('Válido Desde')
                     ->dateTime()
                     ->sortable()
@@ -474,27 +480,16 @@ class DiscountCodeResource extends Resource
                         str_contains($state, '2026') => 'danger',
                         default => 'gray',
                     }),
-                TextColumn::make('valid_to')
+                TextColumn::make('end_date')
                     ->label('Válido Hasta')
-                    ->dateTime()
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
-                        str_contains($state, '2024') => 'success',
-                        str_contains($state, '2025') => 'warning',
-                        str_contains($state, '2026') => 'danger',
-                        default => 'gray',
+                        $state < now() => 'danger',
+                        $state <= now()->addDays(7) => 'warning',
+                        default => 'success',
                     }),
-                TextColumn::make('total_revenue_generated')
-                    ->label('Ingresos Generados')
-                    ->money('USD')
-                    ->sortable()
-                    ->summarize([
-                        Tables\Columns\Summarizers\Sum::make()
-                            ->label('Total')
-                            ->money('USD'),
-                    ])
-                    ->toggleable(isToggledHiddenByDefault: true),
                 ToggleColumn::make('is_active')
                     ->label('Activo'),
                 ToggleColumn::make('is_featured')
@@ -510,18 +505,19 @@ class DiscountCodeResource extends Resource
             ->filters([
                 SelectFilter::make('discount_type')
                     ->label('Tipo de Descuento')
-                    ->options(DiscountCode::getDiscountTypes())
+                    ->options([
+                        'percentage' => 'Porcentaje',
+                        'fixed_amount' => 'Monto Fijo',
+                        'free_shipping' => 'Envío Gratis',
+                        'buy_one_get_one' => 'Compra 1 Lleva 1',
+                    ])
                     ->multiple(),
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options(DiscountCode::getStatuses())
                     ->multiple(),
-                SelectFilter::make('priority')
-                    ->label('Prioridad')
-                    ->options(DiscountCode::getPriorities())
-                    ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
+                Filter::make('active_codes')
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'active'))
                     ->label('Solo Activos'),
                 Filter::make('featured')
                     ->query(fn (Builder $query): Builder => $query->where('is_featured', true))
@@ -530,10 +526,10 @@ class DiscountCodeResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('is_public', true))
                     ->label('Solo Públicos'),
                 Filter::make('expired')
-                    ->query(fn (Builder $query): Builder => $query->where('valid_to', '<', now()))
+                    ->query(fn (Builder $query): Builder => $query->where('end_date', '<', now()))
                     ->label('Expirados'),
                 Filter::make('expiring_soon')
-                    ->query(fn (Builder $query): Builder => $query->where('valid_to', '<=', now()->addDays(7)))
+                    ->query(fn (Builder $query): Builder => $query->where('end_date', '<=', now()->addDays(7)))
                     ->label('Expiran Pronto'),
                 Filter::make('high_usage')
                     ->query(fn (Builder $query): Builder => $query->where('usage_count', '>=', 50))
@@ -543,20 +539,20 @@ class DiscountCodeResource extends Resource
                     ->label('Bajo Uso (<10)'),
                 Filter::make('date_range')
                     ->form([
-                        DateTimePicker::make('valid_from')
+                        DateTimePicker::make('start_date')
                             ->label('Válido desde'),
-                        DateTimePicker::make('valid_until')
+                        DateTimePicker::make('end_date')
                             ->label('Válido hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['valid_from'],
-                                fn (Builder $query, $date): Builder => $query->where('valid_from', '>=', $date),
+                                $data['start_date'],
+                                fn (Builder $query, $date): Builder => $query->where('start_date', '>=', $date),
                             )
                             ->when(
-                                $data['valid_until'],
-                                fn (Builder $query, $date): Builder => $query->where('valid_to', '<=', $date),
+                                $data['end_date'],
+                                fn (Builder $query, $date): Builder => $query->where('end_date', '<=', $date),
                             );
                     })
                     ->label('Rango de Fechas'),
@@ -613,12 +609,12 @@ class DiscountCodeResource extends Resource
                     ->color('secondary')
                     ->action(function (DiscountCode $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->code = $newRecord->code . '_copy';
-                        $newRecord->status = 'pending';
+                        $newRecord->code = 'COPY-' . $record->code;
+                        $newRecord->name = $record->name . ' (Copia)';
+                        $newRecord->status = 'draft';
+                        $newRecord->start_date = now();
+                        $newRecord->end_date = now()->addMonths(3);
                         $newRecord->usage_count = 0;
-                        $newRecord->total_revenue_generated = 0;
-                        $newRecord->total_orders = 0;
-                        $newRecord->average_order_value = 0;
                         $newRecord->save();
                     }),
                 Tables\Actions\Action::make('mark_featured')
@@ -663,26 +659,18 @@ class DiscountCodeResource extends Resource
                         ->form([
                             Select::make('status')
                                 ->label('Estado')
-                                ->options(DiscountCode::getStatuses())
+                                ->options([
+                                    'draft' => 'Borrador',
+                                    'active' => 'Activo',
+                                    'inactive' => 'Inactivo',
+                                    'expired' => 'Expirado',
+                                    'suspended' => 'Suspendido',
+                                ])
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
                                 $record->update(['status' => $data['status']]);
-                            });
-                        }),
-                    Tables\Actions\BulkAction::make('update_priority')
-                        ->label('Actualizar Prioridad')
-                        ->icon('heroicon-o-flag')
-                        ->form([
-                            Select::make('priority')
-                                ->label('Prioridad')
-                                ->options(DiscountCode::getPriorities())
-                                ->required(),
-                        ])
-                        ->action(function ($records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                $record->update(['priority' => $data['priority']]);
                             });
                         }),
                 ]),
