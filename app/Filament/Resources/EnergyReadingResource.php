@@ -965,15 +965,15 @@ class EnergyReadingResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $unvalidatedCount = static::getModel()::where('is_validated', false)->count();
+        $unvalidatedCount = static::getModel()::whereNull('validated_at')->count();
         
         if ($unvalidatedCount > 0) {
             return 'warning';
         }
         
-        $estimatedCount = static::getModel()::where('is_estimated', true)->count();
+        $lowQualityCount = static::getModel()::where('quality_score', '<', 70)->count();
         
-        if ($estimatedCount > 0) {
+        if ($lowQualityCount > 0) {
             return 'info';
         }
         
