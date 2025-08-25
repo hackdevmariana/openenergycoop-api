@@ -86,8 +86,7 @@ class ConsumptionPointResource extends Resource
                                 Select::make('status')
                                     ->label('Estado')
                                     ->options(ConsumptionPoint::getStatuses())
-                                    ->required()
-                                    ->searchable(),
+                                    ->required(),
                             ]),
                     ])
                     ->collapsible(),
@@ -190,46 +189,41 @@ class ConsumptionPointResource extends Resource
                             ->schema([
                                 TextInput::make('connection_type')
                                     ->label('Tipo de Conexión')
-                                    ->options(ConsumptionPoint::getConnectionTypes())
-                                    ->required()
-                                    ->searchable(),
-                                TextInput::make('service_type')
-                                    ->label('Tipo de Servicio')
-                                    ->options(ConsumptionPoint::getServiceTypes())
-                                    ->required()
-                                    ->searchable(),
+                                    ->options([
+                                        'direct' => 'Directa',
+                                        'remote' => 'Remota',
+                                        'wireless' => 'Inalámbrica',
+                                        'fiber' => 'Fibra Óptica',
+                                    ])
+                                    ->required(),
                                 TextInput::make('voltage_level')
-                                    ->label('Nivel de Voltaje (V)')
+                                    ->label('Nivel de Voltaje')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->step(1)
-                                    ->suffix(' V')
-                                    ->helperText('Nivel de voltaje del servicio'),
+                                    ->required(),
                             ]),
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('contracted_power_kw')
-                                    ->label('Potencia Contratada (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->required()
-                                    ->suffix(' kW')
-                                    ->helperText('Potencia contratada'),
-                                TextInput::make('max_power_kw')
-                                    ->label('Potencia Máxima (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix(' kW')
-                                    ->helperText('Potencia máxima disponible'),
                                 TextInput::make('peak_demand_kw')
-                                    ->label('Demanda Pico (kW)')
+                                    ->label('Demanda Máxima (kW)')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->step(0.01)
+                                    ->step(0.1)
                                     ->suffix(' kW')
-                                    ->helperText('Demanda máxima registrada'),
+                                    ->helperText('Demanda máxima de potencia'),
+                                TextInput::make('average_demand_kw')
+                                    ->label('Demanda Promedio (kW)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.1)
+                                    ->suffix(' kW')
+                                    ->helperText('Demanda promedio de potencia'),
+                                TextInput::make('annual_consumption_kwh')
+                                    ->label('Consumo Anual (kWh)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(1)
+                                    ->suffix(' kWh')
+                                    ->helperText('Consumo anual de energía'),
                             ]),
                     ])
                     ->collapsible(),
@@ -346,9 +340,6 @@ class ConsumptionPointResource extends Resource
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Toggle::make('has_smart_meter')
-                                    ->label('Medidor Inteligente')
-                                    ->helperText('¿Tiene medidor inteligente?'),
                                 Toggle::make('remote_reading_enabled')
                                     ->label('Lectura Remota Habilitada')
                                     ->helperText('¿Permite lectura remota?'),
@@ -392,32 +383,25 @@ class ConsumptionPointResource extends Resource
                                     ->minValue(0)
                                     ->step(1)
                                     ->suffix(' kWh')
-                                    ->helperText('Consumo anual en kilovatios-hora'),
-                                TextInput::make('monthly_average_kwh')
-                                    ->label('Promedio Mensual (kWh)')
+                                    ->helperText('Consumo anual de energía'),
+                                TextInput::make('monthly_consumption_kwh')
+                                    ->label('Consumo Mensual (kWh)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(1)
                                     ->suffix(' kWh')
-                                    ->helperText('Consumo promedio mensual'),
-                                TextInput::make('daily_average_kwh')
-                                    ->label('Promedio Diario (kWh)')
+                                    ->helperText('Consumo mensual de energía'),
+                                TextInput::make('daily_consumption_kwh')
+                                    ->label('Consumo Diario (kWh)')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->step(0.01)
+                                    ->step(1)
                                     ->suffix(' kWh')
-                                    ->helperText('Consumo promedio diario'),
+                                    ->helperText('Consumo diario de energía'),
                             ]),
-                        RichEditor::make('consumption_profile')
-                            ->label('Perfil de Consumo')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Descripción del perfil de consumo'),
+                        RichEditor::make('load_profile')
+                            ->label('Perfil de Carga')
+                            ->helperText('Descripción del perfil de carga del punto de consumo'),
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('energy_efficiency_rating')
@@ -484,15 +468,6 @@ class ConsumptionPointResource extends Resource
 
                 Section::make('Configuración Avanzada')
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('net_metering_enabled')
-                                    ->label('Medición Neta Habilitada')
-                                    ->helperText('¿Permite medición neta?'),
-                                Toggle::make('can_inject_energy')
-                                    ->label('Puede Inyectar Energía')
-                                    ->helperText('¿Puede devolver energía a la red?'),
-                            ]),
                         Grid::make(2)
                             ->schema([
                                 Toggle::make('is_active')
@@ -570,11 +545,9 @@ class ConsumptionPointResource extends Resource
                     ->label('Estado')
                     ->colors([
                         'success' => 'active',
-                        'warning' => 'maintenance',
+                        'warning' => 'inactive',
                         'danger' => 'disconnected',
-                        'info' => 'pending',
-                        'secondary' => 'suspended',
-                        'gray' => 'inactive',
+                        'secondary' => 'maintenance',
                     ])
                     ->formatStateUsing(fn (string $state): string => ConsumptionPoint::getStatuses()[$state] ?? $state),
                 BadgeColumn::make('supply_type')
@@ -594,19 +567,17 @@ class ConsumptionPointResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(20),
-                TextColumn::make('contracted_power_kw')
-                    ->label('Potencia (kW)')
+                TextColumn::make('peak_demand_kw')
+                    ->label('Demanda Máxima (kW)')
                     ->suffix(' kW')
                     ->numeric()
                     ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 100 => 'success',
-                        $state >= 50 => 'primary',
-                        $state >= 20 => 'warning',
-                        $state >= 5 => 'info',
-                        default => 'gray',
-                    }),
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('voltage_level')
+                    ->label('Voltaje')
+                    ->suffix(' V')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('annual_consumption_kwh')
                     ->label('Consumo Anual (kWh)')
                     ->suffix(' kWh')
@@ -618,8 +589,8 @@ class ConsumptionPointResource extends Resource
                             ->suffix(' kWh'),
                     ])
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('monthly_average_kwh')
-                    ->label('Promedio Mensual (kWh)')
+                TextColumn::make('monthly_consumption_kwh')
+                    ->label('Consumo Mensual (kWh)')
                     ->suffix(' kWh')
                     ->numeric()
                     ->sortable()
@@ -640,14 +611,15 @@ class ConsumptionPointResource extends Resource
                     ->money('USD')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('has_smart_meter')
-                    ->label('Medidor Inteligente'),
-                ToggleColumn::make('remote_reading_enabled')
-                    ->label('Lectura Remota'),
-                ToggleColumn::make('net_metering_enabled')
-                    ->label('Medición Neta'),
-                ToggleColumn::make('can_inject_energy')
-                    ->label('Puede Inyectar'),
+                TextColumn::make('connection_type')
+                    ->label('Tipo de Conexión')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'direct' => 'Directa',
+                        'remote' => 'Remota',
+                        'wireless' => 'Inalámbrica',
+                        'fiber' => 'Fibra Óptica',
+                        default => $state,
+                    }),
                 ToggleColumn::make('is_active')
                     ->label('Activo'),
                 TextColumn::make('connection_date')
@@ -678,34 +650,28 @@ class ConsumptionPointResource extends Resource
                     ->label('Tipo de Conexión')
                     ->options(ConsumptionPoint::getConnectionTypes())
                     ->multiple(),
-                SelectFilter::make('service_type')
-                    ->label('Tipo de Servicio')
-                    ->options(ConsumptionPoint::getServiceTypes())
+                SelectFilter::make('point_type')
+                    ->label('Tipo de Punto')
+                    ->options(ConsumptionPoint::getPointTypes())
                     ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
+                Filter::make('active_points')
+                    ->query(fn (Builder $query): Builder => $query->where('status', 'active'))
                     ->label('Solo Activos'),
                 Filter::make('smart_meter')
-                    ->query(fn (Builder $query): Builder => $query->where('has_smart_meter', true))
+                    ->query(fn (Builder $query): Builder => $query->where('meter_type', 'smart'))
                     ->label('Con Medidor Inteligente'),
                 Filter::make('remote_reading')
                     ->query(fn (Builder $query): Builder => $query->where('remote_reading_enabled', true))
                     ->label('Con Lectura Remota'),
-                Filter::make('net_metering')
-                    ->query(fn (Builder $query): Builder => $query->where('net_metering_enabled', true))
-                    ->label('Con Medición Neta'),
-                Filter::make('can_inject')
-                    ->query(fn (Builder $query): Builder => $query->where('can_inject_energy', true))
-                    ->label('Pueden Inyectar Energía'),
                 Filter::make('high_power')
-                    ->query(fn (Builder $query): Builder => $query->where('contracted_power_kw', '>=', 100))
+                    ->query(fn (Builder $query): Builder => $query->where('peak_demand_kw', '>=', 100))
                     ->label('Alta Potencia (≥100 kW)'),
                 Filter::make('low_power')
-                    ->query(fn (Builder $query): Builder => $query->where('contracted_power_kw', '<', 10))
+                    ->query(fn (Builder $query): Builder => $query->where('peak_demand_kw', '<', 10))
                     ->label('Baja Potencia (<10 kW)'),
                 Filter::make('high_consumption')
-                    ->query(fn (Builder $query): Builder => $query->where('annual_consumption_kwh', '>=', 50000))
-                    ->label('Alto Consumo (≥50,000 kWh)'),
+                    ->query(fn (Builder $query): Builder => $query->where('annual_consumption_kwh', '>=', 10000))
+                    ->label('Alto Consumo (≥10,000 kWh)'),
                 Filter::make('low_consumption')
                     ->query(fn (Builder $query): Builder => $query->where('annual_consumption_kwh', '<', 5000))
                     ->label('Bajo Consumo (<5,000 kWh)'),
@@ -743,11 +709,11 @@ class ConsumptionPointResource extends Resource
                         return $query
                             ->when(
                                 $data['min_power'],
-                                fn (Builder $query, $power): Builder => $query->where('contracted_power_kw', '>=', $power),
+                                fn (Builder $query, $power): Builder => $query->where('peak_demand_kw', '>=', $power),
                             )
                             ->when(
                                 $data['max_power'],
-                                fn (Builder $query, $power): Builder => $query->where('contracted_power_kw', '<=', $power),
+                                fn (Builder $query, $power): Builder => $query->where('peak_demand_kw', '<=', $power),
                             );
                     })
                     ->label('Rango de Potencia'),
@@ -774,6 +740,9 @@ class ConsumptionPointResource extends Resource
                             );
                     })
                     ->label('Rango de Consumo'),
+                Filter::make('remote_connection')
+                    ->query(fn (Builder $query): Builder => $query->where('connection_type', 'remote'))
+                    ->label('Con Conexión Remota'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -786,33 +755,33 @@ class ConsumptionPointResource extends Resource
                     ->label('Activar')
                     ->icon('heroicon-o-play')
                     ->color('success')
-                    ->visible(fn (ConsumptionPoint $record) => !$record->is_active)
+                    ->visible(fn (ConsumptionPoint $record) => $record->status !== 'active')
                     ->action(function (ConsumptionPoint $record) {
-                        $record->update(['is_active' => true]);
+                        $record->update(['status' => 'active']);
                     }),
                 Tables\Actions\Action::make('deactivate')
                     ->label('Desactivar')
                     ->icon('heroicon-o-pause')
                     ->color('warning')
-                    ->visible(fn (ConsumptionPoint $record) => $record->is_active)
+                    ->visible(fn (ConsumptionPoint $record) => $record->status === 'active')
                     ->action(function (ConsumptionPoint $record) {
-                        $record->update(['is_active' => false]);
+                        $record->update(['status' => 'inactive']);
                     }),
                 Tables\Actions\Action::make('enable_smart_meter')
                     ->label('Habilitar Medidor Inteligente')
                     ->icon('heroicon-o-cpu-chip')
                     ->color('info')
-                    ->visible(fn (ConsumptionPoint $record) => !$record->has_smart_meter)
+                    ->visible(fn (ConsumptionPoint $record) => $record->meter_type !== 'smart')
                     ->action(function (ConsumptionPoint $record) {
-                        $record->update(['has_smart_meter' => true]);
+                        $record->update(['meter_type' => 'smart']);
                     }),
                 Tables\Actions\Action::make('enable_remote_reading')
                     ->label('Habilitar Lectura Remota')
                     ->icon('heroicon-o-signal')
-                    ->color('success')
-                    ->visible(fn (ConsumptionPoint $record) => !$record->remote_reading_enabled)
+                    ->color('info')
+                    ->visible(fn (ConsumptionPoint $record) => $record->connection_type !== 'remote')
                     ->action(function (ConsumptionPoint $record) {
-                        $record->update(['remote_reading_enabled' => true]);
+                        $record->update(['connection_type' => 'remote']);
                     }),
                 Tables\Actions\Action::make('duplicate')
                     ->label('Duplicar')
@@ -820,13 +789,10 @@ class ConsumptionPointResource extends Resource
                     ->color('secondary')
                     ->action(function (ConsumptionPoint $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->name = $newRecord->name . ' (Copia)';
-                        $newRecord->cups_code = $newRecord->cups_code . '_copy';
-                        $newRecord->is_active = false;
-                        $newRecord->annual_consumption_kwh = 0;
-                        $newRecord->monthly_average_kwh = 0;
-                        $newRecord->daily_average_kwh = 0;
-                        $newRecord->peak_demand_kw = 0;
+                        $newRecord->point_number = 'CP-' . uniqid();
+                        $newRecord->status = 'draft';
+                        $newRecord->connection_date = now();
+                        $newRecord->approved_at = null;
                         $newRecord->save();
                     }),
             ])
@@ -846,7 +812,7 @@ class ConsumptionPointResource extends Resource
                         ->icon('heroicon-o-pause')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => false]);
+                                $record->update(['status' => 'inactive']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('enable_smart_meters_all')
@@ -854,7 +820,7 @@ class ConsumptionPointResource extends Resource
                         ->icon('heroicon-o-cpu-chip')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['has_smart_meter' => true]);
+                                $record->update(['meter_type' => 'smart']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('enable_remote_reading_all')
@@ -862,7 +828,7 @@ class ConsumptionPointResource extends Resource
                         ->icon('heroicon-o-signal')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['remote_reading_enabled' => true]);
+                                $record->update(['connection_type' => 'remote']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('update_status')
@@ -879,18 +845,18 @@ class ConsumptionPointResource extends Resource
                                 $record->update(['status' => $data['status']]);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('update_consumption_type')
-                        ->label('Actualizar Tipo de Consumo')
+                    Tables\Actions\BulkAction::make('update_point_type')
+                        ->label('Actualizar Tipo de Punto')
                         ->icon('heroicon-o-tag')
                         ->form([
-                            Select::make('consumption_type')
-                                ->label('Tipo de Consumo')
-                                ->options(ConsumptionPoint::getConsumptionTypes())
+                            Select::make('point_type')
+                                ->label('Tipo de Punto')
+                                ->options(ConsumptionPoint::getPointTypes())
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
-                                $record->update(['consumption_type' => $data['consumption_type']]);
+                                $record->update(['point_type' => $data['point_type']]);
                             });
                         }),
                 ]),
@@ -928,12 +894,6 @@ class ConsumptionPointResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $inactiveCount = static::getModel()::where('is_active', false)->count();
-        
-        if ($inactiveCount > 0) {
-            return 'warning';
-        }
-        
         $disconnectedCount = static::getModel()::where('status', 'disconnected')->count();
         
         if ($disconnectedCount > 0) {
