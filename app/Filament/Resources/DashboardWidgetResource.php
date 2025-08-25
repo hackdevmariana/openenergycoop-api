@@ -493,7 +493,6 @@ class DashboardWidgetResource extends Resource
             'index' => Pages\ListDashboardWidgets::route('/'),
             'create' => Pages\CreateDashboardWidget::route('/create'),
             'edit' => Pages\EditDashboardWidget::route('/{record}/edit'),
-            'view' => Pages\ViewDashboardWidget::route('/{record}'),
         ];
     }
 
