@@ -31,7 +31,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class BondDonationResource extends Resource
 {
@@ -92,14 +92,12 @@ class BondDonationResource extends Resource
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('amount_kwh')
-                                    ->label('Cantidad (kWh)')
+                                TextInput::make('donation_amount')
+                                    ->label('Monto de Donación')
                                     ->numeric()
-                                    ->minValue(0.001)
-                                    ->step(0.001)
+                                    ->prefix('$')
                                     ->required()
-                                    ->suffix(' kWh')
-                                    ->helperText('Cantidad de energía donada'),
+                                    ->minValue(0.01),
                                 TextInput::make('monetary_value')
                                     ->label('Valor Monetario (€)')
                                     ->numeric()
@@ -215,23 +213,20 @@ class BondDonationResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                DateTimePicker::make('donated_at')
-                                    ->label('Donado el')
+                                DateTimePicker::make('donation_date')
+                                    ->label('Fecha de Donación')
                                     ->required()
                                     ->default(now())
-                                    ->helperText('Cuándo se realizó la donación'),
-                                DateTimePicker::make('effective_from')
-                                    ->label('Efectivo desde')
-                                    ->helperText('Cuándo comienza a ser efectiva'),
+                                    ->displayFormat('d/m/Y H:i'),
                                 DateTimePicker::make('effective_until')
                                     ->label('Efectivo hasta')
                                     ->helperText('Cuándo termina de ser efectiva'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                DateTimePicker::make('approved_at')
-                                    ->label('Aprobado el')
-                                    ->helperText('Cuándo se aprobó la donación'),
+                                DateTimePicker::make('approval_date')
+                                    ->label('Fecha de Aprobación')
+                                    ->displayFormat('d/m/Y H:i'),
                                 DateTimePicker::make('processed_at')
                                     ->label('Procesado el')
                                     ->helperText('Cuándo se procesó la donación'),
@@ -307,22 +302,11 @@ class BondDonationResource extends Resource
                                     ->minValue(0)
                                     ->step(1)
                                     ->helperText('Número real de beneficiarios'),
-                                TextInput::make('impact_score')
-                                    ->label('Puntuación de Impacto')
+                                TextInput::make('project_budget')
+                                    ->label('Presupuesto del Proyecto')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Puntuación del impacto logrado'),
-                                TextInput::make('sustainability_score')
-                                    ->label('Puntuación de Sostenibilidad')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Puntuación de la sostenibilidad'),
+                                    ->prefix('$')
+                                    ->minValue(0),
                             ]),
                         RichEditor::make('impact_description')
                             ->label('Descripción del Impacto')
@@ -356,18 +340,25 @@ class BondDonationResource extends Resource
                                     ->label('Activa')
                                     ->default(true)
                                     ->helperText('¿La donación está activa?'),
-                                Toggle::make('is_public')
-                                    ->label('Pública')
-                                    ->helperText('¿La donación es visible públicamente?'),
+                                Toggle::make('follow_up_required')
+                                    ->label('Requiere Seguimiento')
+                                    ->helperText('¿Se necesita seguimiento posterior?'),
                             ]),
                         Grid::make(2)
                             ->schema([
                                 Toggle::make('requires_approval')
                                     ->label('Requiere Aprobación')
                                     ->helperText('¿Se necesita aprobación para cambios?'),
-                                Toggle::make('is_featured')
-                                    ->label('Destacada')
-                                    ->helperText('¿Mostrar como donación destacada?'),
+                                Toggle::make('is_recurring')
+                                    ->label('Es Recurrente')
+                                    ->reactive()
+                                    ->afterStateUpdated(function ($state, callable $set) {
+                                        if (!$state) {
+                                            $set('recurrence_frequency', null);
+                                            $set('next_recurrence_date', null);
+                                            $set('max_recurrences', null);
+                                        }
+                                    }),
                             ]),
                         Grid::make(2)
                             ->schema([
@@ -469,21 +460,8 @@ class BondDonationResource extends Resource
                         'gray' => 'critical',
                     ])
                     ->formatStateUsing(fn (string $state): string => BondDonation::getPriorities()[$state] ?? $state),
-                TextColumn::make('amount_kwh')
-                    ->label('Cantidad (kWh)')
-                    ->suffix(' kWh')
-                    ->numeric()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 10000 => 'success',
-                        $state >= 5000 => 'primary',
-                        $state >= 1000 => 'warning',
-                        $state >= 100 => 'info',
-                        default => 'gray',
-                    }),
-                TextColumn::make('monetary_value')
-                    ->label('Valor (€)')
+                TextColumn::make('donation_amount')
+                    ->label('Cantidad (€)')
                     ->money('EUR')
                     ->sortable()
                     ->summarize([
@@ -497,31 +475,11 @@ class BondDonationResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('impact_score')
-                    ->label('Impacto (%)')
-                    ->suffix('%')
-                    ->numeric()
+                TextColumn::make('donation_date')
+                    ->label('Fecha de Donación')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state >= 90 => 'success',
-                        $state >= 75 => 'primary',
-                        $state >= 50 => 'warning',
-                        $state >= 25 => 'info',
-                        default => 'danger',
-                    })
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('donated_at')
-                    ->label('Donado')
-                    ->dateTime()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        str_contains($state, '2024') => 'success',
-                        str_contains($state, '2025') => 'warning',
-                        str_contains($state, '2026') => 'danger',
-                        default => 'gray',
-                    }),
                 TextColumn::make('effective_from')
                     ->label('Efectivo desde')
                     ->dateTime()
@@ -534,8 +492,8 @@ class BondDonationResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 ToggleColumn::make('is_active')
                     ->label('Activa'),
-                ToggleColumn::make('is_public')
-                    ->label('Pública'),
+                ToggleColumn::make('follow_up_required')
+                    ->label('Requiere Seguimiento'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -571,69 +529,57 @@ class BondDonationResource extends Resource
                 Filter::make('active')
                     ->query(fn (Builder $query): Builder => $query->where('is_active', true))
                     ->label('Solo Activas'),
-                Filter::make('public')
-                    ->query(fn (Builder $query): Builder => $query->where('is_public', true))
-                    ->label('Solo Públicas'),
-                Filter::make('featured')
-                    ->query(fn (Builder $query): Builder => $query->where('is_featured', true))
-                    ->label('Solo Destacadas'),
                 Filter::make('high_amount')
-                    ->query(fn (Builder $query): Builder => $query->where('amount_kwh', '>=', 5000))
-                    ->label('Alta Cantidad (≥5000 kWh)'),
+                    ->query(fn (Builder $query): Builder => $query->where('donation_amount', '>=', 1000))
+                    ->label('Alto Monto (≥$1000)'),
                 Filter::make('low_amount')
-                    ->query(fn (Builder $query): Builder => $query->where('amount_kwh', '<', 100))
-                    ->label('Baja Cantidad (<100 kWh)'),
-                Filter::make('high_impact')
-                    ->query(fn (Builder $query): Builder => $query->where('impact_score', '>=', 80))
-                    ->label('Alto Impacto (≥80%)'),
-                Filter::make('low_impact')
-                    ->query(fn (Builder $query): Builder => $query->where('impact_score', '<', 50))
-                    ->label('Bajo Impacto (<50%)'),
+                    ->query(fn (Builder $query): Builder => $query->where('donation_amount', '<', 100))
+                    ->label('Bajo Monto (<$100)'),
                 Filter::make('recent_donations')
-                    ->query(fn (Builder $query): Builder => $query->where('donated_at', '>=', now()->subDays(30)))
-                    ->label('Donaciones Recientes (≤30 días)'),
+                    ->query(fn (Builder $query): Builder => $query->where('donation_date', '>=', now()->subDays(30)))
+                    ->label('Donaciones Recientes (30 días)'),
                 Filter::make('urgent_priority')
                     ->query(fn (Builder $query): Builder => $query->whereIn('priority', ['high', 'urgent', 'critical']))
                     ->label('Prioridad Urgente'),
                 Filter::make('date_range')
                     ->form([
-                        DateTimePicker::make('donated_from')
-                            ->label('Donado desde'),
-                        DateTimePicker::make('donated_until')
-                            ->label('Donado hasta'),
+                        DatePicker::make('from_date')
+                            ->label('Desde'),
+                        DatePicker::make('to_date')
+                            ->label('Hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['donated_from'],
-                                fn (Builder $query, $date): Builder => $query->where('donated_at', '>=', $date),
+                                $data['from_date'],
+                                fn (Builder $query, $date): Builder => $query->where('donation_date', '>=', $date),
                             )
                             ->when(
-                                $data['donated_until'],
-                                fn (Builder $query, $date): Builder => $query->where('donated_at', '<=', $date),
+                                $data['to_date'],
+                                fn (Builder $query, $date): Builder => $query->where('donation_date', '<=', $date),
                             );
                     })
                     ->label('Rango de Fechas de Donación'),
                 Filter::make('amount_range')
                     ->form([
                         TextInput::make('min_amount')
-                            ->label('Cantidad mínima (kWh)')
+                            ->label('Monto Mínimo')
                             ->numeric()
-                            ->minValue(0),
+                            ->prefix('$'),
                         TextInput::make('max_amount')
-                            ->label('Cantidad máxima (kWh)')
+                            ->label('Monto Máximo')
                             ->numeric()
-                            ->minValue(0),
+                            ->prefix('$'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['min_amount'],
-                                fn (Builder $query, $amount): Builder => $query->where('amount_kwh', '>=', $amount),
+                                fn (Builder $query, $amount): Builder => $query->where('donation_amount', '>=', $amount),
                             )
                             ->when(
                                 $data['max_amount'],
-                                fn (Builder $query, $amount): Builder => $query->where('amount_kwh', '<=', $amount),
+                                fn (Builder $query, $amount): Builder => $query->where('donation_amount', '<=', $amount),
                             );
                     })
                     ->label('Rango de Cantidades'),
@@ -687,25 +633,17 @@ class BondDonationResource extends Resource
                             'status' => 'rejected',
                         ]);
                     }),
-                Tables\Actions\Action::make('mark_featured')
-                    ->label('Destacar')
-                    ->icon('heroicon-o-star')
-                    ->color('warning')
-                    ->visible(fn (BondDonation $record) => !$record->is_featured)
-                    ->action(function (BondDonation $record) {
-                        $record->update(['is_featured' => true]);
-                    }),
                 Tables\Actions\Action::make('duplicate')
                     ->label('Duplicar')
                     ->icon('heroicon-o-document-duplicate')
                     ->color('secondary')
                     ->action(function (BondDonation $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->status = 'pending';
-                        $newRecord->donated_at = now();
-                        $newRecord->approved_at = null;
-                        $newRecord->processed_at = null;
-                        $newRecord->is_featured = false;
+                        $newRecord->donation_number = 'DON-' . uniqid();
+                        $newRecord->status = 'draft';
+                        $newRecord->donation_date = now();
+                        $newRecord->approval_date = null;
+                        $newRecord->completion_date = null;
                         $newRecord->save();
                     }),
             ])
@@ -748,14 +686,6 @@ class BondDonationResource extends Resource
                                 }
                             });
                         }),
-                    Tables\Actions\BulkAction::make('mark_featured_all')
-                        ->label('Destacar Todas')
-                        ->icon('heroicon-o-star')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
-                                $record->update(['is_featured' => true]);
-                            });
-                        }),
                     Tables\Actions\BulkAction::make('update_status')
                         ->label('Actualizar Estado')
                         ->icon('heroicon-o-flag')
@@ -770,23 +700,9 @@ class BondDonationResource extends Resource
                                 $record->update(['status' => $data['status']]);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('update_priority')
-                        ->label('Actualizar Prioridad')
-                        ->icon('heroicon-o-flag')
-                        ->form([
-                            Select::make('priority')
-                                ->label('Prioridad')
-                                ->options(BondDonation::getPriorities())
-                                ->required(),
-                        ])
-                        ->action(function ($records, array $data) {
-                            $records->each(function ($record) use ($data) {
-                                $record->update(['priority' => $data['priority']]);
-                            });
-                        }),
                 ]),
             ])
-            ->defaultSort('donated_at', 'desc')
+            ->defaultSort('donation_date', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100]);
     }
@@ -809,10 +725,7 @@ class BondDonationResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
+        return parent::getEloquentQuery();
     }
 
     public static function getNavigationBadge(): ?string
@@ -828,12 +741,7 @@ class BondDonationResource extends Resource
             return 'warning';
         }
         
-        $urgentCount = static::getModel()::whereIn('priority', ['high', 'urgent', 'critical'])->count();
-        
-        if ($urgentCount > 0) {
-            return 'danger';
-        }
-        
+        // No hay campo priority, solo verificamos status
         return 'success';
     }
 }
