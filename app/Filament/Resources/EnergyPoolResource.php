@@ -814,10 +814,11 @@ class EnergyPoolResource extends Resource
                         }),
                     Tables\Actions\BulkAction::make('deactivate_all')
                         ->label('Desactivar Todos')
-                        ->icon('heroicon-o-pause')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => false]);
+                                $record->update(['status' => 'inactive']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('enable_monitoring_all')
@@ -899,13 +900,13 @@ class EnergyPoolResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $inactiveCount = static::getModel()::where('is_active', false)->count();
+        $inactiveCount = static::getModel()::where('status', 'inactive')->count();
         
         if ($inactiveCount > 0) {
             return 'warning';
         }
         
-        $highUtilizationCount = static::getModel()::whereRaw('(current_utilization / shared_capacity) >= 0.9')->count();
+        $highUtilizationCount = static::getModel()::whereRaw('(utilized_capacity_mw / total_capacity_mw) >= 0.9')->count();
         
         if ($highUtilizationCount > 0) {
             return 'danger';
