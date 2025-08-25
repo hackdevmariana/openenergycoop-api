@@ -315,7 +315,7 @@ class EnergyProductionResource extends Resource
                         'heroicon-o-fire' => 'solar_thermal',
                         'heroicon-s-arrow-trending-up' => 'wind',
                         'heroicon-o-beaker' => 'hydro',
-                        'heroicon-o-leaf' => 'biomass',
+                        'heroicon-o-sun' => 'biomass',
                         'heroicon-o-bolt' => 'geothermal',
                         'heroicon-o-cloud' => 'biogas',
                         'heroicon-o-puzzle-piece' => 'combined',
