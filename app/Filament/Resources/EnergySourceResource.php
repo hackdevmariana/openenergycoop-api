@@ -22,6 +22,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -30,7 +31,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Database\Eloquent\Builder;
-
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class EnergySourceResource extends Resource
 {
@@ -61,27 +62,21 @@ class EnergySourceResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->helperText('Nombre de la fuente de energía'),
-                                TextInput::make('slug')
-                                    ->label('Slug')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->helperText('URL amigable de la fuente'),
+                                TextInput::make('description')
+                                    ->label('Descripción')
+                                    ->maxLength(65535)
+                                    ->helperText('Descripción detallada de la fuente de energía'),
                             ]),
-                        Textarea::make('description')
-                            ->label('Descripción')
-                            ->rows(3)
-                            ->maxLength(65535)
-                            ->helperText('Descripción detallada de la fuente de energía'),
                         Grid::make(3)
                             ->schema([
-                                Select::make('category')
+                                Select::make('energy_category')
                                     ->label('Categoría')
-                                    ->options(EnergySource::getCategories())
+                                    ->options(EnergySource::getEnergyCategories())
                                     ->required()
                                     ->searchable(),
-                                Select::make('type')
+                                Select::make('source_type')
                                     ->label('Tipo')
-                                    ->options(EnergySource::getTypes())
+                                    ->options(EnergySource::getSourceTypes())
                                     ->required()
                                     ->searchable(),
                                 Select::make('status')
@@ -93,9 +88,171 @@ class EnergySourceResource extends Resource
                     ])
                     ->collapsible(),
 
+                Section::make('Capacidad y Producción')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('installed_capacity_mw')
+                                    ->label('Capacidad Instalada (MW)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix(' MW')
+                                    ->helperText('Capacidad total instalada'),
+                                TextInput::make('operational_capacity_mw')
+                                    ->label('Capacidad Operativa (MW)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix(' MW')
+                                    ->helperText('Capacidad actualmente operativa'),
+                            ]),
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('efficiency_rating')
+                                    ->label('Eficiencia (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->helperText('Rating de eficiencia'),
+                                TextInput::make('availability_factor')
+                                    ->label('Factor de Disponibilidad (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->helperText('Porcentaje de tiempo disponible'),
+                                TextInput::make('capacity_factor')
+                                    ->label('Factor de Capacidad (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->helperText('Porcentaje de capacidad utilizada'),
+                            ]),
+                        Grid::make(4)
+                            ->schema([
+                                TextInput::make('annual_production_mwh')
+                                    ->label('Producción Anual (MWh)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix(' MWh'),
+                                TextInput::make('monthly_production_mwh')
+                                    ->label('Producción Mensual (MWh)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix(' MWh'),
+                                TextInput::make('daily_production_mwh')
+                                    ->label('Producción Diaria (MWh)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix(' MWh'),
+                                TextInput::make('hourly_production_mwh')
+                                    ->label('Producción Horaria (MWh)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix(' MWh'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Ubicación')
+                    ->schema([
+                        Textarea::make('location_address')
+                            ->label('Dirección de Ubicación')
+                            ->rows(2)
+                            ->maxLength(65535)
+                            ->helperText('Dirección física de la fuente'),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('latitude')
+                                    ->label('Latitud')
+                                    ->numeric()
+                                    ->step(0.00000001)
+                                    ->helperText('Coordenada de latitud'),
+                                TextInput::make('longitude')
+                                    ->label('Longitud')
+                                    ->numeric()
+                                    ->step(0.00000001)
+                                    ->helperText('Coordenada de longitud'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('region')
+                                    ->label('Región')
+                                    ->maxLength(255)
+                                    ->helperText('Región o provincia'),
+                                TextInput::make('country')
+                                    ->label('País')
+                                    ->maxLength(255)
+                                    ->helperText('País donde se ubica'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Fechas y Vida Útil')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                DatePicker::make('commissioning_date')
+                                    ->label('Fecha de Puesta en Marcha')
+                                    ->helperText('Fecha cuando comenzó a operar'),
+                                DatePicker::make('decommissioning_date')
+                                    ->label('Fecha de Desmantelamiento')
+                                    ->helperText('Fecha planificada de desmantelamiento'),
+                            ]),
+                        TextInput::make('expected_lifespan_years')
+                            ->label('Vida Útil Esperada (años)')
+                            ->numeric()
+                            ->minValue(1)
+                            ->step(1)
+                            ->suffix(' años')
+                            ->helperText('Años esperados de operación'),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Costos')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('construction_cost')
+                                    ->label('Costo de Construcción ($)')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->helperText('Costo total de construcción'),
+                                TextInput::make('operational_cost_per_mwh')
+                                    ->label('Costo Operativo ($/MWh)')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix('/MWh')
+                                    ->helperText('Costo operativo por MWh'),
+                                TextInput::make('maintenance_cost_per_mwh')
+                                    ->label('Costo de Mantenimiento ($/MWh)')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix('/MWh')
+                                    ->helperText('Costo de mantenimiento por MWh'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
                 Section::make('Especificaciones Técnicas')
                     ->schema([
-                        RichEditor::make('technical_specs')
+                        RichEditor::make('technical_specifications')
                             ->label('Especificaciones Técnicas')
                             ->toolbarButtons([
                                 'bold',
@@ -106,104 +263,21 @@ class EnergySourceResource extends Resource
                                 'codeBlock',
                             ])
                             ->helperText('Especificaciones técnicas detalladas'),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('efficiency_min')
-                                    ->label('Eficiencia Mínima (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Eficiencia mínima esperada'),
-                                TextInput::make('efficiency_max')
-                                    ->label('Eficiencia Máxima (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Eficiencia máxima esperada'),
-                                TextInput::make('efficiency_typical')
-                                    ->label('Eficiencia Típica (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Eficiencia típica en condiciones normales'),
-                            ]),
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('capacity_min')
-                                    ->label('Capacidad Mínima (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix(' kW')
-                                    ->helperText('Capacidad mínima instalable'),
-                                TextInput::make('capacity_max')
-                                    ->label('Capacidad Máxima (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix(' kW')
-                                    ->helperText('Capacidad máxima instalable'),
-                                TextInput::make('capacity_typical')
-                                    ->label('Capacidad Típica (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix(' kW')
-                                    ->helperText('Capacidad típica instalada'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('lifespan_years')
-                                    ->label('Vida Útil (años)')
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->step(1)
-                                    ->suffix(' años')
-                                    ->helperText('Vida útil esperada en años'),
-                                TextInput::make('degradation_rate')
-                                    ->label('Tasa de Degradación (%/año)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(10)
-                                    ->step(0.01)
-                                    ->suffix('%/año')
-                                    ->helperText('Tasa de degradación anual'),
-                            ]),
+                        RichEditor::make('equipment_details')
+                            ->label('Detalles del Equipamiento')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Detalles del equipamiento instalado'),
                     ])
                     ->collapsible(),
 
                 Section::make('Impacto Ambiental')
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('carbon_footprint_kg_kwh')
-                                    ->label('Huella de Carbono (kg CO2/kWh)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kg CO2/kWh')
-                                    ->helperText('Emisiones de CO2 por kWh generado'),
-                                TextInput::make('water_consumption_l_kwh')
-                                    ->label('Consumo de Agua (L/kWh)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix(' L/kWh')
-                                    ->helperText('Consumo de agua por kWh generado'),
-                                TextInput::make('land_use_m2_kw')
-                                    ->label('Uso de Tierra (m²/kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix(' m²/kW')
-                                    ->helperText('Superficie requerida por kW instalado'),
-                            ]),
                         RichEditor::make('environmental_impact')
                             ->label('Impacto Ambiental')
                             ->toolbarButtons([
@@ -214,82 +288,23 @@ class EnergySourceResource extends Resource
                                 'orderedList',
                             ])
                             ->helperText('Descripción del impacto ambiental'),
-                        Grid::make(2)
-                            ->schema([
-                                Toggle::make('is_renewable')
-                                    ->label('Renovable')
-                                    ->helperText('¿Es una fuente de energía renovable?'),
-                                Toggle::make('is_clean')
-                                    ->label('Limpia')
-                                    ->helperText('¿Es una fuente de energía limpia?'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('renewable_certificate')
-                                    ->label('Certificado Renovable')
-                                    ->maxLength(255)
-                                    ->helperText('Certificado de energía renovable'),
-                                TextInput::make('environmental_rating')
-                                    ->label('Calificación Ambiental')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('/100')
-                                    ->helperText('Puntuación ambiental (0-100)'),
-                            ]),
+                        RichEditor::make('environmental_data')
+                            ->label('Datos Ambientales')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Datos específicos sobre el impacto ambiental'),
                     ])
                     ->collapsible(),
 
-                Section::make('Aspectos Financieros')
+                Section::make('Cumplimiento y Seguridad')
                     ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('installation_cost_per_kw')
-                                    ->label('Costo de Instalación ($/kW)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix('/kW')
-                                    ->helperText('Costo de instalación por kilovatio'),
-                                TextInput::make('maintenance_cost_annual')
-                                    ->label('Costo de Mantenimiento Anual ($/kW)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->suffix('/kW/año')
-                                    ->helperText('Costo anual de mantenimiento por kW'),
-                                TextInput::make('operational_cost_per_kwh')
-                                    ->label('Costo Operativo ($/kWh)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.0001)
-                                    ->suffix('/kWh')
-                                    ->helperText('Costo operativo por kWh generado'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('levelized_cost_kwh')
-                                    ->label('Costo Nivelado ($/kWh)')
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->minValue(0)
-                                    ->step(0.0001)
-                                    ->suffix('/kWh')
-                                    ->helperText('Costo nivelado de energía'),
-                                TextInput::make('payback_period_years')
-                                    ->label('Período de Recuperación (años)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.1)
-                                    ->suffix(' años')
-                                    ->helperText('Tiempo para recuperar la inversión'),
-                            ]),
-                        RichEditor::make('financial_notes')
-                            ->label('Notas Financieras')
+                        RichEditor::make('regulatory_compliance')
+                            ->label('Cumplimiento Regulatorio')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -297,14 +312,24 @@ class EnergySourceResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
-                            ->helperText('Notas adicionales sobre aspectos financieros'),
+                            ->helperText('Información sobre cumplimiento regulatorio'),
+                        RichEditor::make('safety_features')
+                            ->label('Características de Seguridad')
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'underline',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->helperText('Características de seguridad implementadas'),
                     ])
                     ->collapsible(),
 
-                Section::make('Disponibilidad y Dependencias')
+                Section::make('Mantenimiento y Rendimiento')
                     ->schema([
-                        RichEditor::make('geographic_availability')
-                            ->label('Disponibilidad Geográfica')
+                        RichEditor::make('maintenance_schedule')
+                            ->label('Programa de Mantenimiento')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -312,9 +337,9 @@ class EnergySourceResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
-                            ->helperText('Regiones donde está disponible esta fuente'),
-                        RichEditor::make('weather_dependencies')
-                            ->label('Dependencias Climáticas')
+                            ->helperText('Programa de mantenimiento planificado'),
+                        RichEditor::make('performance_metrics')
+                            ->label('Métricas de Rendimiento')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -322,43 +347,14 @@ class EnergySourceResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
-                            ->helperText('Cómo afecta el clima a la generación'),
-                        RichEditor::make('seasonal_variations')
-                            ->label('Variaciones Estacionales')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Variaciones en la generación por estación'),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('capacity_factor_min')
-                                    ->label('Factor de Capacidad Mínimo (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Factor de capacidad mínimo anual'),
-                                TextInput::make('capacity_factor_max')
-                                    ->label('Factor de Capacidad Máximo (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Factor de capacidad máximo anual'),
-                            ]),
+                            ->helperText('Métricas clave de rendimiento'),
                     ])
                     ->collapsible(),
 
-                Section::make('Tecnología y Equipamiento')
+                Section::make('Documentos')
                     ->schema([
-                        RichEditor::make('technology_description')
-                            ->label('Descripción de la Tecnología')
+                        RichEditor::make('regulatory_documents')
+                            ->label('Documentos Regulatorios')
                             ->toolbarButtons([
                                 'bold',
                                 'italic',
@@ -366,89 +362,38 @@ class EnergySourceResource extends Resource
                                 'bulletList',
                                 'orderedList',
                             ])
-                            ->helperText('Descripción de la tecnología utilizada'),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('manufacturer')
-                                    ->label('Fabricante Principal')
-                                    ->maxLength(255)
-                                    ->helperText('Fabricante principal del equipamiento'),
-                                TextInput::make('model_series')
-                                    ->label('Serie de Modelos')
-                                    ->maxLength(255)
-                                    ->helperText('Serie de modelos disponibles'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('warranty_years')
-                                    ->label('Garantía (años)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.5)
-                                    ->suffix(' años')
-                                    ->helperText('Período de garantía'),
-                                TextInput::make('certification_standards')
-                                    ->label('Estándares de Certificación')
-                                    ->maxLength(255)
-                                    ->helperText('Estándares de certificación aplicables'),
-                            ]),
-                        RichEditor::make('maintenance_requirements')
-                            ->label('Requisitos de Mantenimiento')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Requisitos específicos de mantenimiento'),
+                            ->helperText('Documentos regulatorios relacionados'),
                     ])
                     ->collapsible(),
 
-                Section::make('Configuración del Sistema')
+                Section::make('Gestión y Aprobación')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Toggle::make('is_active')
-                                    ->label('Activa')
-                                    ->default(true)
+                                TextInput::make('managed_by')
+                                    ->label('Gestionado por')
+                                    ->numeric()
+                                    ->helperText('ID del usuario que gestiona'),
+                                TextInput::make('created_by')
+                                    ->label('Creado por')
+                                    ->numeric()
                                     ->required()
-                                    ->helperText('¿La fuente está activa?'),
-                                Toggle::make('is_featured')
-                                    ->label('Destacada')
-                                    ->helperText('¿Mostrar como fuente destacada?'),
+                                    ->helperText('ID del usuario que creó'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Toggle::make('is_public')
-                                    ->label('Pública')
-                                    ->helperText('¿Visible públicamente?'),
-                                Toggle::make('requires_approval')
-                                    ->label('Requiere Aprobación')
-                                    ->helperText('¿Se necesita aprobación para cambios?'),
+                                TextInput::make('approved_by')
+                                    ->label('Aprobado por')
+                                    ->numeric()
+                                    ->helperText('ID del usuario que aprobó'),
+                                DatePicker::make('approved_at')
+                                    ->label('Fecha de Aprobación')
+                                    ->helperText('Fecha cuando fue aprobado'),
                             ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('icon')
-                                    ->label('Icono')
-                                    ->maxLength(255)
-                                    ->helperText('Clase del icono (ej: heroicon-o-bolt)'),
-                                ColorPicker::make('color')
-                                    ->label('Color')
-                                    ->helperText('Color representativo de la fuente'),
-                            ]),
-                        TextInput::make('sort_order')
-                            ->label('Orden de Clasificación')
-                            ->numeric()
-                            ->minValue(0)
-                            ->step(1)
-                            ->default(0)
-                            ->required()
-                            ->helperText('Orden para mostrar en listas'),
                     ])
                     ->collapsible(),
 
-                Section::make('Metadatos y Etiquetas')
+                Section::make('Metadatos')
                     ->schema([
                         TagsInput::make('tags')
                             ->label('Etiquetas')
@@ -464,26 +409,6 @@ class EnergySourceResource extends Resource
                             ]),
                     ])
                     ->collapsible(),
-
-                Section::make('Documentos y Archivos')
-                    ->schema([
-                        FileUpload::make('images')
-                            ->label('Imágenes')
-                            ->multiple()
-                            ->image()
-                            ->directory('energy-sources')
-                            ->maxFiles(15)
-                            ->maxSize(5120)
-                            ->helperText('Máximo 15 imágenes de 5MB cada una'),
-                        FileUpload::make('documents')
-                            ->label('Documentos')
-                            ->multiple()
-                            ->directory('energy-sources/documents')
-                            ->maxFiles(30)
-                            ->maxSize(10240)
-                            ->helperText('Máximo 30 documentos de 10MB cada uno'),
-                    ])
-                    ->collapsible(),
             ]);
     }
 
@@ -496,42 +421,63 @@ class EnergySourceResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(25),
-                BadgeColumn::make('category')
+                BadgeColumn::make('energy_category')
                     ->label('Categoría')
                     ->colors([
-                        'primary' => 'renewable',
-                        'success' => 'solar',
-                        'warning' => 'wind',
-                        'danger' => 'fossil',
-                        'info' => 'nuclear',
-                        'secondary' => 'hydro',
-                        'gray' => 'other',
+                        'success' => 'renewable',
+                        'danger' => 'non_renewable',
+                        'info' => 'hybrid',
                     ])
-                    ->formatStateUsing(fn (string $state): string => EnergySource::getCategories()[$state] ?? $state),
-                BadgeColumn::make('type')
+                    ->formatStateUsing(fn (string $state): string => EnergySource::getEnergyCategories()[$state] ?? $state),
+                BadgeColumn::make('source_type')
                     ->label('Tipo')
                     ->colors([
-                        'primary' => 'photovoltaic',
-                        'success' => 'concentrated_solar',
-                        'warning' => 'wind_turbine',
-                        'danger' => 'coal_plant',
-                        'info' => 'nuclear_reactor',
-                        'secondary' => 'hydroelectric',
-                        'gray' => 'biomass',
+                        'warning' => 'solar',
+                        'info' => 'wind',
+                        'primary' => 'hydroelectric',
+                        'success' => 'biomass',
+                        'danger' => 'geothermal',
+                        'secondary' => 'nuclear',
+                        'gray' => 'fossil_fuel',
+                        'purple' => 'hybrid',
                     ])
-                    ->formatStateUsing(fn (string $state): string => EnergySource::getTypes()[$state] ?? $state),
+                    ->formatStateUsing(fn (string $state): string => EnergySource::getSourceTypes()[$state] ?? $state),
                 BadgeColumn::make('status')
                     ->label('Estado')
                     ->colors([
                         'success' => 'active',
                         'warning' => 'maintenance',
                         'danger' => 'inactive',
-                        'info' => 'development',
-                        'secondary' => 'testing',
-                        'gray' => 'deprecated',
+                        'info' => 'planned',
+                        'secondary' => 'under_construction',
+                        'gray' => 'decommissioned',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergySource::getStatuses()[$state] ?? $state),
-                TextColumn::make('efficiency_typical')
+                TextColumn::make('installed_capacity_mw')
+                    ->label('Capacidad Instalada (MW)')
+                    ->suffix(' MW')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state >= 1000 => 'success',
+                        $state >= 500 => 'primary',
+                        $state >= 100 => 'warning',
+                        $state >= 10 => 'info',
+                        default => 'gray',
+                    }),
+                TextColumn::make('operational_capacity_mw')
+                    ->label('Capacidad Operativa (MW)')
+                    ->suffix(' MW')
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state >= 1000 => 'success',
+                        $state >= 500 => 'primary',
+                        $state >= 100 => 'warning',
+                        $state >= 10 => 'info',
+                        default => 'gray',
+                    }),
+                TextColumn::make('efficiency_rating')
                     ->label('Eficiencia (%)')
                     ->suffix('%')
                     ->sortable()
@@ -543,57 +489,37 @@ class EnergySourceResource extends Resource
                         $state >= 20 => 'info',
                         default => 'danger',
                     }),
-                TextColumn::make('capacity_typical')
-                    ->label('Capacidad Típica (kW)')
-                    ->suffix(' kW')
+                TextColumn::make('annual_production_mwh')
+                    ->label('Producción Anual (MWh)')
+                    ->suffix(' MWh')
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
-                        $state >= 1000 => 'success',
-                        $state >= 500 => 'primary',
-                        $state >= 100 => 'warning',
-                        $state >= 10 => 'info',
+                        $state >= 1000000 => 'success',
+                        $state >= 100000 => 'primary',
+                        $state >= 10000 => 'warning',
+                        $state >= 1000 => 'info',
                         default => 'gray',
-                    }),
-                TextColumn::make('lifespan_years')
-                    ->label('Vida Útil (años)')
-                    ->suffix(' años')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('carbon_footprint_kg_kwh')
-                    ->label('CO2 (kg/kWh)')
-                    ->suffix(' kg CO2/kWh')
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state <= 0.1 => 'success',
-                        $state <= 0.5 => 'primary',
-                        $state <= 1.0 => 'warning',
-                        $state <= 2.0 => 'info',
-                        default => 'danger',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('installation_cost_per_kw')
-                    ->label('Costo Instalación ($/kW)')
-                    ->money('USD')
+                TextColumn::make('region')
+                    ->label('Región')
+                    ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('operational_cost_per_kwh')
-                    ->label('Costo Operativo ($/kWh)')
-                    ->money('USD')
+                TextColumn::make('country')
+                    ->label('País')
+                    ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_renewable')
-                    ->label('Renovable'),
-                ToggleColumn::make('is_clean')
-                    ->label('Limpia'),
-                ToggleColumn::make('is_active')
-                    ->label('Activa'),
-                ToggleColumn::make('is_featured')
-                    ->label('Destacada'),
-                TextColumn::make('sort_order')
-                    ->label('Orden')
-                    ->numeric()
+                TextColumn::make('commissioning_date')
+                    ->label('Puesta en Marcha')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('expected_lifespan_years')
+                    ->label('Vida Útil (años)')
+                    ->suffix(' años')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
@@ -603,48 +529,33 @@ class EnergySourceResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('category')
+                SelectFilter::make('energy_category')
                     ->label('Categoría')
-                    ->options(EnergySource::getCategories())
+                    ->options(EnergySource::getEnergyCategories())
                     ->multiple(),
-                SelectFilter::make('type')
+                SelectFilter::make('source_type')
                     ->label('Tipo')
-                    ->options(EnergySource::getTypes())
+                    ->options(EnergySource::getSourceTypes())
                     ->multiple(),
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options(EnergySource::getStatuses())
                     ->multiple(),
                 Filter::make('renewable')
-                    ->query(fn (Builder $query): Builder => $query->where('is_renewable', true))
+                    ->query(fn (Builder $query): Builder => $query->where('energy_category', 'renewable'))
                     ->label('Solo Renovables'),
-                Filter::make('clean')
-                    ->query(fn (Builder $query): Builder => $query->where('is_clean', true))
-                    ->label('Solo Limpias'),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
-                    ->label('Solo Activas'),
-                Filter::make('featured')
-                    ->query(fn (Builder $query): Builder => $query->where('is_featured', true))
-                    ->label('Solo Destacadas'),
                 Filter::make('high_efficiency')
-                    ->query(fn (Builder $query): Builder => $query->where('efficiency_typical', '>=', 80))
+                    ->query(fn (Builder $query): Builder => $query->where('efficiency_rating', '>=', 80))
                     ->label('Alta Eficiencia (≥80%)'),
                 Filter::make('low_efficiency')
-                    ->query(fn (Builder $query): Builder => $query->where('efficiency_typical', '<', 40))
+                    ->query(fn (Builder $query): Builder => $query->where('efficiency_rating', '<', 40))
                     ->label('Baja Eficiencia (<40%)'),
                 Filter::make('high_capacity')
-                    ->query(fn (Builder $query): Builder => $query->where('capacity_typical', '>=', 1000))
-                    ->label('Alta Capacidad (≥1000 kW)'),
+                    ->query(fn (Builder $query): Builder => $query->where('installed_capacity_mw', '>=', 100))
+                    ->label('Alta Capacidad (≥100 MW)'),
                 Filter::make('low_capacity')
-                    ->query(fn (Builder $query): Builder => $query->where('capacity_typical', '<', 100))
-                    ->label('Baja Capacidad (<100 kW)'),
-                Filter::make('low_carbon')
-                    ->query(fn (Builder $query): Builder => $query->where('carbon_footprint_kg_kwh', '<=', 0.1))
-                    ->label('Baja Huella de Carbono (≤0.1 kg/kWh)'),
-                Filter::make('high_carbon')
-                    ->query(fn (Builder $query): Builder => $query->where('carbon_footprint_kg_kwh', '>', 1.0))
-                    ->label('Alta Huella de Carbono (>1.0 kg/kWh)'),
+                    ->query(fn (Builder $query): Builder => $query->where('installed_capacity_mw', '<', 10))
+                    ->label('Baja Capacidad (<10 MW)'),
                 Filter::make('efficiency_range')
                     ->form([
                         TextInput::make('min_efficiency')
@@ -662,22 +573,22 @@ class EnergySourceResource extends Resource
                         return $query
                             ->when(
                                 $data['min_efficiency'],
-                                fn (Builder $query, $efficiency): Builder => $query->where('efficiency_typical', '>=', $efficiency),
+                                fn (Builder $query, $efficiency): Builder => $query->where('efficiency_rating', '>=', $efficiency),
                             )
                             ->when(
                                 $data['max_efficiency'],
-                                fn (Builder $query, $efficiency): Builder => $query->where('efficiency_typical', '<=', $efficiency),
+                                fn (Builder $query, $efficiency): Builder => $query->where('efficiency_rating', '<=', $efficiency),
                             );
                     })
                     ->label('Rango de Eficiencia'),
                 Filter::make('capacity_range')
                     ->form([
                         TextInput::make('min_capacity')
-                            ->label('Capacidad mínima (kW)')
+                            ->label('Capacidad mínima (MW)')
                             ->numeric()
                             ->minValue(0),
                         TextInput::make('max_capacity')
-                            ->label('Capacidad máxima (kW)')
+                            ->label('Capacidad máxima (MW)')
                             ->numeric()
                             ->minValue(0),
                     ])
@@ -685,22 +596,22 @@ class EnergySourceResource extends Resource
                         return $query
                             ->when(
                                 $data['min_capacity'],
-                                fn (Builder $query, $capacity): Builder => $query->where('capacity_typical', '>=', $capacity),
+                                fn (Builder $query, $capacity): Builder => $query->where('installed_capacity_mw', '>=', $capacity),
                             )
                             ->when(
                                 $data['max_capacity'],
-                                fn (Builder $query, $capacity): Builder => $query->where('capacity_typical', '<=', $capacity),
+                                fn (Builder $query, $capacity): Builder => $query->where('installed_capacity_mw', '<=', $capacity),
                             );
                     })
                     ->label('Rango de Capacidad'),
                 Filter::make('cost_range')
                     ->form([
                         TextInput::make('min_cost')
-                            ->label('Costo mínimo ($/kW)')
+                            ->label('Costo mínimo ($)')
                             ->numeric()
                             ->minValue(0),
                         TextInput::make('max_cost')
-                            ->label('Costo máximo ($/kW)')
+                            ->label('Costo máximo ($)')
                             ->numeric()
                             ->minValue(0),
                     ])
@@ -708,11 +619,11 @@ class EnergySourceResource extends Resource
                         return $query
                             ->when(
                                 $data['min_cost'],
-                                fn (Builder $query, $cost): Builder => $query->where('installation_cost_per_kw', '>=', $cost),
+                                fn (Builder $query, $cost): Builder => $query->where('construction_cost', '>=', $cost),
                             )
                             ->when(
                                 $data['max_cost'],
-                                fn (Builder $query, $cost): Builder => $query->where('installation_cost_per_kw', '<=', $cost),
+                                fn (Builder $query, $cost): Builder => $query->where('construction_cost', '<=', $cost),
                             );
                     })
                     ->label('Rango de Costos'),
@@ -728,25 +639,25 @@ class EnergySourceResource extends Resource
                     ->label('Activar')
                     ->icon('heroicon-o-play')
                     ->color('success')
-                    ->visible(fn (EnergySource $record) => !$record->is_active)
+                    ->visible(fn (EnergySource $record) => $record->status !== 'active')
                     ->action(function (EnergySource $record) {
-                        $record->update(['is_active' => true]);
+                        $record->update(['status' => 'active']);
                     }),
                 Tables\Actions\Action::make('deactivate')
                     ->label('Desactivar')
                     ->icon('heroicon-o-pause')
                     ->color('warning')
-                    ->visible(fn (EnergySource $record) => $record->is_active)
+                    ->visible(fn (EnergySource $record) => $record->status === 'active')
                     ->action(function (EnergySource $record) {
-                        $record->update(['is_active' => false]);
+                        $record->update(['status' => 'inactive']);
                     }),
-                Tables\Actions\Action::make('mark_featured')
-                    ->label('Destacar')
-                    ->icon('heroicon-o-star')
+                Tables\Actions\Action::make('maintenance')
+                    ->label('Mantenimiento')
+                    ->icon('heroicon-o-wrench-screwdriver')
                     ->color('warning')
-                    ->visible(fn (EnergySource $record) => !$record->is_featured)
+                    ->visible(fn (EnergySource $record) => $record->status !== 'maintenance')
                     ->action(function (EnergySource $record) {
-                        $record->update(['is_featured' => true]);
+                        $record->update(['status' => 'maintenance']);
                     }),
                 Tables\Actions\Action::make('duplicate')
                     ->label('Duplicar')
@@ -755,10 +666,7 @@ class EnergySourceResource extends Resource
                     ->action(function (EnergySource $record) {
                         $newRecord = $record->replicate();
                         $newRecord->name = $newRecord->name . ' (Copia)';
-                        $newRecord->slug = $newRecord->slug . '-copy';
-                        $newRecord->is_active = false;
-                        $newRecord->is_featured = false;
-                        $newRecord->sort_order = $newRecord->sort_order + 1;
+                        $newRecord->status = 'planned';
                         $newRecord->save();
                     }),
             ])
@@ -770,7 +678,7 @@ class EnergySourceResource extends Resource
                         ->icon('heroicon-o-play')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => true]);
+                                $record->update(['status' => 'active']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('deactivate_all')
@@ -778,15 +686,15 @@ class EnergySourceResource extends Resource
                         ->icon('heroicon-o-pause')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_active' => false]);
+                                $record->update(['status' => 'inactive']);
                             });
                         }),
-                    Tables\Actions\BulkAction::make('mark_featured_all')
-                        ->label('Destacar Todas')
-                        ->icon('heroicon-o-star')
+                    Tables\Actions\BulkAction::make('maintenance_all')
+                        ->label('Mantenimiento Todas')
+                        ->icon('heroicon-o-wrench-screwdriver')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                $record->update(['is_featured' => true]);
+                                $record->update(['status' => 'maintenance']);
                             });
                         }),
                     Tables\Actions\BulkAction::make('update_status')
@@ -807,19 +715,19 @@ class EnergySourceResource extends Resource
                         ->label('Actualizar Categoría')
                         ->icon('heroicon-o-tag')
                         ->form([
-                            Select::make('category')
+                            Select::make('energy_category')
                                 ->label('Categoría')
-                                ->options(EnergySource::getCategories())
+                                ->options(EnergySource::getEnergyCategories())
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
                             $records->each(function ($record) use ($data) {
-                                $record->update(['category' => $data['category']]);
+                                $record->update(['energy_category' => $data['energy_category']]);
                             });
                         }),
                 ]),
             ])
-            ->defaultSort('sort_order', 'asc')
+            ->defaultSort('name', 'asc')
             ->striped()
             ->paginated([10, 25, 50, 100]);
     }
@@ -842,7 +750,7 @@ class EnergySourceResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return parent::getEloquentQuery()->withoutGlobalScopes([SoftDeletingScope::class]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -852,18 +760,18 @@ class EnergySourceResource extends Resource
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $inactiveCount = static::getModel()::where('is_active', false)->count();
+        $inactiveCount = static::getModel()::where('status', 'inactive')->count();
         
         if ($inactiveCount > 0) {
             return 'warning';
         }
         
-        $featuredCount = static::getModel()::where('is_featured', true)->count();
+        $maintenanceCount = static::getModel()::where('status', 'maintenance')->count();
         
-        if ($featuredCount > 0) {
-            return 'success';
+        if ($maintenanceCount > 0) {
+            return 'info';
         }
         
-        return 'info';
+        return 'success';
     }
 }
