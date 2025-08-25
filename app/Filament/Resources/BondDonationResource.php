@@ -77,18 +77,11 @@ class BondDonationResource extends Resource
                                 Select::make('donation_type')
                                     ->label('Tipo de Donación')
                                     ->options(BondDonation::getDonationTypes())
-                                    ->required()
-                                    ->searchable(),
+                                    ->required(),
                                 Select::make('status')
                                     ->label('Estado')
                                     ->options(BondDonation::getStatuses())
-                                    ->required()
-                                    ->searchable(),
-                                Select::make('priority')
-                                    ->label('Prioridad')
-                                    ->options(BondDonation::getPriorities())
-                                    ->required()
-                                    ->searchable(),
+                                    ->required(),
                             ]),
                         Grid::make(2)
                             ->schema([
@@ -98,13 +91,14 @@ class BondDonationResource extends Resource
                                     ->prefix('$')
                                     ->required()
                                     ->minValue(0.01),
-                                TextInput::make('monetary_value')
-                                    ->label('Valor Monetario (€)')
+                                TextInput::make('bond_units')
+                                    ->label('Unidades de Bono')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->prefix('€')
-                                    ->helperText('Valor monetario equivalente'),
+                                    ->minValue(0.001)
+                                    ->step(0.001)
+                                    ->required()
+                                    ->suffix(' unidades')
+                                    ->helperText('Cantidad de unidades de bono donadas'),
                             ]),
                     ])
                     ->collapsible(),
@@ -336,13 +330,12 @@ class BondDonationResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Toggle::make('is_active')
-                                    ->label('Activa')
-                                    ->default(true)
-                                    ->helperText('¿La donación está activa?'),
-                                Toggle::make('follow_up_required')
-                                    ->label('Requiere Seguimiento')
-                                    ->helperText('¿Se necesita seguimiento posterior?'),
+                                Toggle::make('is_anonymous')
+                                    ->label('Anónima')
+                                    ->helperText('¿La donación debe ser anónima?'),
+                                Toggle::make('is_tax_deductible')
+                                    ->label('Deducible de Impuestos')
+                                    ->helperText('¿La donación es deducible de impuestos?'),
                             ]),
                         Grid::make(2)
                             ->schema([
@@ -450,16 +443,6 @@ class BondDonationResource extends Resource
                         'gray' => 'cancelled',
                     ])
                     ->formatStateUsing(fn (string $state): string => BondDonation::getStatuses()[$state] ?? $state),
-                BadgeColumn::make('priority')
-                    ->label('Prioridad')
-                    ->colors([
-                        'success' => 'low',
-                        'warning' => 'medium',
-                        'danger' => 'high',
-                        'secondary' => 'urgent',
-                        'gray' => 'critical',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => BondDonation::getPriorities()[$state] ?? $state),
                 TextColumn::make('donation_amount')
                     ->label('Cantidad (€)')
                     ->money('EUR')
@@ -490,10 +473,10 @@ class BondDonationResource extends Resource
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_active')
-                    ->label('Activa'),
-                ToggleColumn::make('follow_up_required')
-                    ->label('Requiere Seguimiento'),
+                ToggleColumn::make('is_anonymous')
+                    ->label('Anónima'),
+                ToggleColumn::make('is_tax_deductible')
+                    ->label('Deducible de Impuestos'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -526,9 +509,6 @@ class BondDonationResource extends Resource
                         'other' => 'Otro',
                     ])
                     ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
-                    ->label('Solo Activas'),
                 Filter::make('high_amount')
                     ->query(fn (Builder $query): Builder => $query->where('donation_amount', '>=', 1000))
                     ->label('Alto Monto (≥$1000)'),
@@ -538,9 +518,6 @@ class BondDonationResource extends Resource
                 Filter::make('recent_donations')
                     ->query(fn (Builder $query): Builder => $query->where('donation_date', '>=', now()->subDays(30)))
                     ->label('Donaciones Recientes (30 días)'),
-                Filter::make('urgent_priority')
-                    ->query(fn (Builder $query): Builder => $query->whereIn('priority', ['high', 'urgent', 'critical']))
-                    ->label('Prioridad Urgente'),
                 Filter::make('date_range')
                     ->form([
                         DatePicker::make('from_date')
@@ -583,6 +560,9 @@ class BondDonationResource extends Resource
                             );
                     })
                     ->label('Rango de Cantidades'),
+                Filter::make('anonymous_donations')
+                    ->query(fn (Builder $query): Builder => $query->where('is_anonymous', true))
+                    ->label('Solo Anónimas'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
