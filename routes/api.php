@@ -934,97 +934,238 @@ Route::apiResource('maintenance-schedules', MaintenanceScheduleController::class
     Route::post('community-metrics/{communityMetric}/reset-metrics', [App\Http\Controllers\Api\CommunityMetricsController::class, 'resetMetrics']);
     Route::apiResource('community-metrics', App\Http\Controllers\Api\CommunityMetricsController::class);
 
-    // Vendor routes
-    Route::get('vendors/statistics', [VendorController::class, 'statistics']);
-    Route::get('vendors/vendor-types', [VendorController::class, 'vendorTypes']);
-    Route::get('vendors/risk-levels', [VendorController::class, 'riskLevels']);
-    Route::get('vendors/compliance-statuses', [VendorController::class, 'complianceStatuses']);
-    Route::patch('vendors/{vendor}/toggle-verified', [VendorController::class, 'toggleVerified']);
-    Route::patch('vendors/{vendor}/toggle-preferred', [VendorController::class, 'togglePreferred']);
-    Route::post('vendors/{vendor}/duplicate', [VendorController::class, 'duplicate']);
-    Route::get('vendors/active', [VendorController::class, 'active']);
-    Route::get('vendors/verified', [VendorController::class, 'verified']);
-    Route::get('vendors/preferred', [VendorController::class, 'preferred']);
-    Route::get('vendors/blacklisted', [VendorController::class, 'blacklisted']);
-    Route::get('vendors/compliant', [VendorController::class, 'compliant']);
-    Route::get('vendors/by-risk-level/{riskLevel}', [VendorController::class, 'byRiskLevel']);
-    Route::get('vendors/by-compliance-status/{complianceStatus}', [VendorController::class, 'byComplianceStatus']);
-    Route::get('vendors/by-location/{country}', [VendorController::class, 'byLocation']);
-    Route::get('vendors/high-rating', [VendorController::class, 'highRating']);
-    Route::apiResource('vendors', VendorController::class);
-
-    // Rutas para Production Projects (Proyectos de Producción)
-    Route::get('production-projects/statistics', [ProductionProjectController::class, 'statistics']);
-    Route::get('production-projects/types', [ProductionProjectController::class, 'types']);
-    Route::get('production-projects/statuses', [ProductionProjectController::class, 'statuses']);
-    Route::get('production-projects/technology-types', [ProductionProjectController::class, 'technologyTypes']);
-    Route::post('production-projects/{productionProject}/toggle-active', [ProductionProjectController::class, 'toggleActive']);
-    Route::post('production-projects/{productionProject}/toggle-public', [ProductionProjectController::class, 'togglePublic']);
-    Route::post('production-projects/{productionProject}/update-status', [ProductionProjectController::class, 'updateStatus']);
-    Route::post('production-projects/{productionProject}/duplicate', [ProductionProjectController::class, 'duplicate']);
-    Route::apiResource('production-projects', ProductionProjectController::class);
-
-    // Rutas para Carbon Credits (Créditos de Carbono)
-    Route::get('carbon-credits/my-credits', [CarbonCreditController::class, 'myCredits']);
-    Route::get('carbon-credits/marketplace', [CarbonCreditController::class, 'marketplace']);
-    Route::get('carbon-credits/analytics', [CarbonCreditController::class, 'analytics']);
-    Route::post('carbon-credits/{carbonCredit}/verify', [CarbonCreditController::class, 'verify']);
-    Route::post('carbon-credits/{carbonCredit}/retire', [CarbonCreditController::class, 'retire']);
-    Route::post('carbon-credits/{carbonCredit}/transfer', [CarbonCreditController::class, 'transfer']);
-    Route::get('carbon-credits/{carbonCredit}/traceability', [CarbonCreditController::class, 'traceability']);
-    Route::apiResource('carbon-credits', CarbonCreditController::class);
-
-    // Rutas para Market Prices (Precios de Mercado)
-    Route::get('market-prices/latest', [MarketPriceController::class, 'latest']);
-    Route::get('market-prices/analytics', [MarketPriceController::class, 'analytics']);
-    Route::get('market-prices/markets', [MarketPriceController::class, 'markets']);
-    Route::apiResource('market-prices', MarketPriceController::class);
-
     // ========================================
-    // GESTIÓN DE COMUNIDAD - COOPERATIVAS Y SUSCRIPCIONES
+    // SISTEMA DE DISPOSITIVOS IOT Y DASHBOARD
     // ========================================
 
-    // Rutas para Energy Cooperatives (Cooperativas Energéticas)
-    Route::get('energy-cooperatives/{energyCooperative}/members', [EnergyCooperativeController::class, 'members']);
-    Route::get('energy-cooperatives/{energyCooperative}/analytics', [EnergyCooperativeController::class, 'analytics']);
-    Route::post('energy-cooperatives/{energyCooperative}/join', [EnergyCooperativeController::class, 'join']);
-    Route::apiResource('energy-cooperatives', EnergyCooperativeController::class);
+    // Device routes (IoT & Dispositivos)
+    Route::prefix('devices')->name('devices.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/types', [App\Http\Controllers\Api\DeviceController::class, 'types'])
+            ->name('types');
+        Route::get('/capabilities', [App\Http\Controllers\Api\DeviceController::class, 'capabilities'])
+            ->name('capabilities');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\DeviceController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\DeviceController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\DeviceController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'show'])
+                ->name('show');
+            Route::put('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'update'])
+                ->name('update');
+            Route::patch('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'update'])
+                ->name('update');
+            Route::delete('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{device}/activate', [App\Http\Controllers\Api\DeviceController::class, 'activate'])
+                ->name('activate');
+            Route::post('/{device}/deactivate', [App\Http\Controllers\Api\DeviceController::class, 'deactivate'])
+                ->name('deactivate');
+            Route::post('/{device}/update-communication', [App\Http\Controllers\Api\DeviceController::class, 'updateCommunication'])
+                ->name('update-communication');
+            Route::post('/bulk-update', [App\Http\Controllers\Api\DeviceController::class, 'bulkUpdate'])
+                ->name('bulk-update');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\DeviceController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+        });
+    });
 
-    // Rutas para User Subscriptions (Suscripciones de Usuario)
-    Route::get('user-subscriptions/my-subscriptions', [UserSubscriptionController::class, 'mySubscriptions']);
-    Route::post('user-subscriptions/{userSubscription}/pause', [UserSubscriptionController::class, 'pause']);
-    Route::post('user-subscriptions/{userSubscription}/resume', [UserSubscriptionController::class, 'resume']);
-    Route::get('user-subscriptions/{userSubscription}/usage', [UserSubscriptionController::class, 'usage']);
-    Route::apiResource('user-subscriptions', UserSubscriptionController::class);
+    // DashboardView routes (Vistas del Dashboard)
+    Route::prefix('dashboard-views')->name('dashboard-views.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/themes', [App\Http\Controllers\Api\DashboardViewController::class, 'themes'])
+            ->name('themes');
+        Route::get('/color-schemes', [App\Http\Controllers\Api\DashboardViewController::class, 'colorSchemes'])
+            ->name('color-schemes');
+        Route::get('/default-layout', [App\Http\Controllers\Api\DashboardViewController::class, 'defaultLayout'])
+            ->name('default-layout');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\DashboardViewController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\DashboardViewController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\DashboardViewController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'show'])
+                ->name('show');
+            Route::put('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'update'])
+                ->name('update');
+            Route::patch('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'update'])
+                ->name('update');
+            Route::delete('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{dashboardView}/set-as-default', [App\Http\Controllers\Api\DashboardViewController::class, 'setAsDefault'])
+                ->name('set-as-default');
+            Route::post('/{dashboardView}/duplicate', [App\Http\Controllers\Api\DashboardViewController::class, 'duplicate'])
+                ->name('duplicate');
+            Route::post('/{dashboardView}/add-widget', [App\Http\Controllers\Api\DashboardViewController::class, 'addWidget'])
+                ->name('add-widget');
+            Route::post('/{dashboardView}/remove-widget', [App\Http\Controllers\Api\DashboardViewController::class, 'removeWidget'])
+                ->name('remove-widget');
+            Route::post('/{dashboardView}/move-widget', [App\Http\Controllers\Api\DashboardViewController::class, 'moveWidget'])
+                ->name('move-widget');
+            Route::post('/{dashboardView}/update-module-settings', [App\Http\Controllers\Api\DashboardViewController::class, 'updateModuleSettings'])
+                ->name('update-module-settings');
+            Route::post('/{dashboardView}/share', [App\Http\Controllers\Api\DashboardViewController::class, 'share'])
+                ->name('share');
+            Route::post('/{dashboardView}/unshare', [App\Http\Controllers\Api\DashboardViewController::class, 'unshare'])
+                ->name('unshare');
+        });
+    });
 
-    // Rutas para Energy Sharing (Intercambios de Energía)
-    Route::get('energy-sharings/my-sharings', [EnergySharingController::class, 'mySharings']);
-    Route::post('energy-sharings/{energySharing}/accept', [EnergySharingController::class, 'accept']);
-    Route::post('energy-sharings/{energySharing}/start', [EnergySharingController::class, 'start']);
-    Route::post('energy-sharings/{energySharing}/complete', [EnergySharingController::class, 'complete']);
-    Route::post('energy-sharings/{energySharing}/rate', [EnergySharingController::class, 'rate']);
-    Route::apiResource('energy-sharings', EnergySharingController::class);
+    // DashboardWidget routes (Widgets del Dashboard)
+    Route::prefix('dashboard-widgets')->name('dashboard-widgets.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/types', [App\Http\Controllers\Api\DashboardWidgetController::class, 'types'])
+            ->name('types');
+        Route::get('/sizes', [App\Http\Controllers\Api\DashboardWidgetController::class, 'sizes'])
+            ->name('sizes');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\DashboardWidgetController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\DashboardWidgetController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\DashboardWidgetController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'show'])
+                ->name('show');
+            Route::put('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'update'])
+                ->name('update');
+            Route::patch('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'update'])
+                ->name('update');
+            Route::delete('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{dashboardWidget}/show', [App\Http\Controllers\Api\DashboardWidgetController::class, 'showWidget'])
+                ->name('show-widget');
+            Route::post('/{dashboardWidget}/hide', [App\Http\Controllers\Api\DashboardWidgetController::class, 'hideWidget'])
+                ->name('hide-widget');
+            Route::post('/{dashboardWidget}/refresh', [App\Http\Controllers\Api\DashboardWidgetController::class, 'refresh'])
+                ->name('refresh');
+            Route::post('/{dashboardWidget}/duplicate', [App\Http\Controllers\Api\DashboardWidgetController::class, 'duplicate'])
+                ->name('duplicate');
+            Route::post('/{dashboardWidget}/update-position', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updatePosition'])
+                ->name('update-position');
+            Route::post('/{dashboardWidget}/update-grid-position', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updateGridPosition'])
+                ->name('update-grid-position');
+            Route::post('/{dashboardWidget}/update-settings', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updateSettings'])
+                ->name('update-settings');
+            Route::post('/{dashboardWidget}/update-filters', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updateFilters'])
+                ->name('update-filters');
+            Route::get('/{dashboardWidget}/data', [App\Http\Controllers\Api\DashboardWidgetController::class, 'getData'])
+                ->name('get-data');
+            Route::post('/bulk-update', [App\Http\Controllers\Api\DashboardWidgetController::class, 'bulkUpdate'])
+                ->name('bulk-update');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\DashboardWidgetController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+        });
+    });
 
     // ========================================
-    // ANALYTICS Y REPORTES
+    // SISTEMA DE AUDITORÍA Y SEGURIDAD
     // ========================================
 
-    // Rutas para Energy Reports (Reportes de Energía)
-    Route::get('energy-reports/my-reports', [EnergyReportController::class, 'myReports']);
-    Route::post('energy-reports/{energyReport}/generate', [EnergyReportController::class, 'generate']);
-    Route::get('energy-reports/{energyReport}/download', [EnergyReportController::class, 'download']);
-    Route::post('energy-reports/{energyReport}/share', [EnergyReportController::class, 'share']);
-    Route::get('energy-reports/scheduled', [EnergyReportController::class, 'scheduled']);
-    Route::apiResource('energy-reports', EnergyReportController::class);
+    // AuditLog routes (Registros de Auditoría)
+    Route::prefix('audit-logs')->name('audit-logs.')->group(function () {
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\AuditLogController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\AuditLogController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\AuditLogController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/actions', [App\Http\Controllers\Api\AuditLogController::class, 'actions'])
+                ->name('actions');
+            Route::get('/actor-types', [App\Http\Controllers\Api\AuditLogController::class, 'actorTypes'])
+                ->name('actor-types');
+            Route::get('/export', [App\Http\Controllers\Api\AuditLogController::class, 'export'])
+                ->name('export');
+            Route::get('/summary', [App\Http\Controllers\Api\AuditLogController::class, 'summary'])
+                ->name('summary');
+            Route::get('/timeline', [App\Http\Controllers\Api\AuditLogController::class, 'timeline'])
+                ->name('timeline');
+            Route::get('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'show'])
+                ->name('show');
+            Route::put('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'update'])
+                ->name('update');
+            Route::patch('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'update'])
+                ->name('update');
+            Route::delete('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::get('/{auditLog}/changes', [App\Http\Controllers\Api\AuditLogController::class, 'getChanges'])
+                ->name('get-changes');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\AuditLogController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+        });
+    });
 
-    // Rutas para Sustainability Metrics (Métricas de Sostenibilidad)
-    Route::get('sustainability-metrics/summary', [SustainabilityMetricController::class, 'summary']);
-    Route::apiResource('sustainability-metrics', SustainabilityMetricController::class);
+    // ========================================
+    // SISTEMA DE CLIENTES API Y AUTENTICACIÓN
+    // ========================================
 
-    // Rutas para Performance Indicators (Indicadores de Rendimiento)
-    Route::get('performance-indicators/dashboard', [PerformanceIndicatorController::class, 'dashboard']);
-    Route::get('performance-indicators/alerts', [PerformanceIndicatorController::class, 'alerts']);
-    Route::apiResource('performance-indicators', PerformanceIndicatorController::class);
+    // ApiClient routes (Clientes API)
+    Route::prefix('api-clients')->name('api-clients.')->group(function () {
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\ApiClientController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\ApiClientController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\ApiClientController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/statuses', [App\Http\Controllers\Api\ApiClientController::class, 'statuses'])
+                ->name('statuses');
+            Route::get('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'show'])
+                ->name('show');
+            Route::put('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'update'])
+                ->name('update');
+            Route::patch('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'update'])
+                ->name('update');
+            Route::delete('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{apiClient}/regenerate-token', [App\Http\Controllers\Api\ApiClientController::class, 'regenerateToken'])
+                ->name('regenerate-token');
+            Route::post('/{apiClient}/suspend', [App\Http\Controllers\Api\ApiClientController::class, 'suspend'])
+                ->name('suspend');
+            Route::post('/{apiClient}/activate', [App\Http\Controllers\Api\ApiClientController::class, 'activate'])
+                ->name('activate');
+            Route::post('/{apiClient}/revoke', [App\Http\Controllers\Api\ApiClientController::class, 'revoke'])
+                ->name('revoke');
+            Route::post('/{apiClient}/update-usage', [App\Http\Controllers\Api\ApiClientController::class, 'updateUsage'])
+                ->name('update-usage');
+            Route::get('/{apiClient}/scopes', [App\Http\Controllers\Api\ApiClientController::class, 'getScopes'])
+                ->name('get-scopes');
+            Route::post('/{apiClient}/update-scopes', [App\Http\Controllers\Api\ApiClientController::class, 'updateScopes'])
+                ->name('update-scopes');
+            Route::get('/{apiClient}/rate-limit-info', [App\Http\Controllers\Api\ApiClientController::class, 'getRateLimitInfo'])
+                ->name('get-rate-limit-info');
+            Route::post('/bulk-update', [App\Http\Controllers\Api\ApiClientController::class, 'bulkUpdate'])
+                ->name('bulk-update');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\ApiClientController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+            Route::post('/bulk-regenerate-tokens', [App\Http\Controllers\Api\ApiClientController::class, 'bulkRegenerateTokens'])
+                ->name('bulk-regenerate-tokens');
+        });
+    });
 });
 
 // Rutas públicas
@@ -1357,4 +1498,241 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
     
     // Add more API routes here as needed...
+    
+    // ========================================
+    // SISTEMA DE DISPOSITIVOS IOT Y DASHBOARD
+    // ========================================
+
+    // Device routes (IoT & Dispositivos)
+    Route::prefix('devices')->name('devices.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/types', [App\Http\Controllers\Api\DeviceController::class, 'types'])
+            ->name('types');
+        Route::get('/capabilities', [App\Http\Controllers\Api\DeviceController::class, 'capabilities'])
+            ->name('capabilities');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\DeviceController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\DeviceController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\DeviceController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'show'])
+                ->name('show');
+            Route::put('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'update'])
+                ->name('update');
+            Route::patch('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'update'])
+                ->name('update');
+            Route::delete('/{device}', [App\Http\Controllers\Api\DeviceController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{device}/activate', [App\Http\Controllers\Api\DeviceController::class, 'activate'])
+                ->name('activate');
+            Route::post('/{device}/deactivate', [App\Http\Controllers\Api\DeviceController::class, 'deactivate'])
+                ->name('deactivate');
+            Route::post('/{device}/update-communication', [App\Http\Controllers\Api\DeviceController::class, 'updateCommunication'])
+                ->name('update-communication');
+            Route::post('/bulk-update', [App\Http\Controllers\Api\DeviceController::class, 'bulkUpdate'])
+                ->name('bulk-update');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\DeviceController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+        });
+    });
+
+    // DashboardView routes (Vistas del Dashboard)
+    Route::prefix('dashboard-views')->name('dashboard-views.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/themes', [App\Http\Controllers\Api\DashboardViewController::class, 'themes'])
+            ->name('themes');
+        Route::get('/color-schemes', [App\Http\Controllers\Api\DashboardViewController::class, 'colorSchemes'])
+            ->name('color-schemes');
+        Route::get('/default-layout', [App\Http\Controllers\Api\DashboardViewController::class, 'defaultLayout'])
+            ->name('default-layout');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\DashboardViewController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\DashboardViewController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\DashboardViewController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'show'])
+                ->name('show');
+            Route::put('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'update'])
+                ->name('update');
+            Route::patch('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'update'])
+                ->name('update');
+            Route::delete('/{dashboardView}', [App\Http\Controllers\Api\DashboardViewController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{dashboardView}/set-as-default', [App\Http\Controllers\Api\DashboardViewController::class, 'setAsDefault'])
+                ->name('set-as-default');
+            Route::post('/{dashboardView}/duplicate', [App\Http\Controllers\Api\DashboardViewController::class, 'duplicate'])
+                ->name('duplicate');
+            Route::post('/{dashboardView}/add-widget', [App\Http\Controllers\Api\DashboardViewController::class, 'addWidget'])
+                ->name('add-widget');
+            Route::post('/{dashboardView}/remove-widget', [App\Http\Controllers\Api\DashboardViewController::class, 'removeWidget'])
+                ->name('remove-widget');
+            Route::post('/{dashboardView}/move-widget', [App\Http\Controllers\Api\DashboardViewController::class, 'moveWidget'])
+                ->name('move-widget');
+            Route::post('/{dashboardView}/update-module-settings', [App\Http\Controllers\Api\DashboardViewController::class, 'updateModuleSettings'])
+                ->name('update-module-settings');
+            Route::post('/{dashboardView}/share', [App\Http\Controllers\Api\DashboardViewController::class, 'share'])
+                ->name('share');
+            Route::post('/{dashboardView}/unshare', [App\Http\Controllers\Api\DashboardViewController::class, 'unshare'])
+                ->name('unshare');
+        });
+    });
+
+    // DashboardWidget routes (Widgets del Dashboard)
+    Route::prefix('dashboard-widgets')->name('dashboard-widgets.')->group(function () {
+        // Public routes (no authentication required)
+        Route::get('/types', [App\Http\Controllers\Api\DashboardWidgetController::class, 'types'])
+            ->name('types');
+        Route::get('/sizes', [App\Http\Controllers\Api\DashboardWidgetController::class, 'sizes'])
+            ->name('sizes');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\DashboardWidgetController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\DashboardWidgetController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\DashboardWidgetController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'show'])
+                ->name('show');
+            Route::put('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'update'])
+                ->name('update');
+            Route::patch('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'update'])
+                ->name('update');
+            Route::delete('/{dashboardWidget}', [App\Http\Controllers\Api\DashboardWidgetController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{dashboardWidget}/show', [App\Http\Controllers\Api\DashboardWidgetController::class, 'showWidget'])
+                ->name('show-widget');
+            Route::post('/{dashboardWidget}/hide', [App\Http\Controllers\Api\DashboardWidgetController::class, 'hideWidget'])
+                ->name('hide-widget');
+            Route::post('/{dashboardWidget}/refresh', [App\Http\Controllers\Api\DashboardWidgetController::class, 'refresh'])
+                ->name('refresh');
+            Route::post('/{dashboardWidget}/duplicate', [App\Http\Controllers\Api\DashboardWidgetController::class, 'duplicate'])
+                ->name('duplicate');
+            Route::post('/{dashboardWidget}/update-position', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updatePosition'])
+                ->name('update-position');
+            Route::post('/{dashboardWidget}/update-grid-position', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updateGridPosition'])
+                ->name('update-grid-position');
+            Route::post('/{dashboardWidget}/update-settings', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updateSettings'])
+                ->name('update-settings');
+            Route::post('/{dashboardWidget}/update-filters', [App\Http\Controllers\Api\DashboardWidgetController::class, 'updateFilters'])
+                ->name('update-filters');
+            Route::get('/{dashboardWidget}/data', [App\Http\Controllers\Api\DashboardWidgetController::class, 'getData'])
+                ->name('get-data');
+            Route::post('/bulk-update', [App\Http\Controllers\Api\DashboardWidgetController::class, 'bulkUpdate'])
+                ->name('bulk-update');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\DashboardWidgetController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+        });
+    });
+
+    // ========================================
+    // SISTEMA DE AUDITORÍA Y SEGURIDAD
+    // ========================================
+
+    // AuditLog routes (Registros de Auditoría)
+    Route::prefix('audit-logs')->name('audit-logs.')->group(function () {
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\AuditLogController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\AuditLogController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\AuditLogController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/actions', [App\Http\Controllers\Api\AuditLogController::class, 'actions'])
+                ->name('actions');
+            Route::get('/actor-types', [App\Http\Controllers\Api\AuditLogController::class, 'actorTypes'])
+                ->name('actor-types');
+            Route::get('/export', [App\Http\Controllers\Api\AuditLogController::class, 'export'])
+                ->name('export');
+            Route::get('/summary', [App\Http\Controllers\Api\AuditLogController::class, 'summary'])
+                ->name('summary');
+            Route::get('/timeline', [App\Http\Controllers\Api\AuditLogController::class, 'timeline'])
+                ->name('timeline');
+            Route::get('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'show'])
+                ->name('show');
+            Route::put('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'update'])
+                ->name('update');
+            Route::patch('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'update'])
+                ->name('update');
+            Route::delete('/{auditLog}', [App\Http\Controllers\Api\AuditLogController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::get('/{auditLog}/changes', [App\Http\Controllers\Api\AuditLogController::class, 'getChanges'])
+                ->name('get-changes');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\AuditLogController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+        });
+    });
+
+    // ========================================
+    // SISTEMA DE CLIENTES API Y AUTENTICACIÓN
+    // ========================================
+
+    // ApiClient routes (Clientes API)
+    Route::prefix('api-clients')->name('api-clients.')->group(function () {
+        // Public routes (no authentication required)
+        Route::post('/validate-token', [App\Http\Controllers\Api\ApiClientController::class, 'validateToken'])
+            ->name('validate-token');
+        
+        // Protected routes (authentication required)
+        Route::middleware(['auth:sanctum'])->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\ApiClientController::class, 'index'])
+                ->name('index');
+            Route::post('/', [App\Http\Controllers\Api\ApiClientController::class, 'store'])
+                ->name('store');
+            Route::get('/statistics', [App\Http\Controllers\Api\ApiClientController::class, 'statistics'])
+                ->name('statistics');
+            Route::get('/statuses', [App\Http\Controllers\Api\ApiClientController::class, 'statuses'])
+                ->name('statuses');
+            Route::get('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'show'])
+                ->name('show');
+            Route::put('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'update'])
+                ->name('update');
+            Route::patch('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'update'])
+                ->name('update');
+            Route::delete('/{apiClient}', [App\Http\Controllers\Api\ApiClientController::class, 'destroy'])
+                ->name('destroy');
+            
+            // Additional actions
+            Route::post('/{apiClient}/regenerate-token', [App\Http\Controllers\Api\ApiClientController::class, 'regenerateToken'])
+                ->name('regenerate-token');
+            Route::post('/{apiClient}/suspend', [App\Http\Controllers\Api\ApiClientController::class, 'suspend'])
+                ->name('suspend');
+            Route::post('/{apiClient}/activate', [App\Http\Controllers\Api\ApiClientController::class, 'activate'])
+                ->name('activate');
+            Route::post('/{apiClient}/revoke', [App\Http\Controllers\Api\ApiClientController::class, 'revoke'])
+                ->name('revoke');
+            Route::post('/{apiClient}/update-usage', [App\Http\Controllers\Api\ApiClientController::class, 'updateUsage'])
+                ->name('update-usage');
+            Route::get('/{apiClient}/scopes', [App\Http\Controllers\Api\ApiClientController::class, 'getScopes'])
+                ->name('get-scopes');
+            Route::post('/{apiClient}/update-scopes', [App\Http\Controllers\Api\ApiClientController::class, 'updateScopes'])
+                ->name('update-scopes');
+            Route::get('/{apiClient}/rate-limit-info', [App\Http\Controllers\Api\ApiClientController::class, 'getRateLimitInfo'])
+                ->name('get-rate-limit-info');
+            Route::post('/bulk-update', [App\Http\Controllers\Api\ApiClientController::class, 'bulkUpdate'])
+                ->name('bulk-update');
+            Route::post('/bulk-delete', [App\Http\Controllers\Api\ApiClientController::class, 'bulkDelete'])
+                ->name('bulk-delete');
+            Route::post('/bulk-regenerate-tokens', [App\Http\Controllers\Api\ApiClientController::class, 'bulkRegenerateTokens'])
+                ->name('bulk-regenerate-tokens');
+        });
+    });
 });
