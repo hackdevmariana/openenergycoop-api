@@ -15,10 +15,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'david@aragon.es'],
+            [
+                'name' => 'David Fernández Moreno',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+                'remember_token' => \Illuminate\Support\Str::random(10),
+            ]
+        );
 
         $this->call([
             RolesAndPermissionsSeeder::class, // Agregar este seeder primero
