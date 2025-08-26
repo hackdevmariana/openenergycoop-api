@@ -18,7 +18,7 @@ class PlantResource extends Resource
 {
     protected static ?string $model = Plant::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-sun';
+    protected static ?string $navigationIcon = 'bi-leaf';
     
     protected static ?string $navigationGroup = 'Gamificación';
     
@@ -171,7 +171,7 @@ class PlantResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('toggle_active')
                     ->label('Cambiar Estado')
-                    ->icon('heroicon-o-toggle-right')
+                    ->icon('fluentui-toggle-right-16-o')
                     ->color('warning')
                     ->action(function (Plant $record): void {
                         $record->toggleActive();
