@@ -209,7 +209,7 @@ class EnergyCooperativeSeeder extends Seeder
                 'allows_trading' => false,
                 'sharing_fee_percentage' => 1.2,
                 'membership_fee' => 30.00,
-                'membership_frequency' => 'annual',
+                'membership_fee_frequency' => 'annual',
             ],
         ];
 
