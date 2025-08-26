@@ -13,18 +13,29 @@ class CustomerProfileContactInfoFactory extends Factory
 
     public function definition(): array
     {
+        $spanishData = config('spanish_data');
+        
+        // Seleccionar provincia aleatoria de Aragón
+        $province = $this->faker->randomElement(array_keys($spanishData['aragon']['provinces']));
+        
+        // Seleccionar municipio aleatorio de la provincia
+        $municipality = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['municipalities']);
+        
+        // Seleccionar dirección aleatoria de la provincia
+        $address = $this->faker->randomElement($spanishData['aragon']['addresses'][$province]);
+        
+        // Seleccionar código postal de la provincia
+        $postalCode = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['postal_codes']);
+        
         return [
             'customer_profile_id' => CustomerProfile::factory(),
             'organization_id' => Organization::factory(),
             'billing_email' => $this->faker->optional(0.8)->email(),
             'technical_email' => $this->faker->optional(0.6)->email(),
-            'address' => $this->faker->address(),
-            'postal_code' => $this->faker->postcode(),
-            'city' => $this->faker->city(),
-            'province' => $this->faker->randomElement([
-                'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 
-                'Málaga', 'Murcia', 'Palma', 'Las Palmas', 'Bilbao'
-            ]),
+            'address' => $address,
+            'postal_code' => $postalCode,
+            'city' => $municipality,
+            'province' => $province,
             'iban' => $this->faker->optional(0.7)->iban('ES'),
             'cups' => $this->faker->optional(0.9)->regexify('ES[0-9]{18}[A-Z]{2}'),
             'valid_from' => $this->faker->dateTimeBetween('-2 years', 'now'),
@@ -70,9 +81,24 @@ class CustomerProfileContactInfoFactory extends Factory
      */
     public function inProvince(string $province): static
     {
-        return $this->state(fn (array $attributes) => [
-            'province' => $province,
-        ]);
+        return $this->state(function (array $attributes) use ($province) {
+            $spanishData = config('spanish_data');
+            
+            if (!isset($spanishData['aragon']['provinces'][$province])) {
+                return [];
+            }
+            
+            $municipality = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['municipalities']);
+            $address = $this->faker->randomElement($spanishData['aragon']['addresses'][$province]);
+            $postalCode = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['postal_codes']);
+            
+            return [
+                'province' => $province,
+                'city' => $municipality,
+                'address' => $address,
+                'postal_code' => $postalCode,
+            ];
+        });
     }
 
     /**
@@ -80,11 +106,87 @@ class CustomerProfileContactInfoFactory extends Factory
      */
     public function madrid(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'province' => 'Madrid',
-            'city' => 'Madrid',
-            'postal_code' => $this->faker->randomElement(['28001', '28002', '28003', '28004', '28005']),
-        ]);
+        return $this->state(function (array $attributes) {
+            $spanishData = config('spanish_data');
+            $province = 'Zaragoza'; // Usar Zaragoza como principal
+            
+            $municipality = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['municipalities']);
+            $address = $this->faker->randomElement($spanishData['aragon']['addresses'][$province]);
+            $postalCode = $this->faker->randomElement(['50001', '50002', '50003', '50004', '50005']);
+            
+            return [
+                'province' => $province,
+                'city' => $municipality,
+                'address' => $address,
+                'postal_code' => $postalCode,
+            ];
+        });
+    }
+
+    /**
+     * State for Zaragoza province
+     */
+    public function zaragoza(): static
+    {
+        return $this->state(function (array $attributes) {
+            $spanishData = config('spanish_data');
+            $province = 'Zaragoza';
+            
+            $municipality = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['municipalities']);
+            $address = $this->faker->randomElement($spanishData['aragon']['addresses'][$province]);
+            $postalCode = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['postal_codes']);
+            
+            return [
+                'province' => $province,
+                'city' => $municipality,
+                'address' => $address,
+                'postal_code' => $postalCode,
+            ];
+        });
+    }
+
+    /**
+     * State for Huesca province
+     */
+    public function huesca(): static
+    {
+        return $this->state(function (array $attributes) {
+            $spanishData = config('spanish_data');
+            $province = 'Huesca';
+            
+            $municipality = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['municipalities']);
+            $address = $this->faker->randomElement($spanishData['aragon']['addresses'][$province]);
+            $postalCode = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['postal_codes']);
+            
+            return [
+                'province' => $province,
+                'city' => $municipality,
+                'address' => $address,
+                'postal_code' => $postalCode,
+            ];
+        });
+    }
+
+    /**
+     * State for Teruel province
+     */
+    public function teruel(): static
+    {
+        return $this->state(function (array $attributes) {
+            $spanishData = config('spanish_data');
+            $province = 'Teruel';
+            
+            $municipality = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['municipalities']);
+            $address = $this->faker->randomElement($spanishData['aragon']['addresses'][$province]);
+            $postalCode = $this->faker->randomElement($spanishData['aragon']['provinces'][$province]['postal_codes']);
+            
+            return [
+                'province' => $province,
+                'city' => $municipality,
+                'address' => $address,
+                'postal_code' => $postalCode,
+            ];
+        });
     }
 
     /**
@@ -110,17 +212,6 @@ class CustomerProfileContactInfoFactory extends Factory
             'technical_email' => null,
             'iban' => null,
             'cups' => null,
-        ]);
-    }
-
-    /**
-     * State for specific customer profile
-     */
-    public function forCustomerProfile(CustomerProfile $customerProfile): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'customer_profile_id' => $customerProfile->id,
-            'organization_id' => $customerProfile->organization_id,
         ]);
     }
 }
