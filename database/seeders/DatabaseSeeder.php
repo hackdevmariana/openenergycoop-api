@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
             UserChallengeProgressSeeder::class, // Agregar el seeder de progresos de desafíos
             EnergyCooperativeSeeder::class, // Agregar el seeder de cooperativas energéticas
             CooperativePlantConfigSeeder::class, // Agregar el seeder de configuraciones de plantas
+            TeamSeeder::class, // Agregar el seeder de equipos
         ]);
     }
 }
