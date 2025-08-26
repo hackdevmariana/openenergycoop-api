@@ -48,6 +48,7 @@ class DatabaseSeeder extends Seeder
             AffiliateSeeder::class, // Agregar el seeder de afiliados
             DiscountCodeSeeder::class, // Agregar el seeder de códigos de descuento
             SaleOrderSeeder::class, // Agregar el seeder de órdenes de venta
+            PreSaleOfferSeeder::class, // Agregar el seeder de ofertas de preventa
         ]);
     }
 }
