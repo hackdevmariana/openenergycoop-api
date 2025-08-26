@@ -43,6 +43,11 @@ class DatabaseSeeder extends Seeder
             EnergyCooperativeSeeder::class, // Agregar el seeder de cooperativas energéticas
             CooperativePlantConfigSeeder::class, // Agregar el seeder de configuraciones de plantas
             TeamSeeder::class, // Agregar el seeder de equipos
+            ChallengeSeeder::class, // Agregar el seeder de desafíos
+            TeamChallengeProgressSeeder::class, // Agregar el seeder de progresos de equipos en desafíos
+            AffiliateSeeder::class, // Agregar el seeder de afiliados
+            DiscountCodeSeeder::class, // Agregar el seeder de códigos de descuento
+            SaleOrderSeeder::class, // Agregar el seeder de órdenes de venta
         ]);
     }
 }
