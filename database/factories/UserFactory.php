@@ -27,11 +27,30 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        static $counter = 1;
+        $spanishData = config('spanish_data');
+        
+        // Generar nombre español aleatorio
+        $firstName = $this->faker->randomElement([
+            ...$spanishData['spanish_names']['male'],
+            ...$spanishData['spanish_names']['female']
+        ]);
+        
+        $surname1 = $this->faker->randomElement($spanishData['spanish_names']['surnames']);
+        $surname2 = $this->faker->randomElement($spanishData['spanish_names']['surnames']);
+        
+        $fullName = $firstName . ' ' . $surname1 . ' ' . $surname2;
+        
+        // Generar email basado en el nombre
+        $email = strtolower(
+            str_replace([' ', 'á', 'é', 'í', 'ó', 'ú', 'ñ'], 
+            ['', 'a', 'e', 'i', 'o', 'u', 'n'], 
+            $firstName . '.' . $surname1
+        ) . '@example.es'
+        );
         
         return [
-            'name' => 'User ' . $counter++,
-            'email' => 'user' . $counter . '@example.com',
+            'name' => $fullName,
+            'email' => $email,
             'email_verified_at' => now(),
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
@@ -110,6 +129,39 @@ class UserFactory extends Factory
             if ($role) {
                 $user->assignRole($role);
             }
+        });
+    }
+
+    /**
+     * Crear usuario con nombre específico de Aragón
+     */
+    public function aragon(): static
+    {
+        return $this->state(function (array $attributes) {
+            $spanishData = config('spanish_data');
+            
+            // Usar nombres más comunes en Aragón
+            $aragonNames = [
+                'Antonio', 'Manuel', 'José', 'Francisco', 'María', 'Carmen', 'Ana', 'Isabel'
+            ];
+            
+            $firstName = $this->faker->randomElement($aragonNames);
+            $surname1 = $this->faker->randomElement($spanishData['spanish_names']['surnames']);
+            $surname2 = $this->faker->randomElement($spanishData['spanish_names']['surnames']);
+            
+            $fullName = $firstName . ' ' . $surname1 . ' ' . $surname2;
+            
+            $email = strtolower(
+                str_replace([' ', 'á', 'é', 'í', 'ó', 'ú', 'ñ'], 
+                ['', 'a', 'e', 'i', 'o', 'u', 'n'], 
+                $firstName . '.' . $surname1
+                ) . '@aragon.es'
+            );
+            
+            return [
+                'name' => $fullName,
+                'email' => $email,
+            ];
         });
     }
 }
