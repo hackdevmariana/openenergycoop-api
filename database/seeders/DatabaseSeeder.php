@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             NotificationSettingsSeeder::class,
             EventSeeder::class,
             SurveySeeder::class,
+            CustomerProfileSeeder::class, // Agregar el seeder de perfiles de cliente
         ]);
     }
 }
