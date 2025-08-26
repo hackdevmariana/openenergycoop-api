@@ -67,3 +67,8 @@ Route::prefix('community-metrics')->name('community-metrics.')->group(function (
     Route::post('/{communityMetric}/add-co2-avoided', [App\Http\Controllers\CommunityMetricsController::class, 'addCo2Avoided'])->name('add-co2-avoided');
     Route::post('/{communityMetric}/reset-metrics', [App\Http\Controllers\CommunityMetricsController::class, 'resetMetrics'])->name('reset-metrics');
 });
+
+// Ruta temporal para probar iconos de Bootstrap
+Route::get('/test-icons', function () {
+    return view('test-bootstrap-icons');
+})->name('test.icons');
