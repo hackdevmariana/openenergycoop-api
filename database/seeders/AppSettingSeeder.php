@@ -11,28 +11,29 @@ class AppSettingSeeder extends Seeder
     public function run(): void
     {
         // Crear organización demo
-        $organization = Organization::create([
-            'slug' => 'demo-coop',
-            'name' => 'Demo Cooperativa',
-            'domain' => 'demo.local',
-            'contact_email' => 'contacto@demo.local',
-            'contact_phone' => '123456789',
-            // Quitar estos campos que ya no existen:
-            // 'primary_color' => '#0d6efd',
-            // 'secondary_color' => '#6610f2',
-            'css_files' => null,
-            'active' => true,
-        ]);
+        $organization = Organization::updateOrCreate(
+            ['slug' => 'demo-coop'],
+            [
+                'name' => 'Demo Cooperativa',
+                'domain' => 'demo.local',
+                'contact_email' => 'contacto@demo.local',
+                'contact_phone' => '123456789',
+                'css_files' => null,
+                'active' => true,
+            ]
+        );
 
         // Crear configuración de la app
-        AppSetting::create([
-            'organization_id' => $organization->id,
-            'name' => 'Demo Cooperativa',
-            'slogan' => 'Energía cooperativa para todos',
-            'primary_color' => '#0d6efd', // Estos campos van en AppSettings
-            'secondary_color' => '#6610f2', // Estos campos van en AppSettings
-            'locale' => 'es',
-            'custom_js' => null,
-        ]);
+        AppSetting::updateOrCreate(
+            ['organization_id' => $organization->id],
+            [
+                'name' => 'Demo Cooperativa',
+                'slogan' => 'Energía cooperativa para todos',
+                'primary_color' => '#0d6efd', // Estos campos van en AppSettings
+                'secondary_color' => '#6610f2', // Estos campos van en AppSettings
+                'locale' => 'es',
+                'custom_js' => null,
+            ]
+        );
     }
 }
