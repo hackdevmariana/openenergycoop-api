@@ -36,6 +36,10 @@ class DatabaseSeeder extends Seeder
             CustomerProfileSeeder::class, // Agregar el seeder de perfiles de cliente
             AchievementSeeder::class, // Agregar el seeder de achievements
             EnergyChallengeSeeder::class, // Agregar el seeder de desafíos energéticos
+            PlantSeeder::class, // Agregar el seeder de plantas
+            PlantGroupSeeder::class, // Agregar el seeder de grupos de plantas
+            UserAchievementSeeder::class, // Agregar el seeder de logros de usuarios
+            UserChallengeProgressSeeder::class, // Agregar el seeder de progresos de desafíos
         ]);
     }
 }
