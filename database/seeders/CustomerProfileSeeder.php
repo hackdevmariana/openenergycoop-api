@@ -32,6 +32,8 @@ class CustomerProfileSeeder extends Seeder
             return;
         }
 
+        $this->command->info('🇪🇸 Creando perfiles de cliente españoles de Aragón...');
+
         // Crear perfiles de cliente individuales
         $this->createIndividualProfiles($users, $organizations);
 
@@ -50,7 +52,7 @@ class CustomerProfileSeeder extends Seeder
         // Crear perfiles de cliente con documentos legales
         $this->createProfilesWithLegalDocuments($users, $organizations);
 
-        $this->command->info('CustomerProfileSeeder completado. Se crearon ' . CustomerProfile::count() . ' perfiles de cliente.');
+        $this->command->info('✅ CustomerProfileSeeder completado. Se crearon ' . CustomerProfile::count() . ' perfiles de cliente españoles.');
     }
 
     /**
@@ -58,6 +60,7 @@ class CustomerProfileSeeder extends Seeder
      */
     private function createIndividualProfiles($users, $organizations): void
     {
+        $this->command->info('👤 Creando perfiles individuales...');
         $individualUsers = $users->take(5);
         
         foreach ($individualUsers as $user) {
@@ -74,20 +77,14 @@ class CustomerProfileSeeder extends Seeder
             ]);
 
             // Crear información de contacto para perfiles individuales
-            CustomerProfileContactInfo::create([
-                'customer_profile_id' => $profile->id,
-                'organization_id' => $organization->id,
-                'billing_email' => $user->email,
-                'technical_email' => $user->email,
-                'address' => fake()->address(),
-                'postal_code' => fake()->postcode(),
-                'city' => fake()->city(),
-                'province' => fake()->randomElement(['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza']),
-                'iban' => fake()->optional(0.7)->iban('ES'),
-                'cups' => fake()->optional(0.9)->regexify('ES[0-9]{18}[A-Z]{2}'),
-                'valid_from' => fake()->dateTimeBetween('-1 year', 'now'),
-                'valid_to' => null,
-            ]);
+            CustomerProfileContactInfo::factory()
+                ->valid()
+                ->create([
+                    'customer_profile_id' => $profile->id,
+                    'organization_id' => $organization->id,
+                    'billing_email' => $user->email,
+                    'technical_email' => $user->email,
+                ]);
 
             // Crear documentos legales para perfiles individuales
             $this->createLegalDocumentsForProfile($profile, $organization);
@@ -99,6 +96,7 @@ class CustomerProfileSeeder extends Seeder
      */
     private function createCompanyProfiles($users, $organizations): void
     {
+        $this->command->info('🏢 Creando perfiles empresariales...');
         $companyUsers = $users->slice(5, 3);
         
         foreach ($companyUsers as $user) {
@@ -115,20 +113,14 @@ class CustomerProfileSeeder extends Seeder
             ]);
 
             // Crear información de contacto para empresas
-            CustomerProfileContactInfo::create([
-                'customer_profile_id' => $profile->id,
-                'organization_id' => $organization->id,
-                'billing_email' => 'billing@' . strtolower(str_replace(' ', '', $profile->legal_name)) . '.com',
-                'technical_email' => 'tech@' . strtolower(str_replace(' ', '', $profile->legal_name)) . '.com',
-                'address' => fake()->address(),
-                'postal_code' => fake()->postcode(),
-                'city' => fake()->city(),
-                'province' => fake()->randomElement(['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza']),
-                'iban' => fake()->iban('ES'),
-                'cups' => fake()->regexify('ES[0-9]{18}[A-Z]{2}'),
-                'valid_from' => fake()->dateTimeBetween('-1 year', 'now'),
-                'valid_to' => null,
-            ]);
+            CustomerProfileContactInfo::factory()
+                ->complete()
+                ->create([
+                    'customer_profile_id' => $profile->id,
+                    'organization_id' => $organization->id,
+                    'billing_email' => 'billing@' . strtolower(str_replace(' ', '', $profile->legal_name)) . '.es',
+                    'technical_email' => 'tech@' . strtolower(str_replace(' ', '', $profile->legal_name)) . '.es',
+                ]);
 
             // Crear documentos legales para empresas
             $this->createLegalDocumentsForProfile($profile, $organization, true);
@@ -140,6 +132,7 @@ class CustomerProfileSeeder extends Seeder
      */
     private function createTenantProfiles($users, $organizations): void
     {
+        $this->command->info('🏠 Creando perfiles de inquilinos...');
         $tenantUsers = $users->slice(8, 2);
         
         foreach ($tenantUsers as $user) {
@@ -156,20 +149,14 @@ class CustomerProfileSeeder extends Seeder
             ]);
 
             // Crear información de contacto para inquilinos
-            CustomerProfileContactInfo::create([
-                'customer_profile_id' => $profile->id,
-                'organization_id' => $organization->id,
-                'billing_email' => $user->email,
-                'technical_email' => $user->email,
-                'address' => fake()->address(),
-                'postal_code' => fake()->postcode(),
-                'city' => fake()->city(),
-                'province' => fake()->randomElement(['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza']),
-                'iban' => fake()->optional(0.7)->iban('ES'),
-                'cups' => fake()->optional(0.9)->regexify('ES[0-9]{18}[A-Z]{2}'),
-                'valid_from' => fake()->dateTimeBetween('-1 year', 'now'),
-                'valid_to' => null,
-            ]);
+            CustomerProfileContactInfo::factory()
+                ->valid()
+                ->create([
+                    'customer_profile_id' => $profile->id,
+                    'organization_id' => $organization->id,
+                    'billing_email' => $user->email,
+                    'technical_email' => $user->email,
+                ]);
 
             // Crear documentos legales para inquilinos
             $this->createLegalDocumentsForProfile($profile, $organization);
@@ -181,6 +168,7 @@ class CustomerProfileSeeder extends Seeder
      */
     private function createOwnershipChangeProfiles($users, $organizations): void
     {
+        $this->command->info('🔄 Creando perfiles de cambio de titularidad...');
         $ownershipChangeUsers = $users->slice(10, 2);
         
         foreach ($ownershipChangeUsers as $user) {
@@ -197,20 +185,14 @@ class CustomerProfileSeeder extends Seeder
             ]);
 
             // Crear información de contacto para cambios de titularidad
-            CustomerProfileContactInfo::create([
-                'customer_profile_id' => $profile->id,
-                'organization_id' => $organization->id,
-                'billing_email' => $user->email,
-                'technical_email' => $user->email,
-                'address' => fake()->address(),
-                'postal_code' => fake()->postcode(),
-                'city' => fake()->city(),
-                'province' => fake()->randomElement(['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza']),
-                'iban' => fake()->optional(0.7)->iban('ES'),
-                'cups' => fake()->optional(0.9)->regexify('ES[0-9]{18}[A-Z]{2}'),
-                'valid_from' => fake()->dateTimeBetween('-1 year', 'now'),
-                'valid_to' => null,
-            ]);
+            CustomerProfileContactInfo::factory()
+                ->valid()
+                ->create([
+                    'customer_profile_id' => $profile->id,
+                    'organization_id' => $organization->id,
+                    'billing_email' => $user->email,
+                    'technical_email' => $user->email,
+                ]);
 
             // Crear documentos legales para cambios de titularidad
             $this->createLegalDocumentsForProfile($profile, $organization);
@@ -222,6 +204,7 @@ class CustomerProfileSeeder extends Seeder
      */
     private function createProfilesWithContactInfo($users, $organizations): void
     {
+        $this->command->info('📍 Creando perfiles con información de contacto completa...');
         $contactUsers = $users->take(3);
         
         foreach ($contactUsers as $user) {
@@ -238,20 +221,15 @@ class CustomerProfileSeeder extends Seeder
             ]);
 
             // Crear información de contacto completa
-            CustomerProfileContactInfo::create([
-                'customer_profile_id' => $profile->id,
-                'organization_id' => $organization->id,
-                'billing_email' => $user->email,
-                'technical_email' => 'tech.' . $user->email,
-                'address' => fake()->address(),
-                'postal_code' => fake()->randomElement(['28001', '28002', '28003', '28004', '28005']),
-                'city' => 'Madrid',
-                'province' => 'Madrid',
-                'iban' => fake()->iban('ES'),
-                'cups' => fake()->regexify('ES[0-9]{18}[A-Z]{2}'),
-                'valid_from' => fake()->dateTimeBetween('-1 year', 'now'),
-                'valid_to' => null,
-            ]);
+            CustomerProfileContactInfo::factory()
+                ->complete()
+                ->zaragoza() // Usar Zaragoza como principal
+                ->create([
+                    'customer_profile_id' => $profile->id,
+                    'organization_id' => $organization->id,
+                    'billing_email' => $user->email,
+                    'technical_email' => 'tech.' . $user->email,
+                ]);
         }
     }
 
@@ -260,6 +238,7 @@ class CustomerProfileSeeder extends Seeder
      */
     private function createProfilesWithLegalDocuments($users, $organizations): void
     {
+        $this->command->info('📄 Creando perfiles con documentos legales...');
         $documentUsers = $users->slice(3, 4);
         
         foreach ($documentUsers as $user) {
@@ -276,17 +255,13 @@ class CustomerProfileSeeder extends Seeder
             ]);
 
             // Crear información de contacto
-            CustomerProfileContactInfo::create([
-                'customer_profile_id' => $profile->id,
-                'organization_id' => $organization->id,
-                'billing_email' => $user->email,
-                'address' => fake()->address(),
-                'postal_code' => fake()->postcode(),
-                'city' => fake()->city(),
-                'province' => fake()->randomElement(['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza']),
-                'valid_from' => fake()->dateTimeBetween('-1 year', 'now'),
-                'valid_to' => null,
-            ]);
+            CustomerProfileContactInfo::factory()
+                ->valid()
+                ->create([
+                    'customer_profile_id' => $profile->id,
+                    'organization_id' => $organization->id,
+                    'billing_email' => $user->email,
+                ]);
 
             // Crear documentos legales completos
             $this->createLegalDocumentsForProfile($profile, $organization, false, true);
