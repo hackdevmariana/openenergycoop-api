@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             SurveySeeder::class,
             CustomerProfileSeeder::class, // Agregar el seeder de perfiles de cliente
             AchievementSeeder::class, // Agregar el seeder de achievements
+            EnergyChallengeSeeder::class, // Agregar el seeder de desafíos energéticos
         ]);
     }
 }
