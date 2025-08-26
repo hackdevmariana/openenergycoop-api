@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             EventSeeder::class,
             SurveySeeder::class,
             CustomerProfileSeeder::class, // Agregar el seeder de perfiles de cliente
+            AchievementSeeder::class, // Agregar el seeder de achievements
         ]);
     }
 }
