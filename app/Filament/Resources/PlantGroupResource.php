@@ -263,7 +263,7 @@ class PlantGroupResource extends Resource
                 
                 Tables\Actions\Action::make('toggle_active')
                     ->label('Cambiar Estado')
-                    ->icon('heroicon-o-toggle-right')
+                    ->icon('fluentui-toggle-right-16-o')
                     ->color('warning')
                     ->action(function (PlantGroup $record): void {
                         $record->toggleActive();
