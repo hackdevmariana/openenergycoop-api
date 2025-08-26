@@ -141,7 +141,7 @@ class CommentFactory extends Factory
     /**
      * Set specific commentable model.
      */
-    public function for($commentable): static
+    public function forCommentable($commentable): static
     {
         return $this->state(fn (array $attributes) => [
             'commentable_type' => get_class($commentable),
