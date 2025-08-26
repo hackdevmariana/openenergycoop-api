@@ -33,9 +33,9 @@ class RolesAndAdminSeeder extends Seeder
 
         // Crear usuario admin si no existe
         $adminUser = User::firstOrCreate(
-            ['email' => 'admin@demo.com'],
+            ['email' => 'admin@aragon.es'],
             [
-                'name' => 'Administrador',
+                'name' => 'Antonio García López',
                 'password' => bcrypt('password'), // Cambiar en producción
             ]
         );
@@ -47,9 +47,31 @@ class RolesAndAdminSeeder extends Seeder
 
         // Crear usuario test si no existe
         User::firstOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'test@aragon.es'],
             [
-                'name' => 'Test User',
+                'name' => 'María Carmen Rodríguez Fernández',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+                'remember_token' => Str::random(10),
+            ]
+        );
+
+        // Crear usuario gestor si no existe
+        User::firstOrCreate(
+            ['email' => 'gestor@aragon.es'],
+            [
+                'name' => 'José Manuel López Martínez',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+                'remember_token' => Str::random(10),
+            ]
+        );
+
+        // Crear usuario técnico si no existe
+        User::firstOrCreate(
+            ['email' => 'tecnico@aragon.es'],
+            [
+                'name' => 'Francisco Javier Sánchez Pérez',
                 'email_verified_at' => now(),
                 'password' => bcrypt('password'),
                 'remember_token' => Str::random(10),
@@ -58,7 +80,9 @@ class RolesAndAdminSeeder extends Seeder
 
         $this->command->info('Roles base creados: ' . implode(', ', $roles));
         $this->command->info('Permiso access filament creado y asignado al rol admin');
-        $this->command->info('Usuario admin creado: admin@demo.com / password');
-        $this->command->info('Usuario test creado: test@example.com / password');
+        $this->command->info('Usuario admin creado: admin@aragon.es / password');
+        $this->command->info('Usuario test creado: test@aragon.es / password');
+        $this->command->info('Usuario gestor creado: gestor@aragon.es / password');
+        $this->command->info('Usuario técnico creado: tecnico@aragon.es / password');
     }
 }
