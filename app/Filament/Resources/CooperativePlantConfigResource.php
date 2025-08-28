@@ -285,4 +285,37 @@ class CooperativePlantConfigResource extends Resource
             'edit' => Pages\EditCooperativePlantConfig::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $activeCount = static::getModel()::where('active', true)->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay configuraciones
+        }
+        
+        if ($activeCount === $totalCount) {
+            return 'success';      // 🟢 Verde cuando todas las configuraciones están activas
+        }
+        
+        $defaultCount = static::getModel()::where('default', true)->count();
+        
+        if ($defaultCount > 0) {
+            return 'info';         // 🔵 Azul cuando hay configuraciones por defecto
+        }
+        
+        $inactiveCount = $totalCount - $activeCount;
+        
+        if ($inactiveCount > $activeCount) {
+            return 'danger';       // 🔴 Rojo cuando hay más configuraciones inactivas que activas
+        }
+        
+        return 'warning';          // 🟡 Naranja cuando hay algunas configuraciones inactivas
+    }
 }
