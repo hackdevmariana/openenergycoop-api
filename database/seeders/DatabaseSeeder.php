@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
             SaleOrderSeeder::class, // Agregar el seeder de órdenes de venta
             PreSaleOfferSeeder::class, // Agregar el seeder de ofertas de preventa
             AutomationRuleSeeder::class, // Agregar el seeder de reglas de automatización
+            OrganizationFeatureSeeder::class, // Agregar el seeder de características de organizaciones
         ]);
     }
 }
