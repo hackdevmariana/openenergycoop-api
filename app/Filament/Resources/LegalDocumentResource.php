@@ -192,4 +192,27 @@ class LegalDocumentResource extends Resource
             'edit' => Pages\EditLegalDocument::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $pendingVerificationCount = static::getModel()::whereNull('verified_at')->count();
+        
+        if ($pendingVerificationCount > 0) {
+            return 'warning';  // 🟡 Naranja para documentos pendientes de verificación
+        }
+        
+        $verifiedCount = static::getModel()::whereNotNull('verified_at')->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($verifiedCount === $totalCount && $totalCount > 0) {
+            return 'success';  // 🟢 Verde cuando todos los documentos están verificados
+        }
+        
+        return 'info';         // 🔵 Azul para estado mixto
+    }
 }
