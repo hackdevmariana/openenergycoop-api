@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             AutomationRuleSeeder::class, // Agregar el seeder de reglas de automatización
             OrganizationFeatureSeeder::class, // Agregar el seeder de características de organizaciones
             MaintenanceScheduleSeeder::class, // Agregar el seeder de horarios de mantenimiento
+            OrganizationRoleSeeder::class, // Agregar el seeder de roles de organización
         ]);
     }
 }
