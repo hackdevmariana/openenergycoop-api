@@ -221,4 +221,34 @@ class TeamResource extends Resource
             'edit' => Pages\EditTeam::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay equipos
+        }
+        
+        $openTeamsCount = static::getModel()::where('is_open', true)->count();
+        
+        if ($openTeamsCount === $totalCount) {
+            return 'success';      // 🟢 Verde cuando todos los equipos están abiertos
+        }
+        
+        if ($openTeamsCount > ($totalCount / 2)) {
+            return 'info';         // 🔵 Azul cuando la mayoría de equipos están abiertos
+        }
+        
+        if ($openTeamsCount > 0) {
+            return 'warning';      // 🟡 Naranja cuando algunos equipos están abiertos
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando ningún equipo está abierto
+    }
 }
