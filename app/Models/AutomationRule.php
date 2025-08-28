@@ -146,6 +146,22 @@ class AutomationRule extends Model
         ];
     }
 
+    public static function getPriorities(): array
+    {
+        return [
+            1 => 'Muy Bajo',
+            2 => 'Muy Bajo',
+            3 => 'Bajo',
+            4 => 'Bajo',
+            5 => 'Medio',
+            6 => 'Medio',
+            7 => 'Medio',
+            8 => 'Alto',
+            9 => 'Alto',
+            10 => 'Crítico',
+        ];
+    }
+
     // Relaciones
     public function targetEntity(): MorphTo
     {
