@@ -14,8 +14,7 @@ use Filament\Forms\Components\Tabs;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+
 
 class CollaboratorResource extends Resource
 {
@@ -133,11 +132,12 @@ class CollaboratorResource extends Resource
     {
         return $table
             ->columns([
-                SpatieMediaLibraryImageColumn::make('logo')
+                Tables\Columns\TextColumn::make('logo')
                     ->label('Logo')
-                    ->collection('collaborator_logos')
-                    ->width(80)
-                    ->height(60),
+                    ->formatStateUsing(fn ($state) => $state ? '📁 ' . basename($state) : '🖼️ Sin logo')
+                    ->description(fn ($state) => $state ? 'Ruta: ' . $state : null)
+                    ->wrap()
+                    ->width(120),
                     
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
@@ -145,53 +145,49 @@ class CollaboratorResource extends Resource
                     ->sortable()
                     ->weight(FontWeight::Medium),
                     
-                Tables\Columns\BadgeColumn::make('category')
-                    ->label('Categoría')
+                Tables\Columns\BadgeColumn::make('collaborator_type')
+                    ->label('Tipo')
                     ->colors([
                         'primary' => 'partner',
                         'success' => 'sponsor',
-                        'warning' => 'supplier',
-                        'danger' => 'client',
-                        'secondary' => 'institutional',
-                        'gray' => 'media',
+                        'warning' => 'member',
+                        'danger' => 'supporter',
                     ])
                     ->formatStateUsing(fn ($state) => match($state) {
                         'partner' => 'Socio',
                         'sponsor' => 'Patrocinador',
-                        'supplier' => 'Proveedor',
-                        'client' => 'Cliente',
-                        'institutional' => 'Institucional',
-                        'media' => 'Medios',
+                        'member' => 'Miembro',
+                        'supporter' => 'Proveedor',
                         default => $state,
                     }),
                     
-                Tables\Columns\TextColumn::make('position')
+                Tables\Columns\TextColumn::make('order')
                     ->label('Orden')
                     ->sortable()
                     ->alignCenter()
                     ->badge()
                     ->color('secondary'),
                     
-                Tables\Columns\IconColumn::make('featured')
-                    ->label('Destacado')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-star')
-                    ->falseIcon('heroicon-o-star')
-                    ->trueColor('warning')
-                    ->falseColor('gray'),
-                    
-                Tables\Columns\IconColumn::make('active')
-                    ->label('Estado')
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Activo')
                     ->boolean()
                     ->trueIcon('heroicon-o-eye')
                     ->falseIcon('heroicon-o-eye-slash')
                     ->trueColor('success')
                     ->falseColor('gray'),
                     
-                Tables\Columns\TextColumn::make('website_url')
+                Tables\Columns\IconColumn::make('is_draft')
+                    ->label('Borrador')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-document')
+                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueColor('warning')
+                    ->falseColor('success'),
+                    
+                Tables\Columns\TextColumn::make('url')
                     ->label('Web')
                     ->placeholder('Sin web')
-                    ->url(fn ($record) => $record->website_url)
+                    ->url(fn ($record) => $record->url)
                     ->openUrlInNewTab()
                     ->toggleable(isToggledHiddenByDefault: true),
                     
@@ -207,28 +203,26 @@ class CollaboratorResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('category')
-                    ->label('Categoría')
+                SelectFilter::make('collaborator_type')
+                    ->label('Tipo')
                     ->options([
                         'partner' => 'Socio',
                         'sponsor' => 'Patrocinador',
-                        'supplier' => 'Proveedor',
-                        'client' => 'Cliente',
-                        'institutional' => 'Institucional',
-                        'media' => 'Medios',
+                        'member' => 'Miembro',
+                        'supporter' => 'Proveedor',
                     ]),
                     
-                TernaryFilter::make('active')
+                TernaryFilter::make('is_active')
                     ->label('Estado')
                     ->placeholder('Todos')
                     ->trueLabel('Solo activos')
                     ->falseLabel('Solo inactivos'),
                     
-                TernaryFilter::make('featured')
-                    ->label('Destacados')
+                TernaryFilter::make('is_draft')
+                    ->label('Borradores')
                     ->placeholder('Todos')
-                    ->trueLabel('Solo destacados')
-                    ->falseLabel('Solo no destacados'),
+                    ->trueLabel('Solo borradores')
+                    ->falseLabel('Solo publicados'),
                     
                 SelectFilter::make('organization_id')
                     ->label('Organización')
@@ -239,17 +233,17 @@ class CollaboratorResource extends Resource
                 Tables\Actions\Action::make('visit_website')
                     ->label('Visitar Web')
                     ->icon('heroicon-o-globe-alt')
-                    ->url(fn ($record) => $record->website_url)
+                    ->url(fn ($record) => $record->url)
                     ->openUrlInNewTab()
-                    ->visible(fn ($record) => !empty($record->website_url)),
+                    ->visible(fn ($record) => !empty($record->url)),
                     
                 Tables\Actions\EditAction::make(),
                 
-                Tables\Actions\Action::make('toggle_featured')
-                    ->label(fn ($record) => $record->featured ? 'Quitar Destacado' : 'Destacar')
-                    ->icon(fn ($record) => $record->featured ? 'heroicon-o-star' : 'heroicon-o-star')
-                    ->color(fn ($record) => $record->featured ? 'warning' : 'gray')
-                    ->action(fn ($record) => $record->update(['featured' => !$record->featured])),
+                Tables\Actions\Action::make('toggle_active')
+                    ->label(fn ($record) => $record->is_active ? 'Desactivar' : 'Activar')
+                    ->icon(fn ($record) => $record->is_active ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
+                    ->color(fn ($record) => $record->is_active ? 'danger' : 'success')
+                    ->action(fn ($record) => $record->update(['is_active' => !$record->is_active])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -257,17 +251,17 @@ class CollaboratorResource extends Resource
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Activar seleccionados')
                         ->icon('heroicon-o-eye')
-                        ->action(fn ($records) => $records->each->update(['active' => true]))
+                        ->action(fn ($records) => $records->each->update(['is_active' => true]))
                         ->requiresConfirmation(),
-                    Tables\Actions\BulkAction::make('feature')
-                        ->label('Destacar seleccionados')
-                        ->icon('heroicon-o-star')
-                        ->action(fn ($records) => $records->each->update(['featured' => true]))
+                    Tables\Actions\BulkAction::make('deactivate')
+                        ->label('Desactivar seleccionados')
+                        ->icon('heroicon-o-eye-slash')
+                        ->action(fn ($records) => $records->each->update(['is_active' => false]))
                         ->requiresConfirmation(),
                 ]),
             ])
-            ->defaultSort('position', 'asc')
-            ->reorderable('position');
+            ->defaultSort('order', 'asc')
+            ->reorderable('order');
     }
 
     public static function getPages(): array
