@@ -225,4 +225,35 @@ class TeamMembershipResource extends Resource
             'edit' => Pages\EditTeamMembership::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $activeCount = static::getModel()::whereNull('left_at')->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay membresías
+        }
+        
+        $activityRate = $activeCount / $totalCount;
+        
+        if ($activityRate >= 0.9) {
+            return 'success';      // 🟢 Verde cuando el 90%+ está activo
+        }
+        
+        if ($activityRate >= 0.7) {
+            return 'info';         // 🔵 Azul cuando el 70%+ está activo
+        }
+        
+        if ($activityRate >= 0.5) {
+            return 'warning';      // 🟡 Naranja cuando el 50%+ está activo
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando menos del 50% está activo
+    }
 }
