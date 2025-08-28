@@ -30,6 +30,54 @@ class ContactResource extends Resource
     
     protected static ?int $navigationSort = 2;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $model = static::getModel();
+        $total = $model::count();
+        
+        if ($total === 0) {
+            return 'gray';
+        }
+        
+        $publishedCount = $model::where('is_draft', false)->count();
+        $primaryCount = $model::where('is_primary', true)->count();
+        $withLocationCount = $model::whereNotNull('latitude')->whereNotNull('longitude')->count();
+        
+        // Si hay contactos de emergencia, mostrar danger
+        $emergencyCount = $model::where('contact_type', 'emergency')->count();
+        if ($emergencyCount > 0) {
+            return 'danger';
+        }
+        
+        // Si hay más borradores que publicados, mostrar warning
+        $draftCount = $total - $publishedCount;
+        if ($draftCount > $publishedCount) {
+            return 'warning';
+        }
+        
+        // Si todos están publicados y hay contactos principales, mostrar success
+        if ($publishedCount === $total && $primaryCount > 0) {
+            return 'success';
+        }
+        
+        // Si la mayoría están publicados, mostrar info
+        if ($publishedCount >= ($total * 0.7)) {
+            return 'info';
+        }
+        
+        // Si hay muchos sin ubicación, mostrar warning
+        if ($withLocationCount < ($total * 0.5)) {
+            return 'warning';
+        }
+        
+        return 'info';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
