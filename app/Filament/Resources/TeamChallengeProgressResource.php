@@ -269,4 +269,35 @@ class TeamChallengeProgressResource extends Resource
             'edit' => Pages\EditTeamChallengeProgress::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $completedCount = static::getModel()::whereNotNull('completed_at')->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay progresos
+        }
+        
+        $completionRate = $completedCount / $totalCount;
+        
+        if ($completionRate >= 0.8) {
+            return 'success';      // 🟢 Verde cuando el 80%+ está completado
+        }
+        
+        if ($completionRate >= 0.6) {
+            return 'info';         // 🔵 Azul cuando el 60%+ está completado
+        }
+        
+        if ($completionRate >= 0.3) {
+            return 'warning';      // 🟡 Naranja cuando el 30%+ está completado
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando menos del 30% está completado
+    }
 }
