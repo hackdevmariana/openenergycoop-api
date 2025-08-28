@@ -59,22 +59,22 @@ class FormSubmissionResource extends Resource
                                     
                                 Section::make('Información del Usuario')
                                     ->schema([
-                                        Forms\Components\Select::make('user_id')
-                                            ->label('Usuario')
-                                            ->relationship('user', 'name')
-                                            ->searchable()
-                                            ->disabled()
-                                            ->placeholder('Usuario anónimo'),
-                                            
                                         Forms\Components\TextInput::make('email')
                                             ->label('Email')
                                             ->email()
                                             ->disabled()
-                                            ->copyable(),
+                                            ->copyable()
+                                            ->helperText('Email extraído de los campos del formulario'),
                                             
                                         Forms\Components\TextInput::make('name')
                                             ->label('Nombre')
-                                            ->disabled(),
+                                            ->disabled()
+                                            ->helperText('Nombre extraído de los campos del formulario'),
+                                            
+                                        Forms\Components\TextInput::make('phone')
+                                            ->label('Teléfono')
+                                            ->disabled()
+                                            ->helperText('Teléfono extraído de los campos del formulario'),
                                     ])->columns(3),
                             ]),
                             
@@ -83,7 +83,7 @@ class FormSubmissionResource extends Resource
                             ->schema([
                                 Section::make('Datos Enviados')
                                     ->schema([
-                                        Forms\Components\KeyValue::make('form_data')
+                                        Forms\Components\KeyValue::make('fields')
                                             ->label('Datos del Formulario')
                                             ->keyLabel('Campo')
                                             ->valueLabel('Valor')
@@ -109,12 +109,10 @@ class FormSubmissionResource extends Resource
                                             ->required()
                                             ->default('pending'),
                                             
-                                        Forms\Components\Select::make('assigned_to_user_id')
+                                        Forms\Components\TextInput::make('assigned_to')
                                             ->label('Asignado a')
-                                            ->relationship('assignedTo', 'name')
-                                            ->searchable()
-                                            ->preload()
-                                            ->placeholder('Sin asignar'),
+                                            ->disabled()
+                                            ->helperText('Usuario asignado para procesar este envío'),
                                     ])->columns(2),
                                     
                                 Section::make('Fechas de Seguimiento')
@@ -164,15 +162,18 @@ class FormSubmissionResource extends Resource
                                             ->copyable(),
                                     ])->columns(1),
                                     
-                                Section::make('Metadatos')
-                                    ->schema([
-                                        Forms\Components\KeyValue::make('metadata')
-                                            ->label('Metadatos Adicionales')
-                                            ->keyLabel('Campo')
-                                            ->valueLabel('Valor')
-                                            ->disabled()
-                                            ->columnSpanFull(),
-                                    ]),
+                                                                    Section::make('Metadatos')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('source_url')
+                                                ->label('URL de Origen')
+                                                ->disabled()
+                                                ->copyable(),
+                                            
+                                            Forms\Components\TextInput::make('referrer')
+                                                ->label('Página de Referencia')
+                                                ->disabled()
+                                                ->copyable(),
+                                        ])->columns(2),
                             ])
                             ->hidden(fn () => !auth()->user()->hasRole('admin')),
                     ])
@@ -197,31 +198,41 @@ class FormSubmissionResource extends Resource
                     ->searchable()
                     ->placeholder('Sin nombre'),
                     
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
+                Tables\Columns\TextColumn::make('fields')
+                    ->label('Datos')
+                    ->formatStateUsing(function ($state) {
+                        if (is_array($state)) {
+                            $email = $state['email'] ?? $state['Email'] ?? null;
+                            $name = $state['name'] ?? $state['Name'] ?? null;
+                            return $name ? "{$name} ({$email})" : $email;
+                        }
+                        return 'Sin datos';
+                    })
                     ->searchable()
                     ->copyable()
                     ->color('primary'),
                     
-                Tables\Columns\BadgeColumn::make('form_type')
+                Tables\Columns\BadgeColumn::make('form_name')
                     ->label('Tipo')
                     ->colors([
                         'primary' => 'contact',
                         'success' => 'newsletter',
                         'warning' => 'support',
-                        'danger' => 'complaint',
+                        'danger' => 'spam',
                         'secondary' => 'survey',
-                        'gray' => 'other',
+                        'gray' => 'general',
                     ])
                     ->formatStateUsing(fn ($state) => match($state) {
                         'contact' => 'Contacto',
                         'newsletter' => 'Newsletter',
                         'support' => 'Soporte',
-                        'complaint' => 'Queja',
                         'survey' => 'Encuesta',
                         'registration' => 'Registro',
                         'quote' => 'Cotización',
-                        'other' => 'Otro',
+                        'partnership' => 'Colaboración',
+                        'job_application' => 'Trabajo',
+                        'volunteer' => 'Voluntariado',
+                        'general' => 'General',
                         default => $state,
                     }),
                     
@@ -229,29 +240,22 @@ class FormSubmissionResource extends Resource
                     ->label('Estado')
                     ->colors([
                         'warning' => 'pending',
-                        'primary' => 'reviewed',
                         'success' => 'processed',
                         'secondary' => 'archived',
                         'danger' => 'spam',
                     ])
                     ->formatStateUsing(fn ($state) => match($state) {
                         'pending' => 'Pendiente',
-                        'reviewed' => 'Revisado',
                         'processed' => 'Procesado',
                         'archived' => 'Archivado',
                         'spam' => 'Spam',
                         default => $state,
                     }),
                     
-                Tables\Columns\TextColumn::make('assignedTo.name')
-                    ->label('Asignado a')
-                    ->placeholder('Sin asignar')
-                    ->toggleable(),
-                    
-                Tables\Columns\TextColumn::make('source_page')
+                Tables\Columns\TextColumn::make('source_url')
                     ->label('Página')
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->source_page)
+                    ->tooltip(fn ($record) => $record->source_url)
                     ->toggleable(isToggledHiddenByDefault: true),
                     
                 Tables\Columns\TextColumn::make('created_at')
@@ -266,62 +270,37 @@ class FormSubmissionResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('form_type')
+                SelectFilter::make('form_name')
                     ->label('Tipo de Formulario')
                     ->options([
                         'contact' => 'Contacto',
                         'newsletter' => 'Newsletter',
                         'support' => 'Soporte',
-                        'complaint' => 'Queja',
                         'survey' => 'Encuesta',
                         'registration' => 'Registro',
                         'quote' => 'Cotización',
-                        'other' => 'Otro',
+                        'partnership' => 'Colaboración',
+                        'job_application' => 'Trabajo',
+                        'volunteer' => 'Voluntariado',
+                        'general' => 'General',
                     ]),
                     
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options([
                         'pending' => 'Pendiente',
-                        'reviewed' => 'Revisado',
                         'processed' => 'Procesado',
                         'archived' => 'Archivado',
                         'spam' => 'Spam',
                     ])
                     ->default('pending'),
                     
-                SelectFilter::make('form_name')
-                    ->label('Formulario')
-                    ->options(function () {
-                        return FormSubmission::distinct('form_name')
-                            ->whereNotNull('form_name')
-                            ->pluck('form_name', 'form_name')
-                            ->toArray();
-                    }),
-                    
-                SelectFilter::make('assigned_to_user_id')
-                    ->label('Asignado a')
-                    ->relationship('assignedTo', 'name')
-                    ->placeholder('Todos'),
+                SelectFilter::make('organization_id')
+                    ->label('Organización')
+                    ->relationship('organization', 'name')
+                    ->placeholder('Todas las organizaciones'),
             ])
             ->actions([
-                Tables\Actions\Action::make('mark_reviewed')
-                    ->label('Marcar como Revisado')
-                    ->icon('heroicon-o-eye')
-                    ->color('primary')
-                    ->action(function (FormSubmission $record) {
-                        $record->update([
-                            'status' => 'reviewed',
-                            'reviewed_at' => now(),
-                        ]);
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Envío marcado como revisado')
-                            ->success()
-                            ->send();
-                    })
-                    ->visible(fn (FormSubmission $record) => $record->status === 'pending'),
-                    
                 Tables\Actions\Action::make('mark_processed')
                     ->label('Marcar como Procesado')
                     ->icon('heroicon-o-check-circle')
@@ -338,50 +317,46 @@ class FormSubmissionResource extends Resource
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (FormSubmission $record) => in_array($record->status, ['pending', 'reviewed'])),
+                    ->visible(fn (FormSubmission $record) => $record->status === 'pending'),
                     
-                Tables\Actions\Action::make('assign_to_me')
-                    ->label('Asignarme')
-                    ->icon('heroicon-o-user-plus')
-                    ->color('warning')
+                Tables\Actions\Action::make('mark_spam')
+                    ->label('Marcar como Spam')
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->color('danger')
                     ->action(function (FormSubmission $record) {
-                        $record->update(['assigned_to_user_id' => auth()->id()]);
+                        $record->update(['status' => 'spam']);
                         
                         \Filament\Notifications\Notification::make()
-                            ->title('Envío asignado correctamente')
+                            ->title('Envío marcado como spam')
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (FormSubmission $record) => !$record->assigned_to_user_id),
+                    ->visible(fn (FormSubmission $record) => $record->status === 'pending'),
                     
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('mark_reviewed')
-                        ->label('Marcar como revisados')
-                        ->icon('heroicon-o-eye')
+                    Tables\Actions\BulkAction::make('mark_processed')
+                        ->label('Marcar como procesados')
+                        ->icon('heroicon-o-check-circle')
                         ->action(fn ($records) => $records->each->update([
-                            'status' => 'reviewed',
-                            'reviewed_at' => now()
+                            'status' => 'processed',
+                            'processed_at' => now(),
+                            'processed_by_user_id' => auth()->id()
                         ]))
+                        ->requiresConfirmation(),
+                    Tables\Actions\BulkAction::make('mark_spam')
+                        ->label('Marcar como spam')
+                        ->icon('heroicon-o-exclamation-triangle')
+                        ->action(fn ($records) => $records->each->update(['status' => 'spam']))
                         ->requiresConfirmation(),
                     Tables\Actions\BulkAction::make('archive')
                         ->label('Archivar seleccionados')
                         ->icon('heroicon-o-archive-box')
                         ->action(fn ($records) => $records->each->update(['status' => 'archived']))
                         ->requiresConfirmation(),
-                    Tables\Actions\BulkAction::make('export')
-                        ->label('Exportar seleccionados')
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->action(function ($records) {
-                            // Aquí implementarías la exportación
-                            \Filament\Notifications\Notification::make()
-                                ->title('Envíos exportados')
-                                ->success()
-                                ->send();
-                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
