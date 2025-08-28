@@ -228,4 +228,31 @@ class PlantResource extends Resource
             'edit' => Pages\EditPlant::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $activeCount = static::getModel()::where('is_active', true)->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay plantas
+        }
+        
+        if ($activeCount === $totalCount) {
+            return 'success';      // 🟢 Verde cuando todas las plantas están activas
+        }
+        
+        $inactiveCount = $totalCount - $activeCount;
+        
+        if ($inactiveCount > $activeCount) {
+            return 'danger';       // 🔴 Rojo cuando hay más plantas inactivas que activas
+        }
+        
+        return 'warning';          // 🟡 Naranja cuando hay algunas plantas inactivas
+    }
 }
