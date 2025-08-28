@@ -51,9 +51,9 @@ class CollaboratorResource extends Resource
                                         Forms\Components\Textarea::make('description')
                                             ->label('Descripción')
                                             ->rows(3)
-                                            ->maxLength(500),
+                                            ->maxLength(1000),
                                             
-                                        Forms\Components\TextInput::make('website_url')
+                                        Forms\Components\TextInput::make('url')
                                             ->label('Sitio Web')
                                             ->url()
                                             ->placeholder('https://ejemplo.com'),
@@ -61,17 +61,9 @@ class CollaboratorResource extends Resource
                                     
                                 Section::make('Logo del Colaborador')
                                     ->schema([
-                                        SpatieMediaLibraryFileUpload::make('logo')
-                                            ->label('Logo')
-                                            ->collection('collaborator_logos')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->imageEditorAspectRatios([
-                                                '1:1',
-                                                '16:9',
-                                                '4:3',
-                                            ])
-                                            ->helperText('Logo del colaborador (formato recomendado: PNG con fondo transparente)')
+                                        Forms\Components\TextInput::make('logo')
+                                            ->label('Ruta del Logo')
+                                            ->helperText('Ruta del archivo de logo (ej: collaborators/logo.png)')
                                             ->columnSpanFull(),
                                     ]),
                             ]),
@@ -81,35 +73,33 @@ class CollaboratorResource extends Resource
                             ->schema([
                                 Section::make('Posicionamiento')
                                     ->schema([
-                                        Forms\Components\TextInput::make('position')
+                                        Forms\Components\TextInput::make('order')
                                             ->label('Orden de Aparición')
                                             ->numeric()
                                             ->default(0)
                                             ->helperText('Orden en que aparece (menor número = mayor prioridad)'),
                                             
-                                        Forms\Components\Select::make('category')
-                                            ->label('Categoría')
+                                        Forms\Components\Select::make('collaborator_type')
+                                            ->label('Tipo de Colaborador')
                                             ->options([
                                                 'partner' => 'Socio',
                                                 'sponsor' => 'Patrocinador',
-                                                'supplier' => 'Proveedor',
-                                                'client' => 'Cliente',
-                                                'institutional' => 'Institucional',
-                                                'media' => 'Medios',
+                                                'member' => 'Miembro',
+                                                'supporter' => 'Proveedor',
                                             ])
                                             ->default('partner'),
                                     ])->columns(2),
                                     
                                 Section::make('Estado')
                                     ->schema([
-                                        Forms\Components\Toggle::make('active')
+                                        Forms\Components\Toggle::make('is_active')
                                             ->label('Activo')
                                             ->helperText('Solo los colaboradores activos se muestran públicamente')
                                             ->default(true),
                                             
-                                        Forms\Components\Toggle::make('featured')
-                                            ->label('Destacado')
-                                            ->helperText('Los colaboradores destacados aparecen primero')
+                                        Forms\Components\Toggle::make('is_draft')
+                                            ->label('Borrador')
+                                            ->helperText('Los colaboradores en borrador no se muestran públicamente')
                                             ->default(false),
                                     ])->columns(2),
                                     
