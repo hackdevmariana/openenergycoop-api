@@ -324,4 +324,39 @@ class EnergyChallengeResource extends Resource
             'edit' => Pages\EditEnergyChallenge::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $now = now();
+        
+        $activeCount = static::getModel()::where('starts_at', '<=', $now)
+            ->where('ends_at', '>=', $now)
+            ->where('is_active', true)
+            ->count();
+        
+        if ($activeCount > 0) {
+            return 'success';  // 🟢 Verde para desafíos activos
+        }
+        
+        $upcomingCount = static::getModel()::where('starts_at', '>', $now)
+            ->where('is_active', true)
+            ->count();
+        
+        if ($upcomingCount > 0) {
+            return 'info';     // 🔵 Azul para desafíos próximos
+        }
+        
+        $expiredCount = static::getModel()::where('ends_at', '<', $now)->count();
+        
+        if ($expiredCount > 0) {
+            return 'warning';  // 🟡 Naranja para desafíos expirados
+        }
+        
+        return 'gray';         // ⚫ Gris cuando no hay desafíos
+    }
 }
