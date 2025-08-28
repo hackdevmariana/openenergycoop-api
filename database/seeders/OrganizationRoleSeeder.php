@@ -380,3 +380,4 @@ class OrganizationRoleSeeder extends Seeder
         $this->command->info("  ✅ Creado rol: {$roleData['name']}");
     }
 }
+
