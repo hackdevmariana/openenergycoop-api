@@ -310,4 +310,35 @@ class UserChallengeProgressResource extends Resource
             'edit' => Pages\EditUserChallengeProgress::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $completedCount = static::getModel()::whereNotNull('completed_at')->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay progresos
+        }
+        
+        $completionRate = $completedCount / $totalCount;
+        
+        if ($completionRate >= 0.8) {
+            return 'success';      // 🟢 Verde cuando el 80%+ está completado
+        }
+        
+        if ($completionRate >= 0.5) {
+            return 'info';         // 🔵 Azul cuando el 50%+ está completado
+        }
+        
+        if ($completionRate >= 0.2) {
+            return 'warning';      // 🟡 Naranja cuando el 20%+ está completado
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando menos del 20% está completado
+    }
 }
