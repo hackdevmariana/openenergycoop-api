@@ -54,6 +54,7 @@ class DatabaseSeeder extends Seeder
             MaintenanceScheduleSeeder::class, // Agregar el seeder de horarios de mantenimiento
             OrganizationRoleSeeder::class, // Agregar el seeder de roles de organización
             UserOrganizationRoleSeeder::class, // Agregar el seeder de asignaciones de roles de usuario
+            ApiClientSeeder::class, // Agregar el seeder de clientes API
         ]);
     }
 }
