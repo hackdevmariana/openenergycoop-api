@@ -95,4 +95,41 @@ class AppSettingResource extends Resource
             'edit' => Pages\EditAppSetting::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay configuraciones
+        }
+        
+        $configuredCount = static::getModel()::whereNotNull('favicon_path')
+            ->orWhereNotNull('primary_color')
+            ->orWhereNotNull('secondary_color')
+            ->orWhereNotNull('slogan')
+            ->orWhereNotNull('name')
+            ->count();
+        
+        $configurationRate = $configuredCount / $totalCount;
+        
+        if ($configurationRate >= 0.8) {
+            return 'success';      // 🟢 Verde cuando el 80%+ está bien configurado
+        }
+        
+        if ($configurationRate >= 0.6) {
+            return 'info';         // 🔵 Azul cuando el 60%+ está bien configurado
+        }
+        
+        if ($configurationRate >= 0.4) {
+            return 'warning';      // 🟡 Naranja cuando el 40%+ está bien configurado
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando menos del 40% está bien configurado
+    }
 }
