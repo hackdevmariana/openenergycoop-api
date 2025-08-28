@@ -294,4 +294,46 @@ class ChallengeResource extends Resource
             'edit' => Pages\EditChallenge::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $now = now();
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay desafíos
+        }
+        
+        $activeCount = static::getModel()::where('is_active', true)->count();
+        $currentCount = static::getModel()::where('start_date', '<=', $now)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('end_date')
+                  ->orWhere('end_date', '>=', $now);
+            })
+            ->where('is_active', true)
+            ->count();
+        
+        if ($currentCount > 0) {
+            return 'success';      // 🟢 Verde para desafíos en curso
+        }
+        
+        $upcomingCount = static::getModel()::where('start_date', '>', $now)
+            ->where('is_active', true)
+            ->count();
+        
+        if ($upcomingCount > 0) {
+            return 'info';         // 🔵 Azul para desafíos próximos
+        }
+        
+        if ($activeCount === 0) {
+            return 'danger';       // 🔴 Rojo cuando no hay desafíos activos
+        }
+        
+        return 'warning';          // 🟡 Naranja para desafíos inactivos
+    }
 }
