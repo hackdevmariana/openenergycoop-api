@@ -53,6 +53,7 @@ class DatabaseSeeder extends Seeder
             OrganizationFeatureSeeder::class, // Agregar el seeder de características de organizaciones
             MaintenanceScheduleSeeder::class, // Agregar el seeder de horarios de mantenimiento
             OrganizationRoleSeeder::class, // Agregar el seeder de roles de organización
+            UserOrganizationRoleSeeder::class, // Agregar el seeder de asignaciones de roles de usuario
         ]);
     }
 }
