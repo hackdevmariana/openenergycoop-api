@@ -139,4 +139,26 @@ class CustomerProfileResource extends Resource
             'edit' => Pages\EditCustomerProfile::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $tenantCount = static::getModel()::where('profile_type', 'tenant')->count();
+        
+        if ($tenantCount > 0) {
+            return 'warning';  // 🟡 Naranja para inquilinos (requiere atención)
+        }
+        
+        $ownershipChangeCount = static::getModel()::where('profile_type', 'ownership_change')->count();
+        
+        if ($ownershipChangeCount > 0) {
+            return 'danger';   // 🔴 Rojo para cambios de propiedad (crítico)
+        }
+        
+        return 'success';      // 🟢 Verde cuando todo está bien
+    }
 }
