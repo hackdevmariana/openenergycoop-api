@@ -30,6 +30,59 @@ class SocialLinkResource extends Resource
     
     protected static ?int $navigationSort = 3;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $model = static::getModel();
+        $total = $model::count();
+        
+        if ($total === 0) {
+            return 'gray';
+        }
+        
+        $activeCount = $model::where('is_active', true)->count();
+        $publishedCount = $model::where('is_draft', false)->count();
+        $withFollowersCount = $model::whereNotNull('followers_count')->where('followers_count', '>', 0)->count();
+        
+        // Si hay más borradores que publicados, mostrar warning
+        $draftCount = $total - $publishedCount;
+        if ($draftCount > $publishedCount) {
+            return 'warning';
+        }
+        
+        // Si hay más inactivos que activos, mostrar danger
+        $inactiveCount = $total - $activeCount;
+        if ($inactiveCount > $activeCount) {
+            return 'danger';
+        }
+        
+        // Si todos están activos y publicados, mostrar success
+        if ($activeCount === $total && $publishedCount === $total) {
+            return 'success';
+        }
+        
+        // Si hay muchos con seguidores (redes populares), mostrar success
+        if ($withFollowersCount >= ($total * 0.6)) {
+            return 'success';
+        }
+        
+        // Si la mayoría están activos, mostrar info
+        if ($activeCount >= ($total * 0.7)) {
+            return 'info';
+        }
+        
+        // Si hay muchos sin seguidores, mostrar warning
+        if ($withFollowersCount < ($total * 0.3)) {
+            return 'warning';
+        }
+        
+        return 'info';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
