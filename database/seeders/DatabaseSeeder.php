@@ -55,6 +55,7 @@ class DatabaseSeeder extends Seeder
             OrganizationRoleSeeder::class, // Agregar el seeder de roles de organización
             UserOrganizationRoleSeeder::class, // Agregar el seeder de asignaciones de roles de usuario
             ApiClientSeeder::class, // Agregar el seeder de clientes API
+            CollaboratorSeeder::class, // Agregar el seeder de colaboradores
         ]);
     }
 }
