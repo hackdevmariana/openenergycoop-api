@@ -184,4 +184,28 @@ class CustomerProfileContactInfoResource extends Resource
             'edit' => Pages\EditCustomerProfileContactInfo::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $expiredCount = static::getModel()::where('valid_to', '<', now())->count();
+        
+        if ($expiredCount > 0) {
+            return 'danger';   // 🔴 Rojo para contactos expirados (crítico)
+        }
+        
+        $expiringSoonCount = static::getModel()::where('valid_to', '>=', now())
+            ->where('valid_to', '<=', now()->addDays(30))
+            ->count();
+        
+        if ($expiringSoonCount > 0) {
+            return 'warning';  // 🟡 Naranja para contactos que expiran pronto
+        }
+        
+        return 'success';      // 🟢 Verde cuando todo está vigente
+    }
 }
