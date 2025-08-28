@@ -102,4 +102,44 @@ class OrganizationFeatureResource extends Resource
             'edit' => Pages\EditOrganizationFeature::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay características
+        }
+        
+        $fullyEnabledCount = static::getModel()::where('enabled_dashboard', true)
+            ->where('enabled_web', true)
+            ->count();
+        
+        $fullyEnabledRate = $fullyEnabledCount / $totalCount;
+        
+        if ($fullyEnabledRate >= 0.9) {
+            return 'success';      // 🟢 Verde cuando el 90%+ está completamente habilitado
+        }
+        
+        if ($fullyEnabledRate >= 0.7) {
+            return 'info';         // 🔵 Azul cuando el 70%+ está completamente habilitado
+        }
+        
+        $partiallyEnabledCount = static::getModel()::where('enabled_dashboard', true)
+            ->orWhere('enabled_web', true)
+            ->count();
+        
+        $partiallyEnabledRate = $partiallyEnabledCount / $totalCount;
+        
+        if ($partiallyEnabledRate >= 0.5) {
+            return 'warning';      // 🟡 Naranja cuando el 50%+ está parcialmente habilitado
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando menos del 50% está habilitado
+    }
 }
