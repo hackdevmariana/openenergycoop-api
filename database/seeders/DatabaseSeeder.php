@@ -51,6 +51,7 @@ class DatabaseSeeder extends Seeder
             PreSaleOfferSeeder::class, // Agregar el seeder de ofertas de preventa
             AutomationRuleSeeder::class, // Agregar el seeder de reglas de automatización
             OrganizationFeatureSeeder::class, // Agregar el seeder de características de organizaciones
+            MaintenanceScheduleSeeder::class, // Agregar el seeder de horarios de mantenimiento
         ]);
     }
 }
