@@ -32,6 +32,43 @@ class CollaboratorResource extends Resource
     
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $model = static::getModel();
+        $total = $model::count();
+        
+        if ($total === 0) {
+            return 'gray';
+        }
+        
+        $activeCount = $model::where('is_active', true)->count();
+        $draftCount = $model::where('is_draft', true)->count();
+        
+        // Si hay más borradores que activos, mostrar warning
+        if ($draftCount > $activeCount) {
+            return 'warning';
+        }
+        
+        // Si hay más inactivos que activos, mostrar danger
+        $inactiveCount = $total - $activeCount;
+        if ($inactiveCount > $activeCount) {
+            return 'danger';
+        }
+        
+        // Si todos están activos, mostrar success
+        if ($activeCount === $total) {
+            return 'success';
+        }
+        
+        // Si la mayoría están activos, mostrar info
+        return 'info';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
