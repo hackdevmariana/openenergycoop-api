@@ -126,4 +126,42 @@ class OrganizationResource extends Resource
             'edit' => Pages\EditOrganization::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $totalCount = static::getModel()::count();
+        
+        if ($totalCount === 0) {
+            return 'gray';         // ⚫ Gris cuando no hay organizaciones
+        }
+        
+        $activeCount = static::getModel()::where('active', true)->count();
+        
+        if ($activeCount === $totalCount) {
+            return 'success';      // 🟢 Verde cuando todas las organizaciones están activas
+        }
+        
+        $configuredCount = static::getModel()::whereNotNull('domain')
+            ->orWhereNotNull('contact_email')
+            ->orWhereNotNull('contact_phone')
+            ->orWhereNotNull('css_files')
+            ->count();
+        
+        $configurationRate = $configuredCount / $totalCount;
+        
+        if ($configurationRate >= 0.7) {
+            return 'info';         // 🔵 Azul cuando el 70%+ está bien configurado
+        }
+        
+        if ($configurationRate >= 0.4) {
+            return 'warning';      // 🟡 Naranja cuando el 40%+ está bien configurado
+        }
+        
+        return 'danger';           // 🔴 Rojo cuando menos del 40% está bien configurado
+    }
 }
