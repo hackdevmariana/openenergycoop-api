@@ -135,18 +135,12 @@ class SocialLinkResource extends Resource
                             ->placeholder('https://facebook.com/tu-pagina')
                             ->helperText('URL completa del perfil o página'),
                             
-                        Forms\Components\TextInput::make('username')
-                            ->label('Usuario/Handle')
-                            ->placeholder('@usuario')
-                            ->helperText('Nombre de usuario en la plataforma'),
+
                     ])->columns(3),
                     
                 Section::make('Personalización')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Título Personalizado')
-                            ->placeholder('Síguenos en Facebook')
-                            ->helperText('Título personalizado para mostrar'),
+
                             
                         Forms\Components\TextInput::make('icon')
                             ->label('Icono')
@@ -160,26 +154,18 @@ class SocialLinkResource extends Resource
                     
                 Section::make('Configuración')
                     ->schema([
-                        Forms\Components\TextInput::make('position')
+                        Forms\Components\TextInput::make('order')
                             ->label('Orden')
                             ->numeric()
                             ->default(0)
                             ->helperText('Orden de aparición (menor número = mayor prioridad)'),
                             
-                        Forms\Components\Toggle::make('active')
+                        Forms\Components\Toggle::make('is_active')
                             ->label('Activo')
                             ->helperText('Solo las redes sociales activas se muestran')
                             ->default(true),
                             
-                        Forms\Components\Toggle::make('show_in_footer')
-                            ->label('Mostrar en Footer')
-                            ->helperText('Mostrar en el pie de página')
-                            ->default(true),
-                            
-                        Forms\Components\Toggle::make('show_in_header')
-                            ->label('Mostrar en Header')
-                            ->helperText('Mostrar en la cabecera')
-                            ->default(false),
+
                     ])->columns(4),
                     
                 Section::make('Estadísticas')
@@ -190,9 +176,7 @@ class SocialLinkResource extends Resource
                             ->placeholder('0')
                             ->helperText('Número de seguidores (opcional)'),
                             
-                        Forms\Components\DateTimePicker::make('last_updated')
-                            ->label('Última Actualización')
-                            ->helperText('Cuándo se actualizaron las estadísticas'),
+
                     ])->columns(2),
                     
                 Section::make('Organización')
@@ -265,17 +249,7 @@ class SocialLinkResource extends Resource
                         default => $state,
                     }),
                     
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Título')
-                    ->searchable()
-                    ->placeholder('Sin título personalizado')
-                    ->limit(30),
-                    
-                Tables\Columns\TextColumn::make('username')
-                    ->label('Usuario')
-                    ->searchable()
-                    ->placeholder('Sin usuario')
-                    ->copyable(),
+
                     
                 Tables\Columns\TextColumn::make('followers_count')
                     ->label('Seguidores')
@@ -286,30 +260,16 @@ class SocialLinkResource extends Resource
                     ->color('success')
                     ->toggleable(),
                     
-                Tables\Columns\TextColumn::make('position')
+                Tables\Columns\TextColumn::make('order')
                     ->label('Orden')
                     ->sortable()
                     ->alignCenter()
                     ->badge()
                     ->color('secondary'),
                     
-                Tables\Columns\IconColumn::make('show_in_footer')
-                    ->label('Footer')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check')
-                    ->falseIcon('heroicon-o-x-mark')
-                    ->trueColor('success')
-                    ->falseColor('gray'),
+
                     
-                Tables\Columns\IconColumn::make('show_in_header')
-                    ->label('Header')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check')
-                    ->falseIcon('heroicon-o-x-mark')
-                    ->trueColor('success')
-                    ->falseColor('gray'),
-                    
-                Tables\Columns\IconColumn::make('active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->label('Estado')
                     ->boolean()
                     ->trueIcon('heroicon-o-eye')
@@ -346,17 +306,13 @@ class SocialLinkResource extends Resource
                         'other' => 'Otra',
                     ]),
                     
-                TernaryFilter::make('active')
+                TernaryFilter::make('is_active')
                     ->label('Estado')
                     ->placeholder('Todos')
                     ->trueLabel('Solo activos')
                     ->falseLabel('Solo inactivos'),
                     
-                TernaryFilter::make('show_in_footer')
-                    ->label('En Footer')
-                    ->placeholder('Todos')
-                    ->trueLabel('Mostrar en footer')
-                    ->falseLabel('No mostrar en footer'),
+
                     
                 SelectFilter::make('organization_id')
                     ->label('Organización')
@@ -373,10 +329,7 @@ class SocialLinkResource extends Resource
                     
                 Tables\Actions\EditAction::make(),
                 
-                Tables\Actions\Action::make('toggle_footer')
-                    ->label(fn ($record) => $record->show_in_footer ? 'Ocultar Footer' : 'Mostrar Footer')
-                    ->icon('heroicon-o-bars-3-bottom-left')
-                    ->action(fn ($record) => $record->update(['show_in_footer' => !$record->show_in_footer])),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -384,17 +337,12 @@ class SocialLinkResource extends Resource
                     Tables\Actions\BulkAction::make('activate')
                         ->label('Activar seleccionados')
                         ->icon('heroicon-o-eye')
-                        ->action(fn ($records) => $records->each->update(['active' => true]))
-                        ->requiresConfirmation(),
-                    Tables\Actions\BulkAction::make('show_in_footer')
-                        ->label('Mostrar en footer')
-                        ->icon('heroicon-o-bars-3-bottom-left')
-                        ->action(fn ($records) => $records->each->update(['show_in_footer' => true]))
+                        ->action(fn ($records) => $records->each->update(['is_active' => true]))
                         ->requiresConfirmation(),
                 ]),
             ])
-            ->defaultSort('position', 'asc')
-            ->reorderable('position');
+            ->defaultSort('order', 'asc')
+            ->reorderable('order');
     }
 
     public static function getPages(): array
