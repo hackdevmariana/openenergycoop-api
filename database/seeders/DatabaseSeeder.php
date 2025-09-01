@@ -62,6 +62,7 @@ class DatabaseSeeder extends Seeder
             ContactSeeder::class, // Agregar el seeder de contactos
             NewsletterSubscriptionSeeder::class, // Agregar el seeder de suscripciones a newsletters
             CompanySeeder::class, // Agregar el seeder de empresas
+            SubscriptionRequestSeeder::class, // Agregar el seeder de solicitudes de suscripción
         ]);
     }
 }
