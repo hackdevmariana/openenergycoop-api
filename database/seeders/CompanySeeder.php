@@ -355,13 +355,13 @@ class CompanySeeder extends Seeder
             ],
             [
                 'name' => 'Transporte Energético del Norte S.A.',
-                'cif' => 'B70123456',
+                'cif' => 'B70123457',
                 'contact_person' => 'Luis Miguel Pérez Martín',
                 'company_address' => 'Zona de Transporte, Calle 8, 22008 Huesca, Aragón',
             ],
             [
                 'name' => 'Logística Energética Ibérica S.Coop.',
-                'cif' => 'B81234567',
+                'cif' => 'B81234568',
                 'contact_person' => 'María del Pilar Sánchez García',
                 'company_address' => 'Polígono Logístico, Nave 3, 44007 Teruel, Aragón',
             ],
@@ -390,19 +390,19 @@ class CompanySeeder extends Seeder
         $storageCompanies = [
             [
                 'name' => 'Almacenamiento Energético Aragón S.L.',
-                'cif' => 'B92345678',
+                'cif' => 'B92345679',
                 'contact_person' => 'Diego José Martínez Pérez',
                 'company_address' => 'Centro de Almacenamiento, Nave 7, 50014 Zaragoza, Aragón',
             ],
             [
                 'name' => 'Baterías del Ebro S.A.',
-                'cif' => 'B03456789',
+                'cif' => 'B03456790',
                 'contact_person' => 'Elena María Torres López',
                 'company_address' => 'Parque Tecnológico, Edificio B, 22009 Huesca, Aragón',
             ],
             [
                 'name' => 'Sistemas de Almacenamiento Verde S.Coop.',
-                'cif' => 'B14567890',
+                'cif' => 'B14567891',
                 'contact_person' => 'Francisco Javier Ruiz Sánchez',
                 'company_address' => 'Zona Industrial Verde, Nave 5, 44008 Teruel, Aragón',
             ],
@@ -431,19 +431,19 @@ class CompanySeeder extends Seeder
         $efficiencyCompanies = [
             [
                 'name' => 'Eficiencia Energética Aragón S.L.',
-                'cif' => 'B25678901',
+                'cif' => 'B25678902',
                 'contact_person' => 'Sara María García Torres',
                 'company_address' => 'Centro de Eficiencia, Piso 3, 50015 Zaragoza, Aragón',
             ],
             [
                 'name' => 'Optimización Energética del Norte S.A.',
-                'cif' => 'B36789012',
+                'cif' => 'B36789013',
                 'contact_person' => 'Pedro Manuel López Ruiz',
                 'company_address' => 'Oficinas de Optimización, Local 12, 22010 Huesca, Aragón',
             ],
             [
                 'name' => 'Gestión Energética Inteligente S.Coop.',
-                'cif' => 'B47890123',
+                'cif' => 'B47890124',
                 'contact_person' => 'Carmen Rosa Martín García',
                 'company_address' => 'Centro de Gestión, Edificio E, 44009 Teruel, Aragón',
             ],
@@ -472,19 +472,19 @@ class CompanySeeder extends Seeder
         $researchCompanies = [
             [
                 'name' => 'Investigación Energética Aragón S.L.',
-                'cif' => 'B58901234',
+                'cif' => 'B58901235',
                 'contact_person' => 'Dr. Miguel Ángel Sánchez López',
                 'company_address' => 'Centro de Investigación, Laboratorio A, 50016 Zaragoza, Aragón',
             ],
             [
                 'name' => 'Desarrollo Tecnológico Energético S.A.',
-                'cif' => 'B69012345',
+                'cif' => 'B69012346',
                 'contact_person' => 'Dra. Ana Isabel García Martínez',
                 'company_address' => 'Parque Científico, Edificio F, 22011 Huesca, Aragón',
             ],
             [
                 'name' => 'Innovación Energética Ibérica S.Coop.',
-                'cif' => 'B70123456',
+                'cif' => 'B70123458',
                 'contact_person' => 'Dr. Carlos Manuel Ruiz Torres',
                 'company_address' => 'Centro de Innovación, Laboratorio B, 44010 Teruel, Aragón',
             ],
