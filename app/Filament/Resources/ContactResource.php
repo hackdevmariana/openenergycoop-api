@@ -87,31 +87,25 @@ class ContactResource extends Resource
                         Tabs\Tab::make('Información de Contacto')
                             ->icon('heroicon-o-user')
                             ->schema([
-                                Section::make('Datos Personales')
+                                Section::make('Datos Básicos')
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
                                             ->label('Nombre')
-                                            ->required()
                                             ->maxLength(255),
                                             
-                                        Forms\Components\TextInput::make('position')
-                                            ->label('Cargo/Posición')
-                                            ->maxLength(255),
-                                            
-                                        Forms\Components\Select::make('department')
-                                            ->label('Departamento')
+                                        Forms\Components\Select::make('contact_type')
+                                            ->label('Tipo de Contacto')
                                             ->options([
-                                                'general' => 'General',
-                                                'administration' => 'Administración',
-                                                'technical' => 'Técnico',
-                                                'commercial' => 'Comercial',
-                                                'marketing' => 'Marketing',
-                                                'legal' => 'Legal',
+                                                'main' => 'Principal',
                                                 'support' => 'Soporte',
-                                                'management' => 'Dirección',
+                                                'sales' => 'Ventas',
+                                                'media' => 'Medios',
+                                                'technical' => 'Técnico',
+                                                'billing' => 'Facturación',
+                                                'emergency' => 'Emergencia',
                                             ])
-                                            ->default('general'),
-                                    ])->columns(3),
+                                            ->default('main'),
+                                    ])->columns(2),
                                     
                                 Section::make('Información de Contacto')
                                     ->schema([
@@ -123,18 +117,10 @@ class ContactResource extends Resource
                                         Forms\Components\TextInput::make('phone')
                                             ->label('Teléfono')
                                             ->tel(),
-                                            
-                                        Forms\Components\TextInput::make('mobile')
-                                            ->label('Móvil')
-                                            ->tel(),
-                                            
-                                        Forms\Components\TextInput::make('fax')
-                                            ->label('Fax')
-                                            ->tel(),
                                     ])->columns(2),
                             ]),
                             
-                        Tabs\Tab::make('Dirección')
+                        Tabs\Tab::make('Dirección y Ubicación')
                             ->icon('heroicon-o-map-pin')
                             ->schema([
                                 Section::make('Dirección Física')
@@ -143,45 +129,43 @@ class ContactResource extends Resource
                                             ->label('Dirección')
                                             ->rows(3)
                                             ->columnSpanFull(),
+                                    ]),
+                                    
+                                Section::make('Coordenadas GPS')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('latitude')
+                                            ->label('Latitud')
+                                            ->numeric()
+                                            ->step(0.00000001)
+                                            ->helperText('Coordenada de latitud (ej: 40.4168)'),
                                             
-                                        Forms\Components\TextInput::make('city')
-                                            ->label('Ciudad')
-                                            ->maxLength(255),
-                                            
-                                        Forms\Components\TextInput::make('state')
-                                            ->label('Provincia/Estado')
-                                            ->maxLength(255),
-                                            
-                                        Forms\Components\TextInput::make('postal_code')
-                                            ->label('Código Postal')
-                                            ->maxLength(20),
-                                            
-                                        Forms\Components\TextInput::make('country')
-                                            ->label('País')
-                                            ->maxLength(255)
-                                            ->default('España'),
+                                        Forms\Components\TextInput::make('longitude')
+                                            ->label('Longitud')
+                                            ->numeric()
+                                            ->step(0.00000001)
+                                            ->helperText('Coordenada de longitud (ej: -3.7038)'),
                                     ])->columns(2),
                             ]),
                             
-                        Tabs\Tab::make('Horarios y Disponibilidad')
-                            ->icon('heroicon-o-clock')
+                        Tabs\Tab::make('Información Adicional')
+                            ->icon('heroicon-o-information-circle')
                             ->schema([
-                                Section::make('Horarios de Atención')
+                                Section::make('Horarios de Negocio')
                                     ->schema([
-                                        Forms\Components\KeyValue::make('office_hours')
-                                            ->label('Horarios de Oficina')
+                                        Forms\Components\KeyValue::make('business_hours')
+                                            ->label('Horarios de Negocio')
                                             ->keyLabel('Día')
                                             ->valueLabel('Horario')
                                             ->helperText('Ej: Lunes: 9:00-17:00, Martes: 9:00-17:00')
                                             ->columnSpanFull(),
                                     ]),
                                     
-                                Section::make('Idiomas')
+                                Section::make('Información Adicional')
                                     ->schema([
-                                        Forms\Components\TagsInput::make('languages')
-                                            ->label('Idiomas')
-                                            ->placeholder('Español, Inglés, Catalán...')
-                                            ->helperText('Idiomas que habla este contacto')
+                                        Forms\Components\Textarea::make('additional_info')
+                                            ->label('Información Adicional')
+                                            ->rows(4)
+                                            ->helperText('Información adicional sobre este contacto')
                                             ->columnSpanFull(),
                                     ]),
                             ]),
@@ -189,23 +173,18 @@ class ContactResource extends Resource
                         Tabs\Tab::make('Configuración')
                             ->icon('heroicon-o-cog-6-tooth')
                             ->schema([
-                                Section::make('Visibilidad')
+                                Section::make('Estado')
                                     ->schema([
-                                        Forms\Components\Toggle::make('is_public')
-                                            ->label('Público')
-                                            ->helperText('Si está activado, este contacto será visible en el sitio web')
-                                            ->default(true),
+                                        Forms\Components\Toggle::make('is_draft')
+                                            ->label('Borrador')
+                                            ->helperText('Si está activado, este contacto está en borrador')
+                                            ->default(false),
                                             
                                         Forms\Components\Toggle::make('is_primary')
                                             ->label('Contacto Principal')
-                                            ->helperText('Contacto principal del departamento')
+                                            ->helperText('Contacto principal de la organización')
                                             ->default(false),
-                                            
-                                        Forms\Components\Toggle::make('accepts_marketing')
-                                            ->label('Acepta Marketing')
-                                            ->helperText('Puede recibir comunicaciones de marketing')
-                                            ->default(false),
-                                    ])->columns(3),
+                                    ])->columns(2),
                                     
                                 Section::make('Organización')
                                     ->schema([
@@ -217,13 +196,14 @@ class ContactResource extends Resource
                                             ->placeholder('Global (todas las organizaciones)'),
                                     ]),
                                     
-                                Section::make('Notas Internas')
+                                Section::make('Usuario Creador')
                                     ->schema([
-                                        Forms\Components\Textarea::make('notes')
-                                            ->label('Notas')
-                                            ->rows(4)
-                                            ->helperText('Notas internas sobre este contacto')
-                                            ->columnSpanFull(),
+                                        Forms\Components\Select::make('created_by_user_id')
+                                            ->label('Creado por')
+                                            ->relationship('createdBy', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->placeholder('Usuario del sistema'),
                                     ]),
                             ]),
                     ])
@@ -241,32 +221,25 @@ class ContactResource extends Resource
                     ->sortable()
                     ->weight(FontWeight::Medium),
                     
-                Tables\Columns\TextColumn::make('position')
-                    ->label('Cargo')
-                    ->searchable()
-                    ->placeholder('Sin especificar'),
-                    
-                Tables\Columns\BadgeColumn::make('department')
-                    ->label('Departamento')
+                Tables\Columns\BadgeColumn::make('contact_type')
+                    ->label('Tipo')
                     ->colors([
-                        'primary' => 'general',
-                        'success' => 'administration',
-                        'warning' => 'technical',
-                        'danger' => 'commercial',
-                        'secondary' => 'marketing',
-                        'gray' => 'legal',
-                        'info' => 'support',
-                        'purple' => 'management',
+                        'primary' => 'main',
+                        'success' => 'support',
+                        'warning' => 'sales',
+                        'danger' => 'emergency',
+                        'info' => 'technical',
+                        'gray' => 'billing',
+                        'slate' => 'media',
                     ])
                     ->formatStateUsing(fn ($state) => match($state) {
-                        'general' => 'General',
-                        'administration' => 'Administración',
-                        'technical' => 'Técnico',
-                        'commercial' => 'Comercial',
-                        'marketing' => 'Marketing',
-                        'legal' => 'Legal',
+                        'main' => 'Principal',
                         'support' => 'Soporte',
-                        'management' => 'Dirección',
+                        'sales' => 'Ventas',
+                        'emergency' => 'Emergencia',
+                        'technical' => 'Técnico',
+                        'billing' => 'Facturación',
+                        'media' => 'Medios',
                         default => $state,
                     }),
                     
@@ -281,10 +254,29 @@ class ContactResource extends Resource
                     ->copyable()
                     ->placeholder('Sin teléfono'),
                     
-                Tables\Columns\TextColumn::make('city')
-                    ->label('Ciudad')
+                Tables\Columns\TextColumn::make('address')
+                    ->label('Dirección')
                     ->searchable()
-                    ->toggleable(),
+                    ->placeholder('Sin dirección')
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                    
+                Tables\Columns\IconColumn::make('has_location')
+                    ->label('Ubicación GPS')
+                    ->boolean()
+                    ->getStateUsing(fn ($record) => !is_null($record->latitude) && !is_null($record->longitude))
+                    ->trueIcon('heroicon-o-map-pin')
+                    ->falseIcon('heroicon-o-map-pin')
+                    ->trueColor('success')
+                    ->falseColor('gray'),
+                    
+                Tables\Columns\IconColumn::make('is_draft')
+                    ->label('Borrador')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-document')
+                    ->falseIcon('heroicon-o-check-circle')
+                    ->trueColor('warning')
+                    ->falseColor('success'),
                     
                 Tables\Columns\IconColumn::make('is_primary')
                     ->label('Principal')
@@ -292,14 +284,6 @@ class ContactResource extends Resource
                     ->trueIcon('heroicon-o-star')
                     ->falseIcon('heroicon-o-star')
                     ->trueColor('warning')
-                    ->falseColor('gray'),
-                    
-                Tables\Columns\IconColumn::make('is_public')
-                    ->label('Público')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-eye')
-                    ->falseIcon('heroicon-o-eye-slash')
-                    ->trueColor('success')
                     ->falseColor('gray'),
                     
                 Tables\Columns\TextColumn::make('organization.name')
@@ -314,27 +298,30 @@ class ContactResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('department')
-                    ->label('Departamento')
+                SelectFilter::make('contact_type')
+                    ->label('Tipo de Contacto')
                     ->options([
-                        'general' => 'General',
-                        'administration' => 'Administración',
-                        'technical' => 'Técnico',
-                        'commercial' => 'Comercial',
-                        'marketing' => 'Marketing',
-                        'legal' => 'Legal',
+                        'main' => 'Principal',
                         'support' => 'Soporte',
-                        'management' => 'Dirección',
+                        'sales' => 'Ventas',
+                        'emergency' => 'Emergencia',
+                        'technical' => 'Técnico',
+                        'billing' => 'Facturación',
+                        'media' => 'Medios',
                     ]),
                     
-                SelectFilter::make('city')
-                    ->label('Ciudad')
-                    ->options(function () {
-                        return Contact::distinct('city')
-                            ->whereNotNull('city')
-                            ->pluck('city', 'city')
-                            ->toArray();
-                    }),
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'draft' => 'Borrador',
+                        'published' => 'Publicado',
+                    ]),
+                    
+                TernaryFilter::make('is_primary')
+                    ->label('Contacto Principal')
+                    ->placeholder('Todos')
+                    ->trueLabel('Solo principales')
+                    ->falseLabel('No principales'),
                     
                 SelectFilter::make('organization_id')
                     ->label('Organización')
@@ -355,15 +342,28 @@ class ContactResource extends Resource
                     ->visible(fn ($record) => !empty($record->phone))
                     ->color('success'),
                     
+                Tables\Actions\Action::make('view_location')
+                    ->label('Ver Ubicación')
+                    ->icon('heroicon-o-map-pin')
+                    ->url(fn ($record) => "https://maps.google.com/?q={$record->latitude},{$record->longitude}")
+                    ->visible(fn ($record) => !is_null($record->latitude) && !is_null($record->longitude))
+                    ->openUrlInNewTab()
+                    ->color('info'),
+                    
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('make_public')
-                        ->label('Hacer públicos')
+                    Tables\Actions\BulkAction::make('publish')
+                        ->label('Publicar')
                         ->icon('heroicon-o-eye')
-                        ->action(fn ($records) => $records->each->update(['is_public' => true]))
+                        ->action(fn ($records) => $records->each->update(['is_draft' => false]))
+                        ->requiresConfirmation(),
+                    Tables\Actions\BulkAction::make('make_draft')
+                        ->label('Marcar como borrador')
+                        ->icon('heroicon-o-document')
+                        ->action(fn ($records) => $records->each->update(['is_draft' => true]))
                         ->requiresConfirmation(),
                     Tables\Actions\BulkAction::make('export_contacts')
                         ->label('Exportar Contactos')
@@ -377,7 +377,7 @@ class ContactResource extends Resource
                         }),
                 ]),
             ])
-            ->defaultSort('name', 'asc');
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array
