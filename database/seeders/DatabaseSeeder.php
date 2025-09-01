@@ -59,6 +59,7 @@ class DatabaseSeeder extends Seeder
             AuditLogSeeder::class, // Agregar el seeder de logs de auditoría
             FormSubmissionSeeder::class, // Agregar el seeder de envíos de formularios
             MessageSeeder::class, // Agregar el seeder de mensajes
+            ContactSeeder::class, // Agregar el seeder de contactos
         ]);
     }
 }
