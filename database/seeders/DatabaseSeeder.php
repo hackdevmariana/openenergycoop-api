@@ -63,6 +63,7 @@ class DatabaseSeeder extends Seeder
             NewsletterSubscriptionSeeder::class, // Agregar el seeder de suscripciones a newsletters
             CompanySeeder::class, // Agregar el seeder de empresas
             SubscriptionRequestSeeder::class, // Agregar el seeder de solicitudes de suscripción
+            ConsentLogSeeder::class, // Agregar el seeder de logs de consentimiento
         ]);
     }
 }
