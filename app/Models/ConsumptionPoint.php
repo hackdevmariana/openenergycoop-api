@@ -56,6 +56,9 @@ class ConsumptionPoint extends Model
         'approved_by',
         'approved_at',
         'notes',
+        'remote_reading_enabled',
+        'consumption_type',
+        'supply_type',
     ];
 
     protected $casts = [
@@ -80,6 +83,7 @@ class ConsumptionPoint extends Model
         'peak_hours' => 'array',
         'off_peak_hours' => 'array',
         'tags' => 'array',
+        'remote_reading_enabled' => 'boolean',
     ];
 
     // Enums
@@ -98,6 +102,31 @@ class ConsumptionPoint extends Model
     const STATUS_DISCONNECTED = 'disconnected';
     const STATUS_PLANNED = 'planned';
     const STATUS_DECOMMISSIONED = 'decommissioned';
+
+    // Tipos de consumo
+    const CONSUMPTION_TYPE_BASIC = 'basic';
+    const CONSUMPTION_TYPE_INTERMEDIATE = 'intermediate';
+    const CONSUMPTION_TYPE_HIGH = 'high';
+    const CONSUMPTION_TYPE_VERY_HIGH = 'very_high';
+    const CONSUMPTION_TYPE_INDUSTRIAL = 'industrial';
+
+    // Tipos de suministro
+    const SUPPLY_TYPE_SINGLE_PHASE = 'single_phase';
+    const SUPPLY_TYPE_THREE_PHASE = 'three_phase';
+    const SUPPLY_TYPE_DC = 'dc';
+    const SUPPLY_TYPE_HYBRID = 'hybrid';
+
+    // Tipos de conexión
+    const CONNECTION_TYPE_OVERHEAD = 'overhead';
+    const CONNECTION_TYPE_UNDERGROUND = 'underground';
+    const CONNECTION_TYPE_SUBMARINE = 'submarine';
+    const CONNECTION_TYPE_WIRELESS = 'wireless';
+
+    // Tipos de medidor
+    const METER_TYPE_ANALOG = 'analog';
+    const METER_TYPE_DIGITAL = 'digital';
+    const METER_TYPE_SMART = 'smart';
+    const METER_TYPE_PREPAID = 'prepaid';
 
     public static function getPointTypes(): array
     {
@@ -122,6 +151,47 @@ class ConsumptionPoint extends Model
             self::STATUS_DISCONNECTED => 'Desconectado',
             self::STATUS_PLANNED => 'Planificado',
             self::STATUS_DECOMMISSIONED => 'Desmantelado',
+        ];
+    }
+
+    public static function getConsumptionTypes(): array
+    {
+        return [
+            self::CONSUMPTION_TYPE_BASIC => 'Básico',
+            self::CONSUMPTION_TYPE_INTERMEDIATE => 'Intermedio',
+            self::CONSUMPTION_TYPE_HIGH => 'Alto',
+            self::CONSUMPTION_TYPE_VERY_HIGH => 'Muy Alto',
+            self::CONSUMPTION_TYPE_INDUSTRIAL => 'Industrial',
+        ];
+    }
+
+    public static function getSupplyTypes(): array
+    {
+        return [
+            self::SUPPLY_TYPE_SINGLE_PHASE => 'Monofásico',
+            self::SUPPLY_TYPE_THREE_PHASE => 'Trifásico',
+            self::SUPPLY_TYPE_DC => 'Corriente Continua',
+            self::SUPPLY_TYPE_HYBRID => 'Híbrido',
+        ];
+    }
+
+    public static function getConnectionTypes(): array
+    {
+        return [
+            self::CONNECTION_TYPE_OVERHEAD => 'Aéreo',
+            self::CONNECTION_TYPE_UNDERGROUND => 'Subterráneo',
+            self::CONNECTION_TYPE_SUBMARINE => 'Submarino',
+            self::CONNECTION_TYPE_WIRELESS => 'Inalámbrico',
+        ];
+    }
+
+    public static function getMeterTypes(): array
+    {
+        return [
+            self::METER_TYPE_ANALOG => 'Analógico',
+            self::METER_TYPE_DIGITAL => 'Digital',
+            self::METER_TYPE_SMART => 'Inteligente',
+            self::METER_TYPE_PREPAID => 'Prepago',
         ];
     }
 
