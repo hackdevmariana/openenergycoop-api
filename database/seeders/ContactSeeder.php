@@ -48,7 +48,6 @@ class ContactSeeder extends Seeder
         
         $mainContactData = [
             [
-                'name' => 'Oficina Central',
                 'email' => 'info@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 67',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -59,7 +58,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Atención al Cliente',
                 'email' => 'atencion@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 68',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -105,7 +103,6 @@ class ContactSeeder extends Seeder
         
         $supportContactData = [
             [
-                'name' => 'Soporte Técnico',
                 'email' => 'soporte@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 69',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -116,7 +113,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Ayuda en Línea',
                 'email' => 'ayuda@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 70',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -162,7 +158,6 @@ class ContactSeeder extends Seeder
         
         $salesContactData = [
             [
-                'name' => 'Departamento de Ventas',
                 'email' => 'ventas@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 71',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -173,7 +168,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Nuevos Clientes',
                 'email' => 'nuevos@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 72',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -219,7 +213,6 @@ class ContactSeeder extends Seeder
         
         $technicalContactData = [
             [
-                'name' => 'Ingeniería Técnica',
                 'email' => 'tecnico@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 73',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -230,7 +223,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Mantenimiento',
                 'email' => 'mantenimiento@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 74',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -276,7 +268,6 @@ class ContactSeeder extends Seeder
         
         $billingContactData = [
             [
-                'name' => 'Facturación',
                 'email' => 'facturacion@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 75',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -287,7 +278,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Cobros',
                 'email' => 'cobros@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 76',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -333,7 +323,6 @@ class ContactSeeder extends Seeder
         
         $mediaContactData = [
             [
-                'name' => 'Prensa y Comunicación',
                 'email' => 'prensa@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 77',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -344,7 +333,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Marketing',
                 'email' => 'marketing@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 78',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -390,7 +378,6 @@ class ContactSeeder extends Seeder
         
         $emergencyContactData = [
             [
-                'name' => 'Emergencias 24/7',
                 'email' => 'emergencias@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 79',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
@@ -401,7 +388,6 @@ class ContactSeeder extends Seeder
                 'is_draft' => false,
             ],
             [
-                'name' => 'Incidencias Críticas',
                 'email' => 'incidencias@cooperativa-energetica.es',
                 'phone' => '+34 91 123 45 80',
                 'address' => 'Calle Mayor, 123, 28001 Madrid, España',
