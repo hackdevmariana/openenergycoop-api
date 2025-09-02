@@ -66,6 +66,7 @@ class DatabaseSeeder extends Seeder
             ConsentLogSeeder::class, // Agregar el seeder de logs de consentimiento
             ConsumptionPointSeeder::class, // Agregar el seeder de puntos de consumo
             EnergyMeterSeeder::class, // Agregar el seeder de medidores energéticos
+            EnergyReadingSeeder::class, // Agregar el seeder de lecturas energéticas
         ]);
     }
 }
