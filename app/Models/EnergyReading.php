@@ -29,6 +29,11 @@ class EnergyReading extends Model
         'previous_reading_value',
         'consumption_value',
         'consumption_unit',
+        'active_energy',
+        'reactive_energy',
+        'instantaneous_power',
+        'apparent_power',
+        'reactive_power',
         'demand_value',
         'demand_unit',
         'power_factor',
@@ -44,6 +49,11 @@ class EnergyReading extends Model
         'humidity_unit',
         'quality_score',
         'quality_notes',
+        'is_validated',
+        'is_estimated',
+        'confidence_level',
+        'data_quality',
+        'data_source',
         'validation_notes',
         'correction_notes',
         'raw_data',
@@ -51,6 +61,7 @@ class EnergyReading extends Model
         'alarms',
         'events',
         'tags',
+        'metadata',
         'read_by',
         'validated_by',
         'validated_at',
@@ -65,6 +76,11 @@ class EnergyReading extends Model
         'reading_value' => 'decimal:4',
         'previous_reading_value' => 'decimal:4',
         'consumption_value' => 'decimal:4',
+        'active_energy' => 'decimal:4',
+        'reactive_energy' => 'decimal:4',
+        'instantaneous_power' => 'decimal:4',
+        'apparent_power' => 'decimal:4',
+        'reactive_power' => 'decimal:4',
         'demand_value' => 'decimal:4',
         'power_factor' => 'decimal:3',
         'voltage_value' => 'decimal:2',
@@ -73,6 +89,9 @@ class EnergyReading extends Model
         'temperature' => 'decimal:2',
         'humidity' => 'decimal:2',
         'quality_score' => 'decimal:2',
+        'confidence_level' => 'decimal:2',
+        'is_validated' => 'boolean',
+        'is_estimated' => 'boolean',
         'validated_at' => 'datetime',
         'corrected_at' => 'datetime',
         'raw_data' => 'array',
@@ -80,6 +99,7 @@ class EnergyReading extends Model
         'alarms' => 'array',
         'events' => 'array',
         'tags' => 'array',
+        'metadata' => 'array',
     ];
 
     // Enums
@@ -145,6 +165,32 @@ class EnergyReading extends Model
             self::READING_STATUS_ESTIMATED => 'Estimado',
             self::READING_STATUS_CORRECTED => 'Corregido',
             self::READING_STATUS_MISSING => 'Faltante',
+        ];
+    }
+
+    public static function getDataQualities(): array
+    {
+        return [
+            'excellent' => 'Excelente',
+            'good' => 'Buena',
+            'fair' => 'Regular',
+            'poor' => 'Mala',
+            'unknown' => 'Desconocida',
+        ];
+    }
+
+    public static function getDataSources(): array
+    {
+        return [
+            'manual' => 'Manual',
+            'automatic' => 'Automático',
+            'remote' => 'Remoto',
+            'estimated' => 'Estimado',
+            'calculated' => 'Calculado',
+            'imported' => 'Importado',
+            'api' => 'API',
+            'scada' => 'SCADA',
+            'meter' => 'Medidor',
         ];
     }
 
