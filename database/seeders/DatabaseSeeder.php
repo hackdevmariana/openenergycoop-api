@@ -67,6 +67,7 @@ class DatabaseSeeder extends Seeder
             ConsumptionPointSeeder::class, // Agregar el seeder de puntos de consumo
             EnergyMeterSeeder::class, // Agregar el seeder de medidores energéticos
             EnergyReadingSeeder::class, // Agregar el seeder de lecturas energéticas
+            DashboardViewSeeder::class, // Agregar el seeder de vistas de dashboard
         ]);
     }
 }
