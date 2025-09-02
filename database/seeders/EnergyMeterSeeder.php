@@ -11,6 +11,8 @@ use Carbon\Carbon;
 
 class EnergyMeterSeeder extends Seeder
 {
+    private $serialCounter = 100000;
+
     public function run(): void
     {
         $this->command->info('🔌 Creando medidores energéticos...');
@@ -26,6 +28,9 @@ class EnergyMeterSeeder extends Seeder
 
         // Limpiar tabla antes de crear nuevos datos
         EnergyMeter::query()->delete();
+        
+        // Resetear contador
+        $this->serialCounter = 100000;
 
         // 1. Medidores Inteligentes (Smart Meters)
         $this->createSmartMeters($users, $installations, $consumptionPoints);
@@ -48,6 +53,11 @@ class EnergyMeterSeeder extends Seeder
         $this->command->info('✅ Seeder completado. Total: ' . EnergyMeter::count() . ' medidores.');
     }
 
+    private function getNextSerialNumber(): string
+    {
+        return 'SN-' . $this->serialCounter++;
+    }
+
     private function createSmartMeters($users, $installations, $consumptionPoints): void
     {
         $this->command->info('🧠 Creando medidores inteligentes...');
@@ -63,7 +73,7 @@ class EnergyMeterSeeder extends Seeder
                 'meter_category' => 'electricity',
                 'manufacturer' => fake()->randomElement(['Siemens', 'ABB', 'Schneider Electric', 'Honeywell']),
                 'model' => fake()->bothify('??-####'),
-                'serial_number' => 'SN-' . fake()->unique()->numberBetween(100000, 999999),
+                'serial_number' => $this->getNextSerialNumber(),
                 'firmware_version' => 'v' . fake()->numberBetween(1, 3) . '.' . fake()->numberBetween(0, 9) . '.' . fake()->numberBetween(0, 9),
                 'hardware_version' => 'HW-' . fake()->numberBetween(1, 3) . '.' . fake()->numberBetween(0, 9),
                 'voltage_rating' => fake()->randomElement([230, 400, 480]),
@@ -113,7 +123,7 @@ class EnergyMeterSeeder extends Seeder
                 'meter_category' => 'electricity',
                 'manufacturer' => fake()->randomElement(['Schneider Electric', 'GE', 'Eaton', 'Rockwell']),
                 'model' => fake()->bothify('??-####'),
-                'serial_number' => 'SN-' . fake()->unique()->numberBetween(100000, 999999),
+                'serial_number' => $this->getNextSerialNumber(),
                 'voltage_rating' => fake()->randomElement([230, 400, 480]),
                 'current_rating' => fake()->randomFloat(1, 16, 400),
                 'phase_type' => fake()->randomElement(['single_phase', 'three_phase']),
@@ -157,7 +167,7 @@ class EnergyMeterSeeder extends Seeder
                 'meter_category' => 'electricity',
                 'manufacturer' => fake()->randomElement(['General Electric', 'Westinghouse', 'Sangamo']),
                 'model' => fake()->bothify('??-####'),
-                'serial_number' => 'SN-' . fake()->unique()->numberBetween(100000, 999999),
+                'serial_number' => $this->getNextSerialNumber(),
                 'voltage_rating' => fake()->randomElement([220, 230]),
                 'current_rating' => fake()->randomFloat(1, 16, 63),
                 'phase_type' => 'single_phase',
