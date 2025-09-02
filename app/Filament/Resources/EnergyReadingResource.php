@@ -728,13 +728,17 @@ class EnergyReadingResource extends Resource
                     ->label('Tipo de Lectura')
                     ->options(EnergyReading::getReadingTypes())
                     ->multiple(),
+                SelectFilter::make('reading_source')
+                    ->label('Fuente de Datos')
+                    ->options(EnergyReading::getReadingSources())
+                    ->multiple(),
+                SelectFilter::make('reading_status')
+                    ->label('Estado de Lectura')
+                    ->options(EnergyReading::getReadingStatuses())
+                    ->multiple(),
                 SelectFilter::make('data_quality')
                     ->label('Calidad de Datos')
                     ->options(EnergyReading::getDataQualities())
-                    ->multiple(),
-                SelectFilter::make('data_source')
-                    ->label('Fuente de Datos')
-                    ->options(EnergyReading::getDataSources())
                     ->multiple(),
                 SelectFilter::make('unit')
                     ->label('Unidad')
