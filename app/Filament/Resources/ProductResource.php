@@ -388,7 +388,12 @@ class ProductResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('is_active', true)->count();
-}
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::where('is_active', true)->count() > 0 ? 'success' : 'warning';
+    }
 
     public static function getGloballySearchableAttributes(): array
     {
