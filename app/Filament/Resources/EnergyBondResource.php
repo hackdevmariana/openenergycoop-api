@@ -83,7 +83,7 @@ class EnergyBondResource extends Resource
                                     ->options(EnergyBond::getStatuses())
                                     ->required()
                                     ->searchable(),
-                                Select::make('priority')
+                                Select::make('priority_order')
                                     ->label('Prioridad')
                                     ->options(EnergyBond::getPriorities())
                                     ->required()
@@ -500,7 +500,7 @@ class EnergyBondResource extends Resource
                     ->label('Frecuencia de Interés')
                     ->options(EnergyBond::getInterestFrequencies())
                     ->multiple(),
-                SelectFilter::make('priority')
+                SelectFilter::make('priority_order')
                     ->label('Prioridad')
                     ->options(EnergyBond::getPriorities())
                     ->multiple(),
