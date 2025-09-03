@@ -243,6 +243,11 @@ class ProviderResource extends Resource
         return static::getModel()::count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::where('is_active', true)->count() > 0 ? 'success' : 'warning';
+    }
+
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         return parent::getGlobalSearchEloquentQuery()->with(['products']);
