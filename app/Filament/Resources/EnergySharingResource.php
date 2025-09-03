@@ -494,4 +494,35 @@ class EnergySharingResource extends Resource
             'edit' => Pages\EditEnergySharing::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'active')->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $activeCount = static::getModel()::where('status', 'active')->count();
+        $totalCount = static::getModel()::count();
+        $proposedCount = static::getModel()::where('status', 'proposed')->count();
+        $disputedCount = static::getModel()::where('status', 'disputed')->count();
+        $failedCount = static::getModel()::where('status', 'failed')->count();
+        $expiredCount = static::getModel()::where('status', 'expired')->count();
+        
+        if ($activeCount === $totalCount && $totalCount > 0) {
+            return 'success'; // Todos los intercambios están activos
+        } elseif ($disputedCount > 0) {
+            return 'danger'; // Hay intercambios en disputa
+        } elseif ($failedCount > 0) {
+            return 'danger'; // Hay intercambios fallidos
+        } elseif ($expiredCount > 0) {
+            return 'warning'; // Hay intercambios expirados
+        } elseif ($proposedCount > 0) {
+            return 'warning'; // Hay intercambios propuestos
+        } elseif ($activeCount > 0) {
+            return 'success'; // Hay intercambios activos
+        } else {
+            return 'gray'; // No hay intercambios activos
+        }
+    }
 }
