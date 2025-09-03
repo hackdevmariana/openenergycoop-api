@@ -210,6 +210,16 @@ class EnergyBond extends Model
         ];
     }
 
+    public static function getPriorities(): array
+    {
+        return [
+            1 => 'Alta',
+            2 => 'Media',
+            3 => 'Baja',
+            4 => 'Muy Baja',
+        ];
+    }
+
     // Relaciones
     public function createdBy(): BelongsTo
     {
