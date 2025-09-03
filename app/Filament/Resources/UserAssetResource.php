@@ -408,6 +408,26 @@ class UserAssetResource extends Resource
         return static::getModel()::where('status', 'active')->count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $activeCount = static::getModel()::where('status', 'active')->count();
+        $totalCount = static::getModel()::count();
+        $expiredCount = static::getModel()::where('status', 'expired')->count();
+        $suspendedCount = static::getModel()::where('status', 'suspended')->count();
+        
+        if ($activeCount === $totalCount) {
+            return 'success'; // Todos los activos están activos
+        } elseif ($expiredCount > 0) {
+            return 'danger'; // Hay activos expirados
+        } elseif ($suspendedCount > 0) {
+            return 'warning'; // Hay activos suspendidos
+        } elseif ($activeCount > 0) {
+            return 'success'; // Hay activos activos
+        } else {
+            return 'gray'; // No hay activos activos
+        }
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['user.name', 'product.name'];
