@@ -437,4 +437,14 @@ class EnergyCooperativeResource extends Resource
             'edit' => Pages\EditEnergyCooperative::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getModel()::where('status', 'active')->count() > 0 ? 'success' : 'warning';
+    }
 }
