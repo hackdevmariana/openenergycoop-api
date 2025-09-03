@@ -70,6 +70,7 @@ class DatabaseSeeder extends Seeder
             DashboardViewSeeder::class, // Agregar el seeder de vistas de dashboard
             DashboardWidgetSeeder::class, // Agregar el seeder de widgets de dashboard
             EnergyBondSeeder::class, // Agregar el seeder de bonos energéticos
+            EnergyContractSeeder::class, // Agregar el seeder de contratos energéticos
             DeviceSeeder::class, // Agregar el seeder de dispositivos
         ]);
     }
