@@ -338,4 +338,35 @@ class UserSubscriptionResource extends Resource
             'edit' => Pages\EditUserSubscription::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'active')->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $activeCount = static::getModel()::where('status', 'active')->count();
+        $totalCount = static::getModel()::count();
+        $pendingCount = static::getModel()::where('status', 'pending')->count();
+        $cancelledCount = static::getModel()::where('status', 'cancelled')->count();
+        $expiredCount = static::getModel()::where('status', 'expired')->count();
+        $suspendedCount = static::getModel()::where('status', 'suspended')->count();
+        
+        if ($activeCount === $totalCount && $totalCount > 0) {
+            return 'success'; // Todas las suscripciones están activas
+        } elseif ($expiredCount > 0) {
+            return 'danger'; // Hay suscripciones expiradas
+        } elseif ($cancelledCount > 0) {
+            return 'danger'; // Hay suscripciones canceladas
+        } elseif ($suspendedCount > 0) {
+            return 'warning'; // Hay suscripciones suspendidas
+        } elseif ($pendingCount > 0) {
+            return 'warning'; // Hay suscripciones pendientes
+        } elseif ($activeCount > 0) {
+            return 'success'; // Hay suscripciones activas
+        } else {
+            return 'gray'; // No hay suscripciones activas
+        }
+    }
 }
