@@ -75,6 +75,7 @@ class DatabaseSeeder extends Seeder
             UserSubscriptionSeeder::class, // Agregar el seeder de suscripciones de usuarios
             EnergySharingSeeder::class, // Agregar el seeder de intercambios de energía
             EnergyInstallationSeeder::class, // Agregar el seeder de instalaciones energéticas
+            EnergyStorageSeeder::class, // Agregar el seeder de almacenamiento de energía
         ]);
     }
 }
