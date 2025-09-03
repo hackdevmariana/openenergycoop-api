@@ -331,6 +331,20 @@ class BalanceResource extends Resource
         return static::getModel()::where('is_frozen', false)->count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $frozenCount = static::getModel()::where('is_frozen', true)->count();
+        $totalCount = static::getModel()::count();
+        
+        if ($frozenCount === 0) {
+            return 'success'; // Todos los balances están activos
+        } elseif ($frozenCount < $totalCount * 0.1) {
+            return 'warning'; // Menos del 10% están congelados
+        } else {
+            return 'danger'; // Más del 10% están congelados
+        }
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['user.name', 'type'];
