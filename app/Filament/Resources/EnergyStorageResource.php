@@ -353,13 +353,19 @@ class EnergyStorageResource extends Resource
                     ->numeric()
                     ->sortable(),
                 
-                Tables\Columns\ProgressColumn::make('charge_level_percentage')
+                Tables\Columns\TextColumn::make('charge_level_percentage')
                     ->label('Nivel de Carga')
-                    ->color('success'),
+                    ->suffix('%')
+                    ->numeric()
+                    ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 60 ? 'warning' : 'danger'))
+                    ->sortable(),
                 
-                Tables\Columns\ProgressColumn::make('current_health_percentage')
+                Tables\Columns\TextColumn::make('current_health_percentage')
                     ->label('Salud del Sistema')
-                    ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 60 ? 'warning' : 'danger')),
+                    ->suffix('%')
+                    ->numeric()
+                    ->color(fn ($state) => $state >= 80 ? 'success' : ($state >= 60 ? 'warning' : 'danger'))
+                    ->sortable(),
                 
                 Tables\Columns\TextColumn::make('round_trip_efficiency')
                     ->label('Eficiencia')
