@@ -73,6 +73,7 @@ class DatabaseSeeder extends Seeder
             EnergyContractSeeder::class, // Agregar el seeder de contratos energéticos
             DeviceSeeder::class, // Agregar el seeder de dispositivos
             UserSubscriptionSeeder::class, // Agregar el seeder de suscripciones de usuarios
+            EnergySharingSeeder::class, // Agregar el seeder de intercambios de energía
         ]);
     }
 }
