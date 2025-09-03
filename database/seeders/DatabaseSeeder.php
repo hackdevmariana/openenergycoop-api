@@ -69,6 +69,7 @@ class DatabaseSeeder extends Seeder
             EnergyReadingSeeder::class, // Agregar el seeder de lecturas energéticas
             DashboardViewSeeder::class, // Agregar el seeder de vistas de dashboard
             DashboardWidgetSeeder::class, // Agregar el seeder de widgets de dashboard
+            EnergyBondSeeder::class, // Agregar el seeder de bonos energéticos
             DeviceSeeder::class, // Agregar el seeder de dispositivos
         ]);
     }
