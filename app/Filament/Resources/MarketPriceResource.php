@@ -504,11 +504,23 @@ class MarketPriceResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('price_spike_detected', true)->count();
+        return static::getModel()::count();
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return static::getModel()::where('price_spike_detected', true)->count() > 0 ? 'danger' : 'success';
+        $totalCount = static::getModel()::count();
+        $spikeCount = static::getModel()::where('price_spike_detected', true)->count();
+        $closedCount = static::getModel()::where('market_status', 'closed')->count();
+        
+        if ($spikeCount > 0) {
+            return 'danger';
+        } elseif ($closedCount > 0) {
+            return 'warning';
+        } elseif ($totalCount > 100) {
+            return 'success';
+        } else {
+            return 'info';
+        }
     }
 }
