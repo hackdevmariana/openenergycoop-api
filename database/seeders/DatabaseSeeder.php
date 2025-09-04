@@ -81,6 +81,7 @@ class DatabaseSeeder extends Seeder
             MarketPriceSeeder::class, // Agregar el seeder de precios de mercado
             EnergyReportSeeder::class, // Agregar el seeder de reportes energéticos
             SustainabilityMetricSeeder::class, // Agregar el seeder de métricas de sostenibilidad
+            PerformanceIndicatorSeeder::class, // Agregar el seeder de indicadores de rendimiento
         ]);
     }
 }
