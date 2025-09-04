@@ -502,11 +502,20 @@ class EnergyProductionResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('operational_status', 'error')->count();
+        return static::getModel()::count();
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return static::getModel()::where('operational_status', 'error')->count() > 0 ? 'danger' : 'success';
+        $totalCount = static::getModel()::count();
+        $errorCount = static::getModel()::where('operational_status', 'error')->count();
+        
+        if ($errorCount > 0) {
+            return 'danger';
+        } elseif ($totalCount > 100) {
+            return 'success';
+        } else {
+            return 'info';
+        }
     }
 }
