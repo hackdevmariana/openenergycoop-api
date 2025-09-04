@@ -233,4 +233,29 @@ class EnergyReportResource extends Resource
             'edit' => Pages\EditEnergyReport::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        $totalCount = static::getModel()::count();
+        $failedCount = static::getModel()::where('status', 'failed')->count();
+        $generatingCount = static::getModel()::where('status', 'generating')->count();
+        $completedCount = static::getModel()::where('status', 'completed')->count();
+        
+        if ($failedCount > 0) {
+            return 'danger';
+        } elseif ($generatingCount > 0) {
+            return 'warning';
+        } elseif ($completedCount > 50) {
+            return 'success';
+        } elseif ($totalCount > 20) {
+            return 'info';
+        } else {
+            return 'gray';
+        }
+    }
 }
