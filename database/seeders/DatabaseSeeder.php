@@ -83,6 +83,7 @@ class DatabaseSeeder extends Seeder
             SustainabilityMetricSeeder::class, // Agregar el seeder de métricas de sostenibilidad
             PerformanceIndicatorSeeder::class, // Agregar el seeder de indicadores de rendimiento
             EnergyTradingOrderSeeder::class, // Agregar el seeder de órdenes de trading energético
+            EnergyForecastSeeder::class, // Agregar el seeder de pronósticos energéticos
         ]);
     }
 }
