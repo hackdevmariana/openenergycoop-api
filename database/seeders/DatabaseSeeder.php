@@ -77,6 +77,7 @@ class DatabaseSeeder extends Seeder
             EnergyInstallationSeeder::class, // Agregar el seeder de instalaciones energéticas
             EnergyStorageSeeder::class, // Agregar el seeder de almacenamiento de energía
             EnergyProductionSeeder::class, // Agregar el seeder de producción energética
+            CarbonCreditSeeder::class, // Agregar el seeder de créditos de carbono
         ]);
     }
 }
