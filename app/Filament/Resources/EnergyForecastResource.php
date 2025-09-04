@@ -71,11 +71,11 @@ class EnergyForecastResource extends Resource
                             ]),
                         Grid::make(3)
                             ->schema([
-                                DatePicker::make('forecast_date')
-                                    ->label('Fecha del Pronóstico')
-                                    ->required()
-                                    ->default(now())
-                                    ->helperText('Fecha para la cual se hace el pronóstico'),
+                                                DateTimePicker::make('forecast_start_time')
+                    ->label('Inicio del Pronóstico')
+                    ->required()
+                    ->default(now())
+                    ->helperText('Fecha y hora de inicio del pronóstico'),
                                 Select::make('time_period')
                                     ->label('Período de Tiempo')
                                     ->options([
@@ -171,152 +171,45 @@ class EnergyForecastResource extends Resource
                     ])
                     ->collapsible(),
 
-                Section::make('Pronósticos de Producción')
+                Section::make('Valores del Pronóstico')
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('predicted_production')
-                                    ->label('Producción Predicha (kWh)')
+                                TextInput::make('total_forecasted_value')
+                                    ->label('Valor Total Pronosticado')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.001)
-                                    ->suffix(' kWh')
-                                    ->helperText('Producción de energía predicha'),
-                                TextInput::make('production_min')
-                                    ->label('Producción Mínima (kWh)')
+                                    ->helperText('Valor total del pronóstico'),
+                                TextInput::make('baseline_value')
+                                    ->label('Valor de Referencia')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.001)
-                                    ->suffix(' kWh')
-                                    ->helperText('Límite inferior del pronóstico'),
-                                TextInput::make('production_max')
-                                    ->label('Producción Máxima (kWh)')
+                                    ->helperText('Valor de referencia para el pronóstico'),
+                                TextInput::make('trend_value')
+                                    ->label('Valor de Tendencia')
                                     ->numeric()
-                                    ->minValue(0)
                                     ->step(0.001)
-                                    ->suffix(' kWh')
-                                    ->helperText('Límite superior del pronóstico'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('production_peak_hour')
-                                    ->label('Hora Pico de Producción')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(23)
-                                    ->step(1)
-                                    ->suffix('h')
-                                    ->helperText('Hora del día con máxima producción'),
-                                TextInput::make('production_peak_value')
-                                    ->label('Valor Pico de Producción (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kW')
-                                    ->helperText('Valor máximo de producción en kW'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Pronósticos de Consumo')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('predicted_consumption')
-                                    ->label('Consumo Predicho (kWh)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kWh')
-                                    ->helperText('Consumo de energía predicho'),
-                                TextInput::make('consumption_min')
-                                    ->label('Consumo Mínimo (kWh)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kWh')
-                                    ->helperText('Límite inferior del consumo'),
-                                TextInput::make('consumption_max')
-                                    ->label('Consumo Máximo (kWh)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kWh')
-                                    ->helperText('Límite superior del consumo'),
-                            ]),
-                        Grid::make(2)
-                            ->schema([
-                                TextInput::make('consumption_peak_hour')
-                                    ->label('Hora Pico de Consumo')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(23)
-                                    ->step(1)
-                                    ->suffix('h')
-                                    ->helperText('Hora del día con máximo consumo'),
-                                TextInput::make('consumption_peak_value')
-                                    ->label('Valor Pico de Consumo (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kW')
-                                    ->helperText('Valor máximo de consumo en kW'),
-                            ]),
-                    ])
-                    ->collapsible(),
-
-                Section::make('Pronósticos de Demanda y Precios')
-                    ->schema([
-                        Grid::make(3)
-                            ->schema([
-                                TextInput::make('predicted_demand')
-                                    ->label('Demanda Predicha (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kW')
-                                    ->helperText('Demanda de potencia predicha'),
-                                TextInput::make('demand_min')
-                                    ->label('Demanda Mínima (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kW')
-                                    ->helperText('Límite inferior de la demanda'),
-                                TextInput::make('demand_max')
-                                    ->label('Demanda Máxima (kW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kW')
-                                    ->helperText('Límite superior de la demanda'),
+                                    ->helperText('Componente de tendencia del pronóstico'),
                             ]),
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('predicted_price')
-                                    ->label('Precio Predicho (€/kWh)')
+                                TextInput::make('seasonal_value')
+                                    ->label('Valor Estacional')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.0001)
-                                    ->prefix('€')
-                                    ->suffix('/kWh')
-                                    ->helperText('Precio de la energía predicho'),
-                                TextInput::make('price_min')
-                                    ->label('Precio Mínimo (€/kWh)')
+                                    ->step(0.001)
+                                    ->helperText('Componente estacional del pronóstico'),
+                                TextInput::make('cyclical_value')
+                                    ->label('Valor Cíclico')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.0001)
-                                    ->prefix('€')
-                                    ->suffix('/kWh')
-                                    ->helperText('Límite inferior del precio'),
-                                TextInput::make('price_max')
-                                    ->label('Precio Máximo (€/kWh)')
+                                    ->step(0.001)
+                                    ->helperText('Componente cíclico del pronóstico'),
+                                TextInput::make('irregular_value')
+                                    ->label('Valor Irregular')
                                     ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.0001)
-                                    ->prefix('€')
-                                    ->suffix('/kWh')
-                                    ->helperText('Límite superior del precio'),
+                                    ->step(0.001)
+                                    ->helperText('Componente irregular del pronóstico'),
                             ]),
                     ])
                     ->collapsible(),
@@ -628,9 +521,9 @@ class EnergyForecastResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(20),
-                TextColumn::make('forecast_date')
-                    ->label('Fecha')
-                    ->date('d/m/Y')
+                TextColumn::make('forecast_start_time')
+                    ->label('Inicio')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
@@ -663,9 +556,9 @@ class EnergyForecastResource extends Resource
                         'gray' => 'long_term',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyForecast::getForecastHorizons()[$state] ?? $state),
-                TextColumn::make('predicted_production')
-                    ->label('Producción (kWh)')
-                    ->suffix(' kWh')
+                TextColumn::make('total_forecasted_value')
+                    ->label('Valor Total')
+                    ->suffix(fn (EnergyForecast $record): string => ' ' . ($record->forecast_unit ?? 'kWh'))
                     ->numeric()
                     ->sortable()
                     ->badge()
@@ -676,38 +569,42 @@ class EnergyForecastResource extends Resource
                         $state >= 100 => 'info',
                         default => 'gray',
                     }),
-                TextColumn::make('predicted_consumption')
-                    ->label('Consumo (kWh)')
-                    ->suffix(' kWh')
+                TextColumn::make('accuracy_score')
+                    ->label('Precisión (%)')
+                    ->suffix('%')
                     ->numeric()
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
-                        $state >= 10000 => 'danger',
-                        $state >= 5000 => 'warning',
-                        $state >= 1000 => 'primary',
-                        $state >= 100 => 'info',
-                        default => 'success',
-                    }),
-                TextColumn::make('predicted_demand')
-                    ->label('Demanda (kW)')
-                    ->suffix(' kW')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('predicted_price')
-                    ->label('Precio (€/kWh)')
-                    ->money('EUR')
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state <= 0.05 => 'success',
-                        $state <= 0.10 => 'primary',
-                        $state <= 0.20 => 'warning',
-                        $state <= 0.50 => 'info',
+                        $state >= 90 => 'success',
+                        $state >= 75 => 'primary',
+                        $state >= 60 => 'warning',
                         default => 'danger',
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    }),
+                TextColumn::make('forecast_status')
+                    ->label('Estado')
+                    ->badge()
+                    ->colors([
+                        'success' => 'active',
+                        'warning' => 'draft',
+                        'danger' => 'expired',
+                        'info' => 'validated',
+                        'secondary' => 'superseded',
+                        'gray' => 'archived',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => EnergyForecast::getForecastStatuses()[$state] ?? $state),
+                TextColumn::make('forecast_method')
+                    ->label('Método')
+                    ->badge()
+                    ->colors([
+                        'primary' => 'statistical',
+                        'success' => 'machine_learning',
+                        'warning' => 'physical_model',
+                        'info' => 'hybrid',
+                        'secondary' => 'expert_judgment',
+                        'gray' => 'other',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => EnergyForecast::getForecastMethods()[$state] ?? $state),
                 TextColumn::make('confidence_level')
                     ->label('Confianza (%)')
                     ->suffix('%')
@@ -796,72 +693,72 @@ class EnergyForecastResource extends Resource
                 Filter::make('low_accuracy')
                     ->query(fn (Builder $query): Builder => $query->where('accuracy_score', '<', 70))
                     ->label('Baja Precisión (<70%)'),
-                Filter::make('high_production')
-                    ->query(fn (Builder $query): Builder => $query->where('predicted_production', '>=', 5000))
-                    ->label('Alta Producción (≥5000 kWh)'),
-                Filter::make('low_production')
-                    ->query(fn (Builder $query): Builder => $query->where('predicted_production', '<', 100))
-                    ->label('Baja Producción (<100 kWh)'),
-                Filter::make('high_consumption')
-                    ->query(fn (Builder $query): Builder => $query->where('predicted_consumption', '>=', 5000))
-                    ->label('Alto Consumo (≥5000 kWh)'),
-                Filter::make('low_consumption')
-                    ->query(fn (Builder $query): Builder => $query->where('predicted_consumption', '<', 100))
-                    ->label('Bajo Consumo (<100 kWh)'),
-                Filter::make('high_price')
-                    ->query(fn (Builder $query): Builder => $query->where('predicted_price', '>=', 0.30))
-                    ->label('Alto Precio (≥€0.30/kWh)'),
-                Filter::make('low_price')
-                    ->query(fn (Builder $query): Builder => $query->where('predicted_price', '<=', 0.10))
-                    ->label('Bajo Precio (≤€0.10/kWh)'),
+                Filter::make('high_value')
+                    ->query(fn (Builder $query): Builder => $query->where('total_forecasted_value', '>=', 5000))
+                    ->label('Alto Valor (≥5,000)'),
+                Filter::make('low_value')
+                    ->query(fn (Builder $query): Builder => $query->where('total_forecasted_value', '<', 100))
+                    ->label('Bajo Valor (<100)'),
+                Filter::make('high_accuracy')
+                    ->query(fn (Builder $query): Builder => $query->where('accuracy_score', '>=', 90))
+                    ->label('Alta Precisión (≥90%)'),
+                Filter::make('low_accuracy')
+                    ->query(fn (Builder $query): Builder => $query->where('accuracy_score', '<', 70))
+                    ->label('Baja Precisión (<70%)'),
+                Filter::make('high_confidence')
+                    ->query(fn (Builder $query): Builder => $query->where('confidence_level', '>=', 90))
+                    ->label('Alta Confianza (≥90%)'),
+                Filter::make('low_confidence')
+                    ->query(fn (Builder $query): Builder => $query->where('confidence_level', '<', 70))
+                    ->label('Baja Confianza (<70%)'),
                 Filter::make('recent_forecasts')
-                    ->query(fn (Builder $query): Builder => $query->where('forecast_date', '>=', now()->subDays(7)))
+                    ->query(fn (Builder $query): Builder => $query->where('forecast_start_time', '>=', now()->subDays(7)))
                     ->label('Pronósticos Recientes (≤7 días)'),
                 Filter::make('future_forecasts')
-                    ->query(fn (Builder $query): Builder => $query->where('forecast_date', '>', now()))
+                    ->query(fn (Builder $query): Builder => $query->where('forecast_start_time', '>', now()))
                     ->label('Pronósticos Futuros'),
                 Filter::make('date_range')
                     ->form([
-                        DatePicker::make('forecast_from')
+                        DateTimePicker::make('forecast_from')
                             ->label('Pronóstico desde'),
-                        DatePicker::make('forecast_until')
+                        DateTimePicker::make('forecast_until')
                             ->label('Pronóstico hasta'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['forecast_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('forecast_date', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->where('forecast_start_time', '>=', $date),
                             )
                             ->when(
                                 $data['forecast_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('forecast_date', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->where('forecast_start_time', '<=', $date),
                             );
                     })
                     ->label('Rango de Fechas de Pronóstico'),
-                Filter::make('production_range')
+                Filter::make('value_range')
                     ->form([
-                        TextInput::make('min_production')
-                            ->label('Producción mínima (kWh)')
+                        TextInput::make('min_value')
+                            ->label('Valor mínimo')
                             ->numeric()
                             ->minValue(0),
-                        TextInput::make('max_production')
-                            ->label('Producción máxima (kWh)')
+                        TextInput::make('max_value')
+                            ->label('Valor máximo')
                             ->numeric()
                             ->minValue(0),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['min_production'],
-                                fn (Builder $query, $production): Builder => $query->where('predicted_production', '>=', $production),
+                                $data['min_value'],
+                                fn (Builder $query, $value): Builder => $query->where('total_forecasted_value', '>=', $value),
                             )
                             ->when(
-                                $data['max_production'],
-                                fn (Builder $query, $production): Builder => $query->where('predicted_production', '<=', $production),
+                                $data['max_value'],
+                                fn (Builder $query, $value): Builder => $query->where('total_forecasted_value', '<=', $value),
                             );
                     })
-                    ->label('Rango de Producción'),
+                    ->label('Rango de Valor'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -897,8 +794,8 @@ class EnergyForecastResource extends Resource
                     ->color('secondary')
                     ->action(function (EnergyForecast $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->forecast_date = now()->addDay();
-                        $newRecord->is_active = false;
+                        $newRecord->forecast_start_time = now()->addDay();
+                        $newRecord->forecast_end_time = now()->addDays(2);
                         $newRecord->save();
                     }),
             ])
@@ -965,7 +862,7 @@ class EnergyForecastResource extends Resource
                         }),
                 ]),
             ])
-            ->defaultSort('forecast_date', 'desc')
+            ->defaultSort('forecast_start_time', 'desc')
             ->striped()
             ->paginated([10, 25, 50, 100]);
     }
