@@ -137,4 +137,29 @@ class PerformanceIndicatorResource extends Resource
             'edit' => Pages\EditPerformanceIndicator::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        $totalCount = static::getModel()::count();
+        $criticalCount = static::getModel()::where('criticality', 'critical')->count();
+        $activeCount = static::getModel()::where('is_active', true)->count();
+        $alertCount = static::getModel()::where('current_alert_level', 'critical')->count();
+
+        if ($alertCount > 0) {
+            return 'danger';
+        } elseif ($criticalCount > 10) {
+            return 'warning';
+        } elseif ($activeCount > 70) {
+            return 'success';
+        } elseif ($totalCount > 50) {
+            return 'info';
+        } else {
+            return 'gray';
+        }
+    }
 }
