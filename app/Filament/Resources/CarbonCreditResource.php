@@ -587,11 +587,23 @@ class CarbonCreditResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count();
+        return static::getModel()::count();
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return static::getModel()::where('status', 'pending')->count() > 0 ? 'warning' : 'success';
+        $totalCount = static::getModel()::count();
+        $pendingCount = static::getModel()::where('status', 'pending')->count();
+        $retiredCount = static::getModel()::where('status', 'retired')->count();
+        
+        if ($pendingCount > 0) {
+            return 'warning';
+        } elseif ($retiredCount > 0) {
+            return 'danger';
+        } elseif ($totalCount > 50) {
+            return 'success';
+        } else {
+            return 'info';
+        }
     }
 }
