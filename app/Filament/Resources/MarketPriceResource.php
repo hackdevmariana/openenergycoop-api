@@ -469,25 +469,10 @@ class MarketPriceResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                
-                Tables\Actions\Action::make('export_data')
-                    ->label('Exportar')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('info')
-                    ->url(fn (MarketPrice $record): string => route('market-prices.export', $record))
-                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    
-                    Tables\Actions\BulkAction::make('export_selected')
-                        ->label('Exportar Seleccionados')
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('info')
-                        ->action(function ($records) {
-                            // Implementar lógica de exportación
-                        }),
                 ]),
             ])
             ->defaultSort('price_datetime', 'desc')
