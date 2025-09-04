@@ -124,4 +124,29 @@ class SustainabilityMetricResource extends Resource
             'edit' => Pages\EditSustainabilityMetric::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        $totalCount = static::getModel()::count();
+        $criticalAlertsCount = static::getModel()::where('alert_status', 'critical')->count();
+        $certifiedCount = static::getModel()::where('is_certified', true)->count();
+        $improvingTrendCount = static::getModel()::where('trend', 'improving')->count();
+        
+        if ($criticalAlertsCount > 0) {
+            return 'danger';
+        } elseif ($certifiedCount > 20) {
+            return 'success';
+        } elseif ($improvingTrendCount > 30) {
+            return 'info';
+        } elseif ($totalCount > 50) {
+            return 'warning';
+        } else {
+            return 'gray';
+        }
+    }
 }
