@@ -78,7 +78,15 @@ class EnergyForecastResource extends Resource
                                     ->helperText('Fecha para la cual se hace el pronóstico'),
                                 Select::make('time_period')
                                     ->label('Período de Tiempo')
-                                    ->options(EnergyForecast::getTimePeriods())
+                                    ->options([
+                                        'hourly' => 'Por Hora',
+                                        'daily' => 'Diario',
+                                        'weekly' => 'Semanal',
+                                        'monthly' => 'Mensual',
+                                        'quarterly' => 'Trimestral',
+                                        'yearly' => 'Anual',
+                                        'long_term' => 'Largo Plazo',
+                                    ])
                                     ->required()
                                     ->searchable(),
                                 Select::make('forecast_horizon')
@@ -620,9 +628,9 @@ class EnergyForecastResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(20),
-                DatePicker::make('forecast_date')
+                TextColumn::make('forecast_date')
                     ->label('Fecha')
-                    ->date()
+                    ->date('d/m/Y')
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
@@ -643,8 +651,8 @@ class EnergyForecastResource extends Resource
                         'gray' => 'other',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyForecast::getForecastTypes()[$state] ?? $state),
-                BadgeColumn::make('time_period')
-                    ->label('Período')
+                BadgeColumn::make('forecast_horizon')
+                    ->label('Horizonte')
                     ->colors([
                         'primary' => 'hourly',
                         'success' => 'daily',
@@ -652,9 +660,9 @@ class EnergyForecastResource extends Resource
                         'danger' => 'monthly',
                         'info' => 'quarterly',
                         'secondary' => 'yearly',
-                        'gray' => 'custom',
+                        'gray' => 'long_term',
                     ])
-                    ->formatStateUsing(fn (string $state): string => EnergyForecast::getTimePeriods()[$state] ?? $state),
+                    ->formatStateUsing(fn (string $state): string => EnergyForecast::getForecastHorizons()[$state] ?? $state),
                 TextColumn::make('predicted_production')
                     ->label('Producción (kWh)')
                     ->suffix(' kWh')
@@ -751,9 +759,9 @@ class EnergyForecastResource extends Resource
                     ->label('Tipo de Pronóstico')
                     ->options(EnergyForecast::getForecastTypes())
                     ->multiple(),
-                SelectFilter::make('time_period')
-                    ->label('Período de Tiempo')
-                    ->options(EnergyForecast::getTimePeriods())
+                SelectFilter::make('forecast_horizon')
+                    ->label('Horizonte de Pronóstico')
+                    ->options(EnergyForecast::getForecastHorizons())
                     ->multiple(),
                 SelectFilter::make('geographical_zone')
                     ->label('Zona Geográfica')
@@ -939,7 +947,15 @@ class EnergyForecastResource extends Resource
                         ->form([
                             Select::make('time_period')
                                 ->label('Período de Tiempo')
-                                ->options(EnergyForecast::getTimePeriods())
+                                ->options([
+                                    'hourly' => 'Por Hora',
+                                    'daily' => 'Diario',
+                                    'weekly' => 'Semanal',
+                                    'monthly' => 'Mensual',
+                                    'quarterly' => 'Trimestral',
+                                    'yearly' => 'Anual',
+                                    'long_term' => 'Largo Plazo',
+                                ])
                                 ->required(),
                         ])
                         ->action(function ($records, array $data) {
