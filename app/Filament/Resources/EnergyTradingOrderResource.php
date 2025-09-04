@@ -41,11 +41,11 @@ class EnergyTradingOrderResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Órdenes de Comercio';
+    protected static ?string $navigationLabel = 'Órdenes de compraventa';
 
-    protected static ?string $modelLabel = 'Orden de Comercio';
+    protected static ?string $modelLabel = 'Orden de compraventa';
 
-    protected static ?string $pluralModelLabel = 'Órdenes de Comercio';
+    protected static ?string $pluralModelLabel = 'Órdenes de compraventa';
 
     public static function form(Form $form): Form
     {
