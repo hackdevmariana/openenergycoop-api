@@ -80,6 +80,7 @@ class DatabaseSeeder extends Seeder
             CarbonCreditSeeder::class, // Agregar el seeder de créditos de carbono
             MarketPriceSeeder::class, // Agregar el seeder de precios de mercado
             EnergyReportSeeder::class, // Agregar el seeder de reportes energéticos
+            SustainabilityMetricSeeder::class, // Agregar el seeder de métricas de sostenibilidad
         ]);
     }
 }
