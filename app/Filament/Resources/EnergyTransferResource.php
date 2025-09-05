@@ -57,21 +57,21 @@ class EnergyTransferResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('from_user_id')
-                                    ->label('Usuario Origen')
-                                    ->relationship('fromUser', 'name')
+                                TextInput::make('transfer_number')
+                                    ->label('Número de Transferencia')
                                     ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Usuario que envía la energía'),
-                                Select::make('to_user_id')
-                                    ->label('Usuario Destino')
-                                    ->relationship('toUser', 'name')
+                                    ->unique(ignoreRecord: true)
+                                    ->helperText('Número único de identificación'),
+                                TextInput::make('name')
+                                    ->label('Nombre')
                                     ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Usuario que recibe la energía'),
+                                    ->maxLength(255)
+                                    ->helperText('Nombre descriptivo de la transferencia'),
                             ]),
+                        Textarea::make('description')
+                            ->label('Descripción')
+                            ->rows(3)
+                            ->helperText('Descripción detallada de la transferencia'),
                         Grid::make(3)
                             ->schema([
                                 Select::make('transfer_type')
@@ -92,7 +92,7 @@ class EnergyTransferResource extends Resource
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('kwh_amount')
+                                TextInput::make('transfer_amount_kwh')
                                     ->label('Cantidad (kWh)')
                                     ->numeric()
                                     ->minValue(0.001)
@@ -100,116 +100,165 @@ class EnergyTransferResource extends Resource
                                     ->required()
                                     ->suffix(' kWh')
                                     ->helperText('Cantidad de energía a transferir'),
-                                TextInput::make('transfer_rate')
-                                    ->label('Tasa de Transferencia (kWh/h)')
+                                TextInput::make('transfer_rate_kw')
+                                    ->label('Tasa de Transferencia (kW)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.001)
-                                    ->suffix(' kWh/h')
-                                    ->helperText('Velocidad de la transferencia'),
+                                    ->suffix(' kW')
+                                    ->helperText('Potencia de transferencia'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('estimated_duration_hours')
-                                    ->label('Duración Estimada (horas)')
+                                TextInput::make('duration_hours')
+                                    ->label('Duración (horas)')
                                     ->numeric()
                                     ->minValue(0.1)
                                     ->step(0.1)
                                     ->suffix(' h')
-                                    ->helperText('Tiempo estimado para completar'),
-                                TextInput::make('actual_duration_hours')
-                                    ->label('Duración Real (horas)')
+                                    ->helperText('Duración de la transferencia'),
+                                TextInput::make('efficiency_percentage')
+                                    ->label('Eficiencia (%)')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->step(0.1)
-                                    ->suffix(' h')
-                                    ->helperText('Tiempo real tomado'),
+                                    ->maxValue(100)
+                                    ->step(0.01)
+                                    ->suffix('%')
+                                    ->helperText('Eficiencia de la transferencia'),
                             ]),
                     ])
                     ->collapsible(),
 
-                Section::make('Relaciones y Asignaciones')
+                Section::make('Origen y Destino')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('from_installation_id')
-                                    ->label('Instalación Origen')
-                                    ->relationship('fromInstallation', 'name')
+                                Select::make('source_id')
+                                    ->label('ID Origen')
+                                    ->numeric()
+                                    ->helperText('ID del origen de la transferencia'),
+                                Select::make('source_type')
+                                    ->label('Tipo Origen')
+                                    ->options([
+                                        'App\Models\EnergyInstallation' => 'Instalación',
+                                        'App\Models\EnergyCooperative' => 'Cooperativa',
+                                        'App\Models\EnergyStorage' => 'Almacenamiento',
+                                    ])
                                     ->searchable()
-                                    ->preload()
-                                    ->helperText('Instalación de origen'),
-                                Select::make('to_installation_id')
-                                    ->label('Instalación Destino')
-                                    ->relationship('toInstallation', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Instalación de destino'),
+                                    ->helperText('Tipo de origen'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('energy_source_id')
-                                    ->label('Fuente de Energía')
-                                    ->relationship('energySource', 'name')
+                                Select::make('destination_id')
+                                    ->label('ID Destino')
+                                    ->numeric()
+                                    ->helperText('ID del destino de la transferencia'),
+                                Select::make('destination_type')
+                                    ->label('Tipo Destino')
+                                    ->options([
+                                        'App\Models\EnergyInstallation' => 'Instalación',
+                                        'App\Models\EnergyCooperative' => 'Cooperativa',
+                                        'App\Models\EnergyStorage' => 'Almacenamiento',
+                                    ])
                                     ->searchable()
-                                    ->preload(),
-                                Select::make('transfer_network_id')
-                                    ->label('Red de Transferencia')
-                                    ->relationship('transferNetwork', 'name')
-                                    ->searchable()
-                                    ->preload(),
+                                    ->helperText('Tipo de destino'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('approved_by_user_id')
+                                Select::make('source_meter_id')
+                                    ->label('Medidor Origen')
+                                    ->relationship('sourceMeter', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Medidor de origen'),
+                                Select::make('destination_meter_id')
+                                    ->label('Medidor Destino')
+                                    ->relationship('destinationMeter', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Medidor de destino'),
+                            ]),
+                    ])
+                    ->collapsible(),
+
+                Section::make('Usuarios Responsables')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('scheduled_by')
+                                    ->label('Programado por')
+                                    ->relationship('scheduledBy', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Usuario que programó la transferencia'),
+                                Select::make('initiated_by')
+                                    ->label('Iniciado por')
+                                    ->relationship('initiatedBy', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Usuario que inició la transferencia'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('approved_by')
                                     ->label('Aprobado por')
-                                    ->relationship('approvedByUser', 'name')
+                                    ->relationship('approvedBy', 'name')
                                     ->searchable()
-                                    ->preload(),
+                                    ->preload()
+                                    ->helperText('Usuario que aprobó la transferencia'),
+                                Select::make('verified_by')
+                                    ->label('Verificado por')
+                                    ->relationship('verifiedBy', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Usuario que verificó la transferencia'),
+                            ]),
+                        Grid::make(2)
+                            ->schema([
+                                Select::make('completed_by')
+                                    ->label('Completado por')
+                                    ->relationship('completedBy', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->helperText('Usuario que completó la transferencia'),
                                 Select::make('created_by')
                                     ->label('Creado por')
                                     ->relationship('createdBy', 'name')
                                     ->required()
                                     ->searchable()
-                                    ->preload(),
+                                    ->preload()
+                                    ->helperText('Usuario que creó el registro'),
                             ]),
                     ])
                     ->collapsible(),
 
                 Section::make('Detalles de la Transferencia')
                     ->schema([
-                        RichEditor::make('message')
-                            ->label('Mensaje')
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'underline',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->helperText('Mensaje o descripción de la transferencia'),
+                        Textarea::make('notes')
+                            ->label('Notas')
+                            ->rows(3)
+                            ->helperText('Notas adicionales sobre la transferencia'),
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('transfer_fee')
-                                    ->label('Tarifa de Transferencia (€)')
+                                TextInput::make('cost_per_kwh')
+                                    ->label('Costo por kWh (€)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.0001)
+                                    ->prefix('€')
+                                    ->helperText('Costo por kilovatio hora'),
+                                TextInput::make('total_cost')
+                                    ->label('Costo Total (€)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.01)
                                     ->prefix('€')
-                                    ->helperText('Tarifa por la transferencia'),
-                                TextInput::make('network_fee')
-                                    ->label('Tarifa de Red (€)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->prefix('€')
-                                    ->helperText('Tarifa de la red de distribución'),
-                                TextInput::make('total_fee')
-                                    ->label('Tarifa Total (€)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.01)
-                                    ->prefix('€')
-                                    ->helperText('Tarifa total incluyendo todas las comisiones'),
+                                    ->helperText('Costo total de la transferencia'),
+                                TextInput::make('currency')
+                                    ->label('Moneda')
+                                    ->default('EUR')
+                                    ->maxLength(3)
+                                    ->helperText('Moneda del costo'),
                             ]),
                         Grid::make(2)
                             ->schema([
@@ -300,36 +349,38 @@ class EnergyTransferResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                DateTimePicker::make('scheduled_at')
-                                    ->label('Programado para')
-                                    ->helperText('Cuándo se programó la transferencia'),
-                                DateTimePicker::make('started_at')
-                                    ->label('Iniciado el')
-                                    ->helperText('Cuándo comenzó la transferencia'),
-                                DateTimePicker::make('completed_at')
-                                    ->label('Completado el')
-                                    ->helperText('Cuándo se completó la transferencia'),
+                                DateTimePicker::make('scheduled_start_time')
+                                    ->label('Inicio Programado')
+                                    ->required()
+                                    ->helperText('Cuándo está programado el inicio'),
+                                DateTimePicker::make('scheduled_end_time')
+                                    ->label('Fin Programado')
+                                    ->required()
+                                    ->helperText('Cuándo está programado el fin'),
+                                DateTimePicker::make('actual_start_time')
+                                    ->label('Inicio Real')
+                                    ->helperText('Cuándo comenzó realmente'),
                             ]),
                         Grid::make(3)
                             ->schema([
-                                DateTimePicker::make('confirmed_at')
-                                    ->label('Confirmado el')
-                                    ->helperText('Cuándo se confirmó la transferencia'),
+                                DateTimePicker::make('actual_end_time')
+                                    ->label('Fin Real')
+                                    ->helperText('Cuándo terminó realmente'),
+                                DateTimePicker::make('completion_time')
+                                    ->label('Tiempo de Completado')
+                                    ->helperText('Cuándo se completó la transferencia'),
                                 DateTimePicker::make('approved_at')
                                     ->label('Aprobado el')
                                     ->helperText('Cuándo se aprobó la transferencia'),
-                                DateTimePicker::make('cancelled_at')
-                                    ->label('Cancelado el')
-                                    ->helperText('Cuándo se canceló la transferencia'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                DateTimePicker::make('expires_at')
-                                    ->label('Expira el')
-                                    ->helperText('Cuándo expira la solicitud'),
-                                DateTimePicker::make('last_activity_at')
-                                    ->label('Última Actividad')
-                                    ->helperText('Cuándo fue la última actividad'),
+                                DateTimePicker::make('verified_at')
+                                    ->label('Verificado el')
+                                    ->helperText('Cuándo se verificó la transferencia'),
+                                DateTimePicker::make('completed_at')
+                                    ->label('Completado el')
+                                    ->helperText('Cuándo se marcó como completado'),
                             ]),
                     ])
                     ->collapsible(),
@@ -338,46 +389,39 @@ class EnergyTransferResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('progress_percentage')
-                                    ->label('Progreso (%)')
+                                TextInput::make('loss_percentage')
+                                    ->label('Pérdidas (%)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->maxValue(100)
                                     ->step(0.01)
                                     ->suffix('%')
-                                    ->helperText('Porcentaje de progreso de la transferencia'),
-                                TextInput::make('current_kwh_transferred')
-                                    ->label('kWh Transferidos Actualmente')
+                                    ->helperText('Porcentaje de pérdidas'),
+                                TextInput::make('loss_amount_kwh')
+                                    ->label('Pérdidas (kWh)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.001)
                                     ->suffix(' kWh')
-                                    ->helperText('Cantidad ya transferida'),
-                                TextInput::make('remaining_kwh')
-                                    ->label('kWh Restantes')
+                                    ->helperText('Cantidad perdida en kWh'),
+                                TextInput::make('net_transfer_amount_kwh')
+                                    ->label('Transferencia Neta (kWh)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.001)
                                     ->suffix(' kWh')
-                                    ->helperText('Cantidad pendiente de transferir'),
+                                    ->helperText('Cantidad neta transferida'),
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('transfer_speed')
-                                    ->label('Velocidad de Transferencia (kWh/h)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' kWh/h')
-                                    ->helperText('Velocidad actual de transferencia'),
-                                TextInput::make('efficiency_rating')
-                                    ->label('Calificación de Eficiencia')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.01)
-                                    ->suffix('%')
-                                    ->helperText('Eficiencia de la transferencia'),
+                                TextInput::make('transfer_method')
+                                    ->label('Método de Transferencia')
+                                    ->maxLength(255)
+                                    ->helperText('Método utilizado para la transferencia'),
+                                TextInput::make('transfer_medium')
+                                    ->label('Medio de Transferencia')
+                                    ->maxLength(255)
+                                    ->helperText('Medio utilizado para la transferencia'),
                             ]),
                         RichEditor::make('monitoring_data')
                             ->label('Datos de Monitoreo')
@@ -473,26 +517,82 @@ class EnergyTransferResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('fromUser.name')
-                    ->label('Usuario Origen')
+                TextColumn::make('source_display')
+                    ->label('EMISOR')
+                    ->getStateUsing(function (EnergyTransfer $record): string {
+                        if (!$record->source_id || !$record->source_type) {
+                            return 'Sin origen';
+                        }
+                        
+                        $sourceModel = $record->source_type::find($record->source_id);
+                        if (!$sourceModel) {
+                            return 'Origen no encontrado';
+                        }
+                        
+                        $name = $sourceModel->name ?? $sourceModel->title ?? "ID: {$record->source_id}";
+                        $type = class_basename($record->source_type);
+                        
+                        return "{$name} ({$type})";
+                    })
                     ->searchable()
                     ->sortable()
-                    ->limit(20),
-                TextColumn::make('toUser.name')
-                    ->label('Usuario Destino')
+                    ->weight('bold')
+                    ->color('success')
+                    ->limit(30)
+                    ->tooltip(function (EnergyTransfer $record): string {
+                        if (!$record->source_id || !$record->source_type) {
+                            return 'Sin información de origen';
+                        }
+                        return "Tipo: " . class_basename($record->source_type) . "\nID: {$record->source_id}";
+                    }),
+                TextColumn::make('destination_display')
+                    ->label('RECEPTOR')
+                    ->getStateUsing(function (EnergyTransfer $record): string {
+                        if (!$record->destination_id || !$record->destination_type) {
+                            return 'Sin destino';
+                        }
+                        
+                        $destinationModel = $record->destination_type::find($record->destination_id);
+                        if (!$destinationModel) {
+                            return 'Destino no encontrado';
+                        }
+                        
+                        $name = $destinationModel->name ?? $destinationModel->title ?? "ID: {$record->destination_id}";
+                        $type = class_basename($record->destination_type);
+                        
+                        return "{$name} ({$type})";
+                    })
                     ->searchable()
                     ->sortable()
-                    ->limit(20),
+                    ->weight('bold')
+                    ->color('warning')
+                    ->limit(30)
+                    ->tooltip(function (EnergyTransfer $record): string {
+                        if (!$record->destination_id || !$record->destination_type) {
+                            return 'Sin información de destino';
+                        }
+                        return "Tipo: " . class_basename($record->destination_type) . "\nID: {$record->destination_id}";
+                    }),
+                TextColumn::make('transfer_number')
+                    ->label('Número')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(15),
+                TextColumn::make('name')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(30),
                 BadgeColumn::make('transfer_type')
                     ->label('Tipo')
                     ->colors([
-                        'primary' => 'peer_to_peer',
-                        'success' => 'pool_to_user',
-                        'warning' => 'user_to_pool',
-                        'danger' => 'emergency',
-                        'info' => 'scheduled',
-                        'secondary' => 'bulk',
-                        'gray' => 'other',
+                        'success' => 'generation',
+                        'danger' => 'consumption',
+                        'info' => 'storage',
+                        'warning' => 'grid_import',
+                        'primary' => 'grid_export',
+                        'secondary' => 'peer_to_peer',
+                        'gray' => 'virtual',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyTransfer::getTransferTypes()[$state] ?? $state),
                 BadgeColumn::make('status')
@@ -502,7 +602,7 @@ class EnergyTransferResource extends Resource
                         'warning' => 'in_progress',
                         'danger' => 'cancelled',
                         'info' => 'pending',
-                        'secondary' => 'approved',
+                        'secondary' => 'scheduled',
                         'gray' => 'failed',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyTransfer::getStatuses()[$state] ?? $state),
@@ -510,40 +610,42 @@ class EnergyTransferResource extends Resource
                     ->label('Prioridad')
                     ->colors([
                         'success' => 'low',
-                        'warning' => 'medium',
+                        'warning' => 'normal',
                         'danger' => 'high',
                         'secondary' => 'urgent',
                         'gray' => 'critical',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyTransfer::getPriorities()[$state] ?? $state),
-                TextColumn::make('kwh_amount')
-                    ->label('Cantidad (kWh)')
+                TextColumn::make('transfer_amount_kwh')
+                    ->label('ENERGÍA TRANSFERIDA')
                     ->suffix(' kWh')
                     ->numeric()
                     ->sortable()
-                    ->badge()
+                    ->weight('bold')
+                    ->size('lg')
                     ->color(fn (string $state): string => match (true) {
                         $state >= 1000 => 'success',
                         $state >= 500 => 'primary',
                         $state >= 100 => 'warning',
                         $state >= 10 => 'info',
                         default => 'gray',
-                    }),
-                TextColumn::make('progress_percentage')
-                    ->label('Progreso (%)')
+                    })
+                    ->tooltip('Cantidad de energía transferida en kilovatios hora'),
+                TextColumn::make('efficiency_percentage')
+                    ->label('Eficiencia (%)')
                     ->suffix('%')
                     ->numeric()
                     ->sortable()
                     ->badge()
                     ->color(fn (string $state): string => match (true) {
-                        $state >= 100 => 'success',
-                        $state >= 75 => 'primary',
-                        $state >= 50 => 'warning',
-                        $state >= 25 => 'info',
+                        $state >= 95 => 'success',
+                        $state >= 90 => 'primary',
+                        $state >= 85 => 'warning',
+                        $state >= 80 => 'info',
                         default => 'danger',
                     }),
-                TextColumn::make('transfer_fee')
-                    ->label('Tarifa (€)')
+                TextColumn::make('total_cost')
+                    ->label('Costo Total (€)')
                     ->money('EUR')
                     ->sortable()
                     ->summarize([
@@ -552,45 +654,61 @@ class EnergyTransferResource extends Resource
                             ->money('EUR'),
                     ])
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('transfer_rate')
-                    ->label('Velocidad (kWh/h)')
-                    ->suffix(' kWh/h')
+                TextColumn::make('transfer_rate_kw')
+                    ->label('Potencia (kW)')
+                    ->suffix(' kW')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('estimated_duration_hours')
-                    ->label('Duración Est. (h)')
+                TextColumn::make('duration_hours')
+                    ->label('Duración (h)')
                     ->suffix(' h')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('energy_quality')
-                    ->label('Calidad')
-                    ->searchable()
-                    ->sortable()
-                    ->badge()
-                    ->color(fn (string $state): string => match (true) {
-                        $state === 'premium' => 'success',
-                        $state === 'standard' => 'primary',
-                        $state === 'basic' => 'warning',
-                        $state === 'renewable' => 'info',
-                        default => 'gray',
+                TextColumn::make('responsible_users')
+                    ->label('RESPONSABLES')
+                    ->getStateUsing(function (EnergyTransfer $record): string {
+                        $users = [];
+                        
+                        if ($record->scheduledBy) {
+                            $users[] = "Prog: {$record->scheduledBy->name}";
+                        }
+                        if ($record->initiatedBy) {
+                            $users[] = "Inic: {$record->initiatedBy->name}";
+                        }
+                        if ($record->createdBy) {
+                            $users[] = "Creado: {$record->createdBy->name}";
+                        }
+                        
+                        return implode(' | ', $users) ?: 'Sin responsables';
                     })
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('verification_code')
-                    ->label('Código')
                     ->searchable()
                     ->sortable()
-                    ->limit(6)
-                    ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('requires_2fa')
-                    ->label('2FA'),
-                ToggleColumn::make('admin_approval_required')
-                    ->label('Aprob. Admin'),
+                    ->limit(40)
+                    ->weight('bold')
+                    ->color('info')
+                    ->tooltip(function (EnergyTransfer $record): string {
+                        $details = [];
+                        if ($record->scheduledBy) $details[] = "Programado por: {$record->scheduledBy->name}";
+                        if ($record->initiatedBy) $details[] = "Iniciado por: {$record->initiatedBy->name}";
+                        if ($record->approvedBy) $details[] = "Aprobado por: {$record->approvedBy->name}";
+                        if ($record->verifiedBy) $details[] = "Verificado por: {$record->verifiedBy->name}";
+                        if ($record->completedBy) $details[] = "Completado por: {$record->completedBy->name}";
+                        if ($record->createdBy) $details[] = "Creado por: {$record->createdBy->name}";
+                        
+                        return implode("\n", $details) ?: 'Sin información de responsables';
+                    }),
+                ToggleColumn::make('is_automated')
+                    ->label('Automático'),
+                ToggleColumn::make('requires_approval')
+                    ->label('Requiere Aprobación'),
+                ToggleColumn::make('is_approved')
+                    ->label('Aprobado'),
                 ToggleColumn::make('is_verified')
                     ->label('Verificado'),
-                TextColumn::make('scheduled_at')
-                    ->label('Programado')
+                TextColumn::make('scheduled_start_time')
+                    ->label('Inicio Programado')
                     ->dateTime()
                     ->sortable()
                     ->badge()
@@ -601,18 +719,16 @@ class EnergyTransferResource extends Resource
                         default => 'gray',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('started_at')
-                    ->label('Iniciado')
+                TextColumn::make('actual_start_time')
+                    ->label('Inicio Real')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('completed_at')
+                TextColumn::make('completion_time')
                     ->label('Completado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                ToggleColumn::make('is_active')
-                    ->label('Activa'),
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime()
@@ -620,6 +736,58 @@ class EnergyTransferResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Filter::make('by_source')
+                    ->form([
+                        TextInput::make('source_name')
+                            ->label('Buscar por Emisor')
+                            ->placeholder('Nombre del emisor...')
+                            ->helperText('Busca por nombre del emisor'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (!$data['source_name']) {
+                            return $query;
+                        }
+                        
+                        return $query->where(function ($q) use ($data) {
+                            $searchTerm = $data['source_name'];
+                            
+                            // Buscar en diferentes tipos de modelos origen
+                            $q->whereHasMorph('source', [
+                                'App\Models\EnergyInstallation',
+                                'App\Models\EnergyCooperative', 
+                                'App\Models\EnergyStorage'
+                            ], function ($query, $type) use ($searchTerm) {
+                                $query->where('name', 'like', "%{$searchTerm}%");
+                            });
+                        });
+                    })
+                    ->label('Filtrar por Emisor'),
+                Filter::make('by_destination')
+                    ->form([
+                        TextInput::make('destination_name')
+                            ->label('Buscar por Receptor')
+                            ->placeholder('Nombre del receptor...')
+                            ->helperText('Busca por nombre del receptor'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (!$data['destination_name']) {
+                            return $query;
+                        }
+                        
+                        return $query->where(function ($q) use ($data) {
+                            $searchTerm = $data['destination_name'];
+                            
+                            // Buscar en diferentes tipos de modelos destino
+                            $q->whereHasMorph('destination', [
+                                'App\Models\EnergyInstallation',
+                                'App\Models\EnergyCooperative', 
+                                'App\Models\EnergyStorage'
+                            ], function ($query, $type) use ($searchTerm) {
+                                $query->where('name', 'like', "%{$searchTerm}%");
+                            });
+                        });
+                    })
+                    ->label('Filtrar por Receptor'),
                 SelectFilter::make('transfer_type')
                     ->label('Tipo de Transferencia')
                     ->options(EnergyTransfer::getTransferTypes())
@@ -643,30 +811,30 @@ class EnergyTransferResource extends Resource
                         'other' => 'Otra',
                     ])
                     ->multiple(),
-                Filter::make('active')
-                    ->query(fn (Builder $query): Builder => $query->where('is_active', true))
-                    ->label('Solo Activas'),
+                Filter::make('automated')
+                    ->query(fn (Builder $query): Builder => $query->where('is_automated', true))
+                    ->label('Solo Automáticas'),
                 Filter::make('verified')
                     ->query(fn (Builder $query): Builder => $query->where('is_verified', true))
                     ->label('Solo Verificadas'),
-                Filter::make('requires_2fa')
-                    ->query(fn (Builder $query): Builder => $query->where('requires_2fa', true))
-                    ->label('Requieren 2FA'),
-                Filter::make('admin_approval_required')
-                    ->query(fn (Builder $query): Builder => $query->where('admin_approval_required', true))
-                    ->label('Requieren Aprobación Admin'),
+                Filter::make('requires_approval')
+                    ->query(fn (Builder $query): Builder => $query->where('requires_approval', true))
+                    ->label('Requieren Aprobación'),
+                Filter::make('approved')
+                    ->query(fn (Builder $query): Builder => $query->where('is_approved', true))
+                    ->label('Solo Aprobadas'),
                 Filter::make('high_amount')
-                    ->query(fn (Builder $query): Builder => $query->where('kwh_amount', '>=', 1000))
+                    ->query(fn (Builder $query): Builder => $query->where('transfer_amount_kwh', '>=', 1000))
                     ->label('Alta Cantidad (≥1000 kWh)'),
                 Filter::make('low_amount')
-                    ->query(fn (Builder $query): Builder => $query->where('kwh_amount', '<', 100))
+                    ->query(fn (Builder $query): Builder => $query->where('transfer_amount_kwh', '<', 100))
                     ->label('Baja Cantidad (<100 kWh)'),
-                Filter::make('high_fee')
-                    ->query(fn (Builder $query): Builder => $query->where('transfer_fee', '>=', 100))
-                    ->label('Alta Tarifa (≥€100)'),
-                Filter::make('low_fee')
-                    ->query(fn (Builder $query): Builder => $query->where('transfer_fee', '<', 10))
-                    ->label('Baja Tarifa (<€10)'),
+                Filter::make('high_cost')
+                    ->query(fn (Builder $query): Builder => $query->where('total_cost', '>=', 100))
+                    ->label('Alto Costo (≥€100)'),
+                Filter::make('low_cost')
+                    ->query(fn (Builder $query): Builder => $query->where('total_cost', '<', 10))
+                    ->label('Bajo Costo (<€10)'),
                 Filter::make('in_progress')
                     ->query(fn (Builder $query): Builder => $query->where('status', 'in_progress'))
                     ->label('En Progreso'),
@@ -713,11 +881,11 @@ class EnergyTransferResource extends Resource
                         return $query
                             ->when(
                                 $data['min_amount'],
-                                fn (Builder $query, $amount): Builder => $query->where('kwh_amount', '>=', $amount),
+                                fn (Builder $query, $amount): Builder => $query->where('transfer_amount_kwh', '>=', $amount),
                             )
                             ->when(
                                 $data['max_amount'],
-                                fn (Builder $query, $amount): Builder => $query->where('kwh_amount', '<=', $amount),
+                                fn (Builder $query, $amount): Builder => $query->where('transfer_amount_kwh', '<=', $amount),
                             );
                     })
                     ->label('Rango de Cantidades'),
@@ -733,10 +901,11 @@ class EnergyTransferResource extends Resource
                     ->label('Aprobar')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
-                    ->visible(fn (EnergyTransfer $record) => $record->status === 'pending' && $record->admin_approval_required)
+                    ->visible(fn (EnergyTransfer $record) => $record->status === 'pending' && $record->requires_approval)
                     ->action(function (EnergyTransfer $record) {
                         $record->update([
-                            'status' => 'approved',
+                            'status' => 'scheduled',
+                            'is_approved' => true,
                             'approved_at' => now(),
                         ]);
                     }),
@@ -744,11 +913,11 @@ class EnergyTransferResource extends Resource
                     ->label('Iniciar')
                     ->icon('heroicon-o-play')
                     ->color('primary')
-                    ->visible(fn (EnergyTransfer $record) => in_array($record->status, ['approved', 'pending']))
+                    ->visible(fn (EnergyTransfer $record) => in_array($record->status, ['scheduled', 'pending']))
                     ->action(function (EnergyTransfer $record) {
                         $record->update([
                             'status' => 'in_progress',
-                            'started_at' => now(),
+                            'actual_start_time' => now(),
                         ]);
                     }),
                 Tables\Actions\Action::make('complete_transfer')
@@ -759,21 +928,19 @@ class EnergyTransferResource extends Resource
                     ->action(function (EnergyTransfer $record) {
                         $record->update([
                             'status' => 'completed',
+                            'actual_end_time' => now(),
+                            'completion_time' => now(),
                             'completed_at' => now(),
-                            'progress_percentage' => 100,
-                            'current_kwh_transferred' => $record->kwh_amount,
-                            'remaining_kwh' => 0,
                         ]);
                     }),
                 Tables\Actions\Action::make('cancel_transfer')
                     ->label('Cancelar')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
-                    ->visible(fn (EnergyTransfer $record) => in_array($record->status, ['pending', 'approved', 'in_progress']))
+                    ->visible(fn (EnergyTransfer $record) => in_array($record->status, ['pending', 'scheduled', 'in_progress']))
                     ->action(function (EnergyTransfer $record) {
                         $record->update([
                             'status' => 'cancelled',
-                            'cancelled_at' => now(),
                         ]);
                     }),
                 Tables\Actions\Action::make('verify_transfer')
@@ -814,7 +981,8 @@ class EnergyTransferResource extends Resource
                             $records->each(function ($record) {
                                 if ($record->status === 'pending') {
                                     $record->update([
-                                        'status' => 'approved',
+                                        'status' => 'scheduled',
+                                        'is_approved' => true,
                                         'approved_at' => now(),
                                     ]);
                                 }
@@ -825,10 +993,10 @@ class EnergyTransferResource extends Resource
                         ->icon('heroicon-o-play')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                if (in_array($record->status, ['approved', 'pending'])) {
+                                if (in_array($record->status, ['scheduled', 'pending'])) {
                                     $record->update([
                                         'status' => 'in_progress',
-                                        'started_at' => now(),
+                                        'actual_start_time' => now(),
                                     ]);
                                 }
                             });
@@ -841,10 +1009,9 @@ class EnergyTransferResource extends Resource
                                 if ($record->status === 'in_progress') {
                                     $record->update([
                                         'status' => 'completed',
+                                        'actual_end_time' => now(),
+                                        'completion_time' => now(),
                                         'completed_at' => now(),
-                                        'progress_percentage' => 100,
-                                        'current_kwh_transferred' => $record->kwh_amount,
-                                        'remaining_kwh' => 0,
                                     ]);
                                 }
                             });
@@ -854,10 +1021,9 @@ class EnergyTransferResource extends Resource
                         ->icon('heroicon-o-x-mark')
                         ->action(function ($records) {
                             $records->each(function ($record) {
-                                if (in_array($record->status, ['pending', 'approved', 'in_progress'])) {
+                                if (in_array($record->status, ['pending', 'scheduled', 'in_progress'])) {
                                     $record->update([
                                         'status' => 'cancelled',
-                                        'cancelled_at' => now(),
                                     ]);
                                 }
                             });
