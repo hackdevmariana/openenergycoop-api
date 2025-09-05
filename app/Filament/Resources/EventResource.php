@@ -371,4 +371,47 @@ class EventResource extends Resource
             'edit' => Pages\EditEvent::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $todayEvents = static::getModel()::whereDate('date', today())->count();
+        $upcomingEvents = static::getModel()::upcoming()->count();
+        $draftEvents = static::getModel()::where('is_draft', true)->count();
+        
+        // Prioridad: eventos de hoy > eventos próximos > borradores > total
+        if ($todayEvents > 0) {
+            return $todayEvents; // Muestra eventos de hoy
+        }
+        
+        if ($upcomingEvents > 0) {
+            return $upcomingEvents; // Muestra eventos próximos
+        }
+        
+        if ($draftEvents > 0) {
+            return $draftEvents; // Muestra borradores
+        }
+        
+        return static::getModel()::count(); // Muestra total
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $upcomingEvents = static::getModel()::upcoming()->count();
+        $todayEvents = static::getModel()::whereDate('date', today())->count();
+        $draftEvents = static::getModel()::where('is_draft', true)->count();
+        
+        if ($todayEvents > 0) {
+            return 'warning'; // Eventos de hoy - amarillo
+        }
+        
+        if ($upcomingEvents > 0) {
+            return 'success'; // Eventos próximos - verde
+        }
+        
+        if ($draftEvents > 0) {
+            return 'info'; // Hay borradores - azul
+        }
+        
+        return 'gray'; // Sin eventos próximos - gris
+    }
 }
