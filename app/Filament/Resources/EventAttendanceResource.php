@@ -115,7 +115,7 @@ class EventAttendanceResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->limit(40)
-                    ->url(fn (EventAttendance $record): string => route('filament.admin.resources.events.edit', $record->event_id))
+                    ->url(fn (?EventAttendance $record): string => $record ? route('filament.admin.resources.events.edit', $record->event_id) : '#')
                     ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Usuario')
@@ -147,11 +147,11 @@ class EventAttendanceResource extends Resource
                     ->sortable()
                     ->placeholder('No realizado')
                     ->badge()
-                    ->color(fn (EventAttendance $record): string => $record->checked_in_at ? 'success' : 'gray'),
+                    ->color(fn (?EventAttendance $record): string => $record && $record->checked_in_at ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('cancellation_reason')
                     ->label('Razón de Cancelación')
                     ->limit(30)
-                    ->visible(fn (EventAttendance $record): bool => $record->status === 'cancelled')
+                    ->visible(fn (?EventAttendance $record): bool => $record && $record->status === 'cancelled')
                     ->placeholder('No especificada'),
                 Tables\Columns\TextColumn::make('notes')
                     ->label('Notas')
@@ -233,7 +233,7 @@ class EventAttendanceResource extends Resource
                     ->label('Hacer Check-in')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (EventAttendance $record): bool => $record->canCheckIn())
+                    ->visible(fn (?EventAttendance $record): bool => $record && $record->canCheckIn())
                     ->action(function (EventAttendance $record): void {
                         $record->checkIn();
                     })
@@ -245,7 +245,7 @@ class EventAttendanceResource extends Resource
                     ->label('Cancelar Asistencia')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (EventAttendance $record): bool => $record->canCancel())
+                    ->visible(fn (?EventAttendance $record): bool => $record && $record->canCancel())
                     ->form([
                         Forms\Components\Textarea::make('cancellation_reason')
                             ->label('Razón de Cancelación')
@@ -262,7 +262,7 @@ class EventAttendanceResource extends Resource
                     ->label('Marcar No Asistió')
                     ->icon('heroicon-o-exclamation-triangle')
                     ->color('warning')
-                    ->visible(fn (EventAttendance $record): bool => $record->isRegistered())
+                    ->visible(fn (?EventAttendance $record): bool => $record && $record->isRegistered())
                     ->action(function (EventAttendance $record): void {
                         $record->markAsNoShow();
                     })
