@@ -723,3 +723,4 @@ class EnergyTransferSeeder extends Seeder
         return null;
     }
 }
+
