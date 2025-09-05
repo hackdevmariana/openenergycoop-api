@@ -334,4 +334,53 @@ class EventAttendanceResource extends Resource
             'edit' => Pages\EditEventAttendance::route('/{record}/edit'),
         ];
     }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $totalAttendances = static::getModel()::count();
+        $registeredAttendances = static::getModel()::where('status', 'registered')->count();
+        $checkedInAttendances = static::getModel()::whereNotNull('checked_in_at')->count();
+        $cancelledAttendances = static::getModel()::where('status', 'cancelled')->count();
+        
+        // Prioridad: registrados > check-in > cancelados > total
+        if ($registeredAttendances > 0) {
+            return $registeredAttendances; // Muestra asistencias registradas
+        }
+        
+        if ($checkedInAttendances > 0) {
+            return $checkedInAttendances; // Muestra check-ins realizados
+        }
+        
+        if ($cancelledAttendances > 0) {
+            return $cancelledAttendances; // Muestra cancelaciones
+        }
+        
+        return $totalAttendances; // Muestra total
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $registeredAttendances = static::getModel()::where('status', 'registered')->count();
+        $checkedInAttendances = static::getModel()::whereNotNull('checked_in_at')->count();
+        $cancelledAttendances = static::getModel()::where('status', 'cancelled')->count();
+        $noShowAttendances = static::getModel()::where('status', 'no_show')->count();
+        
+        if ($registeredAttendances > 0) {
+            return 'info'; // Asistencias registradas - azul
+        }
+        
+        if ($checkedInAttendances > 0) {
+            return 'success'; // Check-ins realizados - verde
+        }
+        
+        if ($cancelledAttendances > 0) {
+            return 'danger'; // Cancelaciones - rojo
+        }
+        
+        if ($noShowAttendances > 0) {
+            return 'warning'; // No asistieron - amarillo
+        }
+        
+        return 'gray'; // Sin asistencias - gris
+    }
 }
