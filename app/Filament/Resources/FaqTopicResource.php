@@ -194,4 +194,9 @@ class FaqTopicResource extends Resource
             'edit' => Pages\EditFaqTopic::route('/{record}/edit'),
         ];
     }
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('is_active', true)->count() ?: null;
+    }
 }
