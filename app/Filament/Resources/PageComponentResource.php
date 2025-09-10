@@ -30,6 +30,11 @@ class PageComponentResource extends Resource
     
     protected static ?int $navigationSort = 4;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('is_draft', false)->count() ?: null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -345,8 +350,7 @@ class PageComponentResource extends Resource
                 ]),
             ])
             ->defaultSort('position', 'asc')
-            ->reorderable('position')
-            ->groupedBulkActions();
+            ->reorderable('position');
     }
 
     public static function getPages(): array
