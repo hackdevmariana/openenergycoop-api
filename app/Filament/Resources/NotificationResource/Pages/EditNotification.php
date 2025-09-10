@@ -28,25 +28,42 @@ class EditNotification extends EditRecord
     {
         $record = $this->record;
         
+        // Determinar el mensaje basado en el estado de lectura
+        $isRead = $record->isRead();
+        $statusText = $isRead ? 'marcada como leída' : 'marcada como no leída';
+        
         // Notificar al usuario
         FilamentNotification::make()
             ->title('Notificación Actualizada')
-            ->body("La notificación '{$record->title}' ha sido actualizada exitosamente.")
+            ->body("La notificación '{$record->title}' ha sido {$statusText}. El badge de navegación se actualizará al refrescar la página.")
             ->success()
             ->send();
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // Asegurar que is_read se hidrate correctamente
+        $data['is_read'] = $this->record->isRead();
+        return $data;
+    }
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Si se marca como leída pero no tiene read_at, establecerlo
-        if (isset($data['is_read']) && $data['is_read'] && !isset($data['read_at'])) {
-            $data['read_at'] = now();
+        // Sincronizar el estado de lectura con read_at
+        if (isset($data['is_read'])) {
+            if ($data['is_read']) {
+                // Si se marca como leída, establecer read_at si no existe
+                if (!isset($data['read_at']) || is_null($data['read_at'])) {
+                    $data['read_at'] = now();
+                }
+            } else {
+                // Si se desmarca como leída, limpiar read_at
+                $data['read_at'] = null;
+            }
         }
         
-        // Si se desmarca como leída, limpiar read_at
-        if (isset($data['is_read']) && !$data['is_read']) {
-            $data['read_at'] = null;
-        }
+        // Remover is_read del array ya que no es un campo de la base de datos
+        unset($data['is_read']);
         
         return $data;
     }
