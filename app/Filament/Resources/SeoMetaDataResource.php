@@ -389,7 +389,7 @@ class SeoMetaDataResource extends Resource
     
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereNull('meta_title')->count();
+        return static::getModel()::count() ?: null;
     }
     
     public static function getNavigationBadgeColor(): string|array|null
