@@ -329,4 +329,9 @@ class HeroResource extends Resource
             'edit' => Pages\EditHero::route('/{record}/edit'),
         ];
     }
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('active', true)->count() ?: null;
+    }
 }
