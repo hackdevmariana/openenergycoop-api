@@ -13,13 +13,17 @@ class Faq extends Model
     protected $fillable = [
         'topic_id',
         'question',
+        'slug',
         'answer',
+        'short_answer',
         'position',
+        'view_count',
         'views_count',
         'helpful_count',
         'not_helpful_count',
         'is_featured',
         'tags',
+        'keywords',
         'organization_id',
         'language',
         'is_draft',
@@ -30,10 +34,12 @@ class Faq extends Model
 
     protected $casts = [
         'tags' => 'array',
+        'keywords' => 'array',
         'is_featured' => 'boolean',
         'is_draft' => 'boolean',
         'published_at' => 'datetime',
         'position' => 'integer',
+        'view_count' => 'integer',
         'views_count' => 'integer',
         'helpful_count' => 'integer',
         'not_helpful_count' => 'integer',
@@ -98,7 +104,7 @@ class Faq extends Model
 
     public function incrementViews(): void
     {
-        $this->increment('views_count');
+        $this->increment('view_count');
     }
 
     public function markAsHelpful(): void
