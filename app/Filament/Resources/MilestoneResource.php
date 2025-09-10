@@ -463,7 +463,7 @@ class MilestoneResource extends Resource
                     ->label('Poner en Espera')
                     ->icon('heroicon-o-pause')
                     ->color('warning')
-                    ->visible(fn (Milestone $record) => in_array($record->record->status, ['not_started', 'in_progress']))
+                    ->visible(fn (Milestone $record) => in_array($record->status, ['not_started', 'in_progress']))
                     ->action(function (Milestone $record) {
                         $record->update(['status' => 'on_hold']);
                     }),
