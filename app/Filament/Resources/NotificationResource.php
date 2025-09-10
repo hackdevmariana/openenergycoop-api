@@ -69,10 +69,13 @@ class NotificationResource extends Resource
 
                         Forms\Components\Toggle::make('is_read')
                             ->label('¿Leída?')
-                            ->afterStateHydrated(function ($state, $record) {
-                                return $record ? $record->isRead() : false;
+                            ->default(false)
+                            ->afterStateHydrated(function ($component, $state, $record) {
+                                if ($record) {
+                                    $component->state($record->isRead());
+                                }
                             })
-                            ->dehydrated(false)
+                            ->live()
                             ->columnSpan(1),
                     ])
                     ->columns(2),

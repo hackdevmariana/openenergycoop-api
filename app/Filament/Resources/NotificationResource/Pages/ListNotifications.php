@@ -6,6 +6,7 @@ use App\Filament\Resources\NotificationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 
 class ListNotifications extends ListRecords
 {
@@ -19,11 +20,13 @@ class ListNotifications extends ListRecords
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->action(function () {
-                    $user = auth()->user();
-                    if ($user) {
-                        \App\Models\Notification::markAllAsRead($user->id);
-                        $this->notify('success', 'Todas las notificaciones han sido marcadas como leídas.');
-                    }
+                    // Marcar todas las notificaciones no leídas como leídas
+                    $updated = \App\Models\Notification::unread()->update(['read_at' => now()]);
+                    Notification::make()
+                        ->title('Éxito')
+                        ->body("Se han marcado {$updated} notificaciones como leídas.")
+                        ->success()
+                        ->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading('Confirmar Acción')
@@ -36,7 +39,11 @@ class ListNotifications extends ListRecords
                 ->color('warning')
                 ->action(function () {
                     $deleted = \App\Models\Notification::cleanupOld(30);
-                    $this->notify('success', "Se han eliminado {$deleted} notificaciones antiguas.");
+                    Notification::make()
+                        ->title('Limpieza Completada')
+                        ->body("Se han eliminado {$deleted} notificaciones antiguas.")
+                        ->success()
+                        ->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading('Confirmar Limpieza')
