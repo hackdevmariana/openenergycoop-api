@@ -238,7 +238,7 @@ class NotificationSettingResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('toggle_enabled')
                     ->label('Cambiar Estado')
-                    ->icon('heroicon-o-toggle-right')
+                    ->icon('heroicon-o-arrow-path')
                     ->color(fn ($record): string => $record->enabled ? 'warning' : 'success')
                     ->action(fn ($record) => $record->toggle())
                     ->requiresConfirmation()
@@ -293,6 +293,16 @@ class NotificationSettingResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('enabled', true)->count() ?: null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
     }
 
     public static function getPages(): array
