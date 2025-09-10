@@ -32,6 +32,11 @@ class ImageResource extends Resource
     
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('is_public', true)->where('status', 'active')->count() ?: null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
