@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 use App\Traits\HasOrganization;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Banner extends Model
+class Banner extends Model implements HasMedia
 {
-    use HasFactory, HasOrganization;
+    use HasFactory, HasOrganization, InteractsWithMedia;
 
     protected $fillable = [
         'image',
@@ -150,6 +153,41 @@ class Banner extends Model
     public function getTypeLabel(): string
     {
         return self::BANNER_TYPES[$this->banner_type] ?? $this->banner_type;
+    }
+
+    /**
+     * Media Collections
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('banner_images')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('banner_mobile_images')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(200)
+            ->sharpen(10)
+            ->performOnCollections('banner_images', 'banner_mobile_images');
+
+        $this->addMediaConversion('optimized')
+            ->width(800)
+            ->height(600)
+            ->quality(85)
+            ->performOnCollections('banner_images');
+
+        $this->addMediaConversion('mobile_optimized')
+            ->width(400)
+            ->height(300)
+            ->quality(85)
+            ->performOnCollections('banner_mobile_images');
     }
 
     /**
