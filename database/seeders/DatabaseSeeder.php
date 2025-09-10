@@ -85,6 +85,7 @@ class DatabaseSeeder extends Seeder
             EnergyTradingOrderSeeder::class, // Agregar el seeder de órdenes de trading energético
             EnergyForecastSeeder::class, // Agregar el seeder de pronósticos energéticos
             EnergyTransferSeeder::class, // Agregar el seeder de transferencias energéticas
+            FaqSeeder::class, // Agregar el seeder de FAQs
         ]);
     }
 }
