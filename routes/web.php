@@ -72,3 +72,11 @@ Route::prefix('community-metrics')->name('community-metrics.')->group(function (
 Route::get('/test-icons', function () {
     return view('test-bootstrap-icons');
 })->name('test.icons');
+
+// ========================================
+// RUTAS PARA FAQs
+// ========================================
+Route::prefix('faqs')->name('faq.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Web\FaqController::class, 'index'])->name('index');
+    Route::get('/{slug}', [App\Http\Controllers\Web\FaqController::class, 'show'])->name('show');
+});
