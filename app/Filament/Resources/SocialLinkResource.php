@@ -249,6 +249,20 @@ class SocialLinkResource extends Resource
                         default => $state,
                     }),
                     
+                Tables\Columns\TextColumn::make('url')
+                    ->label('URL')
+                    ->limit(50)
+                    ->tooltip(function ($record) {
+                        return $record->url;
+                    })
+                    ->copyable()
+                    ->copyMessage('URL copiada')
+                    ->copyMessageDuration(1500)
+                    ->url(fn ($record) => $record->url)
+                    ->openUrlInNewTab()
+                    ->color('primary')
+                    ->icon('heroicon-o-link')
+                    ->toggleable(),
 
                     
                 Tables\Columns\TextColumn::make('followers_count')
