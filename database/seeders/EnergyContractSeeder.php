@@ -217,8 +217,8 @@ class EnergyContractSeeder extends Seeder
     {
         $startDate = Carbon::now()->subDays(rand(30, 365));
         $endDate = $startDate->copy()->addYears(rand(1, 5));
-        $signedDate = fake()->optional(0.8)->dateTimeBetween($startDate->format('Y-m-d'), 'now');
-        $activationDate = $signedDate ? fake()->optional(0.7)->dateTimeBetween($signedDate->format('Y-m-d'), 'now') : null;
+        $signedDate = fake()->optional(0.8)->dateTimeBetween($startDate->format('Y-m-d'), 'now')?->format('Y-m-d');
+        $activationDate = $signedDate ? fake()->optional(0.7)->dateTimeBetween($signedDate, 'now')?->format('Y-m-d') : null;
 
         $totalValue = $additionalData['total_value'] ?? fake()->randomFloat(2, 5000, 100000);
         $monthlyPayment = $additionalData['monthly_payment'] ?? fake()->randomFloat(2, 100, 2000);
@@ -256,8 +256,8 @@ class EnergyContractSeeder extends Seeder
             'renewal_period_months' => fake()->randomElement([12, 24, 36]),
             'early_termination_fee' => fake()->randomFloat(2, 0, 1000),
             'billing_frequency' => $additionalData['billing_frequency'] ?? fake()->randomElement(['monthly', 'quarterly', 'semi_annual', 'annual']),
-            'next_billing_date' => fake()->optional()->dateTimeBetween('+1 week', '+2 months'),
-            'last_billing_date' => fake()->optional()->dateTimeBetween('-3 months', '-1 week'),
+            'next_billing_date' => fake()->optional()->dateTimeBetween('+1 week', '+2 months')?->format('Y-m-d'),
+            'last_billing_date' => fake()->optional()->dateTimeBetween('-3 months', '-1 week')?->format('Y-m-d'),
             'performance_metrics' => json_encode([
                 'uptime_percentage' => fake()->randomFloat(2, 95, 99.9),
                 'response_time_minutes' => fake()->randomFloat(2, 5, 60),
@@ -284,7 +284,7 @@ class EnergyContractSeeder extends Seeder
                 'installation_guide' => fake()->optional()->url()
             ]),
             'notes' => fake()->optional()->paragraph(),
-            'approved_at' => fake()->optional()->dateTimeBetween('-6 months', '-1 day'),
+            'approved_at' => fake()->optional()->dateTimeBetween('-6 months', '-1 day')?->format('Y-m-d H:i:s'),
             'approved_by' => fake()->optional()->randomElement([1, 2, 3, 4, 5]),
             'terminated_at' => null,
             'terminated_by' => null,
