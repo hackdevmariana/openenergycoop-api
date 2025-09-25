@@ -243,7 +243,10 @@ class ImageSeeder extends Seeder
         ];
 
         foreach ($images as $image) {
-            Image::create($image);
+            Image::firstOrCreate(
+                ['slug' => $image['slug']],
+                $image
+            );
         }
 
         $this->command->info('✅ ImageSeeder ejecutado correctamente');
