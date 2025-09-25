@@ -206,10 +206,14 @@ class EnergyStorageSeeder extends Seeder
             $lastMaintenanceDate = Carbon::now()->subDays(rand(30, 365));
             $nextMaintenanceDate = $lastMaintenanceDate->copy()->addMonths(rand(6, 18));
             
-            EnergyStorage::create([
+            $systemId = 'STOR-' . strtoupper($data['storage_type']) . '-' . str_pad($this->storageCounter++, 4, '0', STR_PAD_LEFT);
+            
+            EnergyStorage::firstOrCreate(
+                ['system_id' => $systemId],
+                [
                 'user_id' => $users->isNotEmpty() ? $users->random()->id : 1,
                 'provider_id' => 1, // Usar un provider por defecto
-                'system_id' => 'STOR-' . strtoupper($data['storage_type']) . '-' . str_pad($this->storageCounter++, 4, '0', STR_PAD_LEFT),
+                'system_id' => $systemId,
                 'name' => $data['name'],
                 'description' => fake()->paragraph(),
                 'storage_type' => $data['storage_type'],
@@ -263,7 +267,8 @@ class EnergyStorageSeeder extends Seeder
                 'commissioned_at' => $installationDate,
                 'created_at' => $installationDate,
                 'updated_at' => Carbon::now()->subDays(rand(0, 30)),
-            ]);
+                ]
+            );
             
             $this->command->info("   ✅ Almacenamiento {$data['status']} creado: {$data['name']}");
         }
