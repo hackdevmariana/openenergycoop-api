@@ -47,59 +47,18 @@ class ConsumptionPointSeeder extends Seeder
     {
         $this->command->info('🏠 Creando puntos residenciales...');
 
-        $points = [
-            [
-                'point_number' => 'RES-001',
-                'name' => 'Residencia Villa del Sol',
-                'description' => 'Punto de consumo para vivienda unifamiliar',
-                'point_type' => 'residential',
-                'status' => 'active',
-                'location_address' => 'Calle del Sol 123, Valencia',
-                'latitude' => 39.4699,
-                'longitude' => -0.3763,
-                'peak_demand_kw' => 8.5,
-                'average_demand_kw' => 4.2,
-                'annual_consumption_kwh' => 3500.00,
-                'connection_date' => Carbon::now()->subMonths(6),
-                'meter_number' => 'MTR-RES-001',
-                'meter_type' => 'smart',
-                'voltage_level' => 230.00,
-                'consumption_type' => 'basic',
-                'supply_type' => 'single_phase',
-                'connection_type' => 'underground',
-                'remote_reading_enabled' => true,
-            ],
-            [
-                'point_number' => 'RES-002',
-                'name' => 'Apartamento Centro',
-                'description' => 'Punto de consumo para apartamento céntrico',
-                'point_type' => 'residential',
-                'status' => 'active',
-                'location_address' => 'Plaza Mayor 45, Madrid',
-                'latitude' => 40.4168,
-                'longitude' => -3.7038,
-                'peak_demand_kw' => 5.5,
-                'average_demand_kw' => 2.8,
-                'annual_consumption_kwh' => 2400.00,
-                'connection_date' => Carbon::now()->subMonths(12),
-                'meter_number' => 'MTR-RES-002',
-                'meter_type' => 'digital',
-                'voltage_level' => 220.00,
-                'consumption_type' => 'basic',
-                'supply_type' => 'single_phase',
-                'connection_type' => 'underground',
-                'remote_reading_enabled' => false,
-            ],
-        ];
-
-        foreach ($points as $pointData) {
-            $this->createPoint($pointData, $users, $installations);
-        }
-
-        // Crear puntos adicionales con factory
-        for ($i = 0; $i < 15; $i++) {
+        // Crear puntos residenciales con números únicos
+        for ($i = 0; $i < 17; $i++) {
+            $pointNumber = 'RES-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Verificar si ya existe un punto con este número
+            if (ConsumptionPoint::where('point_number', $pointNumber)->exists()) {
+                $this->command->line("   ⚠️ Punto ya existe con número: {$pointNumber}");
+                continue;
+            }
+            
             $point = ConsumptionPoint::create([
-                'point_number' => 'RES-' . str_pad($i + 3, 3, '0', STR_PAD_LEFT),
+                'point_number' => $pointNumber,
                 'name' => 'Residencia ' . fake()->streetName,
                 'description' => fake()->optional(0.7)->sentence,
                 'point_type' => 'residential',
@@ -131,38 +90,18 @@ class ConsumptionPointSeeder extends Seeder
     {
         $this->command->info('🏢 Creando puntos comerciales...');
 
-        $points = [
-            [
-                'point_number' => 'COM-001',
-                'name' => 'Centro Comercial Plaza Norte',
-                'description' => 'Punto de consumo para centro comercial',
-                'point_type' => 'commercial',
-                'status' => 'active',
-                'location_address' => 'Avenida Comercial 200, Barcelona',
-                'latitude' => 41.3851,
-                'longitude' => 2.1734,
-                'peak_demand_kw' => 85.0,
-                'average_demand_kw' => 42.5,
-                'annual_consumption_kwh' => 125000.00,
-                'connection_date' => Carbon::now()->subYear(),
-                'meter_number' => 'MTR-COM-001',
-                'meter_type' => 'smart',
-                'voltage_level' => 400.00,
-                'consumption_type' => 'high',
-                'supply_type' => 'three_phase',
-                'connection_type' => 'underground',
-                'remote_reading_enabled' => true,
-            ],
-        ];
-
-        foreach ($points as $pointData) {
-            $this->createPoint($pointData, $users, $installations);
-        }
-
-        // Crear puntos comerciales adicionales
-        for ($i = 0; $i < 10; $i++) {
+        // Crear puntos comerciales con números únicos
+        for ($i = 0; $i < 11; $i++) {
+            $pointNumber = 'COM-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Verificar si ya existe un punto con este número
+            if (ConsumptionPoint::where('point_number', $pointNumber)->exists()) {
+                $this->command->line("   ⚠️ Punto ya existe con número: {$pointNumber}");
+                continue;
+            }
+            
             $point = ConsumptionPoint::create([
-                'point_number' => 'COM-' . str_pad($i + 2, 3, '0', STR_PAD_LEFT),
+                'point_number' => $pointNumber,
                 'name' => 'Comercio ' . fake()->company,
                 'description' => fake()->optional(0.8)->sentence,
                 'point_type' => 'commercial',
@@ -194,38 +133,18 @@ class ConsumptionPointSeeder extends Seeder
     {
         $this->command->info('🏭 Creando puntos industriales...');
 
-        $points = [
-            [
-                'point_number' => 'IND-001',
-                'name' => 'Planta Industrial MetalTech',
-                'description' => 'Punto de consumo para planta de manufactura',
-                'point_type' => 'industrial',
-                'status' => 'active',
-                'location_address' => 'Polígono Industrial Norte, Sector 5',
-                'latitude' => 40.5000,
-                'longitude' => -3.5000,
-                'peak_demand_kw' => 450.0,
-                'average_demand_kw' => 280.0,
-                'annual_consumption_kwh' => 850000.00,
-                'connection_date' => Carbon::now()->subYears(2),
-                'meter_number' => 'MTR-IND-001',
-                'meter_type' => 'smart',
-                'voltage_level' => 660.00,
-                'consumption_type' => 'industrial',
-                'supply_type' => 'three_phase',
-                'connection_type' => 'overhead',
-                'remote_reading_enabled' => true,
-            ],
-        ];
-
-        foreach ($points as $pointData) {
-            $this->createPoint($pointData, $users, $installations);
-        }
-
-        // Crear puntos industriales adicionales
-        for ($i = 0; $i < 6; $i++) {
+        // Crear puntos industriales con números únicos
+        for ($i = 0; $i < 7; $i++) {
+            $pointNumber = 'IND-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Verificar si ya existe un punto con este número
+            if (ConsumptionPoint::where('point_number', $pointNumber)->exists()) {
+                $this->command->line("   ⚠️ Punto ya existe con número: {$pointNumber}");
+                continue;
+            }
+            
             $point = ConsumptionPoint::create([
-                'point_number' => 'IND-' . str_pad($i + 2, 3, '0', STR_PAD_LEFT),
+                'point_number' => $pointNumber,
                 'name' => 'Industria ' . fake()->company,
                 'description' => fake()->optional(0.9)->sentence,
                 'point_type' => 'industrial',
@@ -257,38 +176,18 @@ class ConsumptionPointSeeder extends Seeder
     {
         $this->command->info('🏛️ Creando puntos públicos...');
 
-        $points = [
-            [
-                'point_number' => 'PUB-001',
-                'name' => 'Ayuntamiento de Valencia',
-                'description' => 'Punto de consumo para edificio municipal',
-                'point_type' => 'public',
-                'status' => 'active',
-                'location_address' => 'Plaza del Ayuntamiento 1, Valencia',
-                'latitude' => 39.4699,
-                'longitude' => -0.3763,
-                'peak_demand_kw' => 65.0,
-                'average_demand_kw' => 35.0,
-                'annual_consumption_kwh' => 95000.00,
-                'connection_date' => Carbon::now()->subYears(5),
-                'meter_number' => 'MTR-PUB-001',
-                'meter_type' => 'digital',
-                'voltage_level' => 400.00,
-                'consumption_type' => 'high',
-                'supply_type' => 'three_phase',
-                'connection_type' => 'underground',
-                'remote_reading_enabled' => true,
-            ],
-        ];
-
-        foreach ($points as $pointData) {
-            $this->createPoint($pointData, $users, $installations);
-        }
-
-        // Crear puntos públicos adicionales
-        for ($i = 0; $i < 8; $i++) {
+        // Crear puntos públicos con números únicos
+        for ($i = 0; $i < 9; $i++) {
+            $pointNumber = 'PUB-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Verificar si ya existe un punto con este número
+            if (ConsumptionPoint::where('point_number', $pointNumber)->exists()) {
+                $this->command->line("   ⚠️ Punto ya existe con número: {$pointNumber}");
+                continue;
+            }
+            
             $point = ConsumptionPoint::create([
-                'point_number' => 'PUB-' . str_pad($i + 2, 3, '0', STR_PAD_LEFT),
+                'point_number' => $pointNumber,
                 'name' => fake()->randomElement(['Hospital', 'Escuela', 'Biblioteca', 'Centro Deportivo', 'Parque']) . ' ' . fake()->lastName,
                 'description' => fake()->optional(0.8)->sentence,
                 'point_type' => 'public',
@@ -320,9 +219,18 @@ class ConsumptionPointSeeder extends Seeder
     {
         $this->command->info('💡 Creando puntos de alumbrado...');
 
+        // Crear puntos de alumbrado con números únicos
         for ($i = 0; $i < 12; $i++) {
+            $pointNumber = 'STL-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Verificar si ya existe un punto con este número
+            if (ConsumptionPoint::where('point_number', $pointNumber)->exists()) {
+                $this->command->line("   ⚠️ Punto ya existe con número: {$pointNumber}");
+                continue;
+            }
+            
             $point = ConsumptionPoint::create([
-                'point_number' => 'STL-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
+                'point_number' => $pointNumber,
                 'name' => 'Alumbrado ' . fake()->streetName,
                 'description' => 'Punto de consumo para alumbrado público',
                 'point_type' => 'street_lighting',
@@ -354,9 +262,18 @@ class ConsumptionPointSeeder extends Seeder
     {
         $this->command->info('🔌 Creando estaciones de carga...');
 
+        // Crear estaciones de carga con números únicos
         for ($i = 0; $i < 8; $i++) {
+            $pointNumber = 'CHG-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            
+            // Verificar si ya existe un punto con este número
+            if (ConsumptionPoint::where('point_number', $pointNumber)->exists()) {
+                $this->command->line("   ⚠️ Punto ya existe con número: {$pointNumber}");
+                continue;
+            }
+            
             $point = ConsumptionPoint::create([
-                'point_number' => 'CHG-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
+                'point_number' => $pointNumber,
                 'name' => 'Estación de Carga ' . fake()->lastName,
                 'description' => 'Punto de consumo para vehículos eléctricos',
                 'point_type' => 'charging_station',
@@ -384,14 +301,4 @@ class ConsumptionPointSeeder extends Seeder
         }
     }
 
-    private function createPoint(array $data, $users, $installations): void
-    {
-        $data['customer_id'] = $users->random()->id;
-        $data['installation_id'] = $installations->isEmpty() ? null : $installations->random()->id;
-        $data['managed_by'] = $users->random()->id;
-        $data['created_by'] = $users->random()->id;
-
-        $point = ConsumptionPoint::create($data);
-        $this->command->line("   ✅ Punto creado: {$point->name} ({$point->point_type})");
-    }
 }
