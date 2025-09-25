@@ -564,8 +564,20 @@ class NewsletterSubscriptionSeeder extends Seeder
      */
     private function createSubscription(array $data, $organizations): void
     {
+        $organizationId = $organizations->isEmpty() ? null : $organizations->random()->id;
+        
+        // Verificar si ya existe una suscripción con este email y organización
+        $existingSubscription = NewsletterSubscription::where('email', $data['email'])
+            ->where('organization_id', $organizationId)
+            ->exists();
+            
+        if ($existingSubscription) {
+            $this->command->line("   ⚠️ Suscripción ya existe: {$data['email']} (organización: {$organizationId})");
+            return;
+        }
+        
         $subscription = NewsletterSubscription::create(array_merge($data, [
-            'organization_id' => $organizations->isEmpty() ? null : $organizations->random()->id,
+            'organization_id' => $organizationId,
             'confirmation_token' => \Illuminate\Support\Str::random(64),
             'unsubscribe_token' => \Illuminate\Support\Str::random(64),
             'ip_address' => fake()->ipv4(),
