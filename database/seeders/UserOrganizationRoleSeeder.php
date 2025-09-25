@@ -118,10 +118,19 @@ class UserOrganizationRoleSeeder extends Seeder
         // Crear algunas asignaciones de usuarios que participan en múltiples organizaciones
         $this->createCrossOrganizationAssignments($users, $organizations, $organizationRoles, $assignments, $assignmentCount);
         
-        // Insertar todas las asignaciones en la base de datos
+        // Insertar todas las asignaciones en la base de datos usando firstOrCreate para evitar duplicados
         if (!empty($assignments)) {
-            DB::table('user_organization_roles')->insert($assignments);
-            $this->command->info("💾 Se insertaron {$assignmentCount} asignaciones de roles en la base de datos");
+            foreach ($assignments as $assignment) {
+                UserOrganizationRole::firstOrCreate(
+                    [
+                        'user_id' => $assignment['user_id'],
+                        'organization_id' => $assignment['organization_id'],
+                        'organization_role_id' => $assignment['organization_role_id'],
+                    ],
+                    $assignment
+                );
+            }
+            $this->command->info("💾 Se procesaron {$assignmentCount} asignaciones de roles en la base de datos");
         }
     }
     
