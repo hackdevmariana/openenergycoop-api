@@ -579,11 +579,22 @@ class EnergyContractResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count();
+        return static::getModel()::count();
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return static::getModel()::where('status', 'pending')->count() > 0 ? 'warning' : 'primary';
+        $total = static::getModel()::count();
+        $pending = static::getModel()::where('status', 'pending')->count();
+        
+        if ($pending > 0) {
+            return 'warning'; // Contratos pendientes
+        } elseif ($total >= 50) {
+            return 'success'; // Muchos contratos
+        } elseif ($total >= 20) {
+            return 'info'; // Cantidad moderada
+        } else {
+            return 'primary'; // Pocos contratos
+        }
     }
 }
