@@ -508,6 +508,14 @@ class CompanySeeder extends Seeder
      */
     private function createCompany(array $data): void
     {
+        // Verificar si ya existe una empresa con este CIF
+        $existingCompany = Company::where('cif', $data['cif'])->exists();
+        
+        if ($existingCompany) {
+            $this->command->line("   ⚠️ Empresa ya existe con CIF: {$data['cif']}");
+            return;
+        }
+        
         $company = Company::create($data);
         $this->command->line("   ✅ Creada empresa: {$company->name} (CIF: {$company->cif})");
     }
