@@ -389,33 +389,33 @@ class DashboardWidgetSeeder extends Seeder
             'type' => $type,
             'title' => $title,
             'position' => rand(0, 100),
-            'settings_json' => $settings,
+            'settings_json' => json_encode($settings),
             'visible' => true,
             'collapsible' => fake()->boolean(30),
             'collapsed' => false,
             'size' => $size,
-            'grid_position' => [
+            'grid_position' => json_encode([
                 'x' => $gridPosition[0],
                 'y' => $gridPosition[1],
                 'w' => $gridPosition[2],
                 'h' => $gridPosition[3]
-            ],
-            'refresh_interval' => [
+            ]),
+            'refresh_interval' => json_encode([
                 'value' => $settings['refresh_interval'] ?? 300,
                 'unit' => 'seconds'
-            ],
+            ]),
             'last_refresh' => Carbon::now()->subMinutes(rand(1, 60)),
-            'data_source' => $settings['data_source'] ?? null,
-            'filters' => [
+            'data_source' => json_encode($settings['data_source'] ?? null),
+            'filters' => json_encode([
                 'time_range' => $settings['time_range'] ?? '24h',
                 'user_id' => $dashboardView->user_id,
                 'dashboard_id' => $dashboardView->id
-            ],
-            'permissions' => [
+            ]),
+            'permissions' => json_encode([
                 'view' => ['owner'],
                 'edit' => ['owner'],
                 'delete' => ['owner']
-            ],
+            ]),
             'created_at' => Carbon::now()->subDays(rand(0, 30)),
             'updated_at' => Carbon::now()->subDays(rand(0, 30))
         ]);
