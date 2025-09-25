@@ -166,8 +166,11 @@ class EnergyInstallationSeeder extends Seeder
             $commissioningDate = $data['status'] === 'operational' ? $installationDate->copy()->addDays(rand(7, 30)) : null;
             $warrantyExpiryDate = $installationDate->copy()->addYears(rand(5, 25));
             
-            EnergyInstallation::create([
-                'installation_number' => 'INST-' . strtoupper($data['installation_type']) . '-' . str_pad($this->installationCounter++, 4, '0', STR_PAD_LEFT),
+            $installationNumber = 'INST-' . strtoupper($data['installation_type']) . '-' . str_pad($this->installationCounter++, 4, '0', STR_PAD_LEFT);
+            
+            EnergyInstallation::firstOrCreate(
+                ['installation_number' => $installationNumber],
+                [
                 'name' => $data['name'],
                 'description' => fake()->paragraph(),
                 'installation_type' => $data['installation_type'],
@@ -263,7 +266,8 @@ class EnergyInstallationSeeder extends Seeder
                 'notes' => fake()->optional()->paragraph(),
                 'created_at' => $installationDate,
                 'updated_at' => Carbon::now()->subDays(rand(0, 30)),
-            ]);
+                ]
+            );
             
             $this->command->info("   ✅ Instalación {$data['status']} creada: {$data['name']}");
         }
