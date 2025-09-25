@@ -16,11 +16,14 @@ class CompanyFactory extends Factory
      */
     public function definition(): array
     {
-        static $cifCounter = 1;
+        // Generar un CIF único
+        do {
+            $cif = 'B' . str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT);
+        } while (\App\Models\Company::where('cif', $cif)->exists());
         
         return [
             'name' => fake()->company() . ' ' . fake()->randomElement(['S.L.', 'S.A.', 'S.C.', 'S.Coop.']),
-            'cif' => 'B' . str_pad($cifCounter++, 8, '0', STR_PAD_LEFT),
+            'cif' => $cif,
             'contact_person' => fake()->name(),
             'company_address' => fake()->streetAddress() . ', ' . fake()->postcode() . ' ' . fake()->city() . ', ' . fake()->state(),
         ];
