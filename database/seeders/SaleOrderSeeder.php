@@ -551,7 +551,11 @@ class SaleOrderSeeder extends Seeder
     
     private function generateOrderNumber(): string
     {
-        return 'SO-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        // Generar un número único usando microtime y número aleatorio
+        $microtime = microtime(true);
+        $timestamp = substr(str_replace('.', '', $microtime), -8); // Últimos 8 dígitos
+        $random = rand(100, 999);
+        return 'SO-' . date('Y') . '-' . $timestamp . $random;
     }
     
     private function generatePaymentReference(): string
