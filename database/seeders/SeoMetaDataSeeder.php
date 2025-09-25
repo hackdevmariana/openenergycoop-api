@@ -280,7 +280,14 @@ class SeoMetaDataSeeder extends Seeder
         ];
 
         foreach ($seoData as $seo) {
-            SeoMetaData::create($seo);
+            SeoMetaData::firstOrCreate(
+                [
+                    'seoable_type' => $seo['seoable_type'],
+                    'seoable_id' => $seo['seoable_id'],
+                    'language' => $seo['language'],
+                ],
+                $seo
+            );
         }
 
         $this->command->info('✅ SeoMetaDataSeeder ejecutado correctamente');
