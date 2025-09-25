@@ -400,7 +400,10 @@ class DashboardWidgetSeeder extends Seeder
                 'w' => $gridPosition[2],
                 'h' => $gridPosition[3]
             ],
-            'refresh_interval' => $settings['refresh_interval'] ?? 300,
+            'refresh_interval' => [
+                'value' => $settings['refresh_interval'] ?? 300,
+                'unit' => 'seconds'
+            ],
             'last_refresh' => Carbon::now()->subMinutes(rand(1, 60)),
             'data_source' => $settings['data_source'] ?? null,
             'filters' => [
