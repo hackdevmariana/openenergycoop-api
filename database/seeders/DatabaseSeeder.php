@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             ShopSeeder::class,
             NotificationSettingsSeeder::class,
             EventSeeder::class,
+            EventAttendanceSeeder::class, // Agregar el seeder de asistencias a eventos
             SurveySeeder::class,
             CustomerProfileSeeder::class, // Agregar el seeder de perfiles de cliente
             AchievementSeeder::class, // Agregar el seeder de achievements
@@ -89,6 +90,12 @@ class DatabaseSeeder extends Seeder
             EnergyTransferSeeder::class, // Agregar el seeder de transferencias energéticas
             UserAssetSeeder::class, // Agregar el seeder de activos de usuario
             FaqSeeder::class, // Agregar el seeder de FAQs
+            HeroSeeder::class, // Agregar el seeder de contenido hero
+            TextContentSeeder::class, // Agregar el seeder de contenido de texto
+            BannerSeeder::class, // Agregar el seeder de banners
+            PageComponentSeeder::class, // Agregar el seeder de componentes de página
+            ImageSeeder::class, // Agregar el seeder de imágenes
+            SeoMetaDataSeeder::class, // Agregar el seeder de metadatos SEO
         ]);
     }
 }
