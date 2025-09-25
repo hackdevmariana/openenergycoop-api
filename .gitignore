@@ -26,3 +26,4 @@ _ide_helper.php
 _ide_helper_models.php
 check_models.php
 config/spanish_data.php
+.env.testing
