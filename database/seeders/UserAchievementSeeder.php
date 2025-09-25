@@ -56,8 +56,9 @@ class UserAchievementSeeder extends Seeder
     {
         $this->command->info('👑 Creando logros de usuarios activos...');
 
-        // Seleccionar 8 usuarios que serán muy activos
-        $activeUsers = $users->random(8);
+        // Seleccionar usuarios que serán muy activos (máximo 8, mínimo 2)
+        $maxActiveUsers = min(8, $users->count());
+        $activeUsers = $users->random($maxActiveUsers);
 
         foreach ($activeUsers as $user) {
             // Cada usuario activo gana entre 8-15 achievements
@@ -76,8 +77,9 @@ class UserAchievementSeeder extends Seeder
     {
         $this->command->info('🌱 Creando logros de usuarios principiantes...');
 
-        // Seleccionar 15 usuarios que serán principiantes
-        $beginnerUsers = $users->diff($users->random(8))->random(15);
+        // Seleccionar usuarios que serán principiantes (máximo 15, mínimo 1)
+        $maxBeginnerUsers = min(15, $users->count());
+        $beginnerUsers = $users->random($maxBeginnerUsers);
 
         foreach ($beginnerUsers as $user) {
             // Cada usuario principiante gana entre 2-5 achievements
@@ -96,8 +98,9 @@ class UserAchievementSeeder extends Seeder
     {
         $this->command->info('🎯 Creando logros de usuarios especializados...');
 
-        // Seleccionar 10 usuarios para especializaciones
-        $specializedUsers = $users->diff($users->random(23))->random(10);
+        // Seleccionar usuarios que serán especializados (máximo 10, mínimo 1)
+        $maxSpecializedUsers = min(10, $users->count());
+        $specializedUsers = $users->random($maxSpecializedUsers);
 
         // Especializaciones por tipo
         $specializations = [
@@ -124,8 +127,9 @@ class UserAchievementSeeder extends Seeder
     {
         $this->command->info('🤝 Creando logros de usuarios de la comunidad...');
 
-        // Seleccionar 6 usuarios para achievements comunitarios
-        $communityUsers = $users->diff($users->random(33))->random(6);
+        // Seleccionar usuarios que serán de comunidad (máximo 6, mínimo 1)
+        $maxCommunityUsers = min(6, $users->count());
+        $communityUsers = $users->random($maxCommunityUsers);
 
         // Achievements comunitarios específicos
         $communityAchievements = $achievements->where('type', 'community')->take(4);
@@ -144,8 +148,9 @@ class UserAchievementSeeder extends Seeder
     {
         $this->command->info('🎖️ Creando logros de usuarios con hitos...');
 
-        // Seleccionar 3 usuarios para milestones importantes
-        $milestoneUsers = $users->diff($users->random(39))->random(3);
+        // Seleccionar usuarios que serán de hitos (máximo 3, mínimo 1)
+        $maxMilestoneUsers = min(3, $users->count());
+        $milestoneUsers = $users->random($maxMilestoneUsers);
 
         // Achievements de milestones
         $milestoneAchievements = $achievements->where('type', 'milestone')->take(3);
