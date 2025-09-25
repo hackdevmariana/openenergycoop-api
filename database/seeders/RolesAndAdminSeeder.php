@@ -78,11 +78,28 @@ class RolesAndAdminSeeder extends Seeder
             ]
         );
 
+        // Crear usuario administrador demo para Filament
+        $demoAdminUser = User::firstOrCreate(
+            ['email' => 'admin@demo.com'],
+            [
+                'name' => 'Administrador Demo',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+                'remember_token' => Str::random(10),
+            ]
+        );
+
+        // Asignar rol admin al usuario demo si aún no lo tiene
+        if (!$demoAdminUser->hasRole('admin')) {
+            $demoAdminUser->assignRole('admin');
+        }
+
         $this->command->info('Roles base creados: ' . implode(', ', $roles));
         $this->command->info('Permiso access filament creado y asignado al rol admin');
         $this->command->info('Usuario admin creado: admin@aragon.es / password');
         $this->command->info('Usuario test creado: test@aragon.es / password');
         $this->command->info('Usuario gestor creado: gestor@aragon.es / password');
         $this->command->info('Usuario técnico creado: tecnico@aragon.es / password');
+        $this->command->info('🎯 Usuario demo admin creado: admin@demo.com / password');
     }
 }
