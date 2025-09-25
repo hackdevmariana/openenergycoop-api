@@ -113,36 +113,42 @@ class EnergyMeterSeeder extends Seeder
         $this->command->info('📱 Creando medidores digitales...');
 
         // Crear medidores digitales
-        for ($i = 0; $i < 16; $i++) {
+        for ($i = 0; $i < 8; $i++) {
             $meter = EnergyMeter::create([
-                'meter_number' => 'DIG-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
-                'name' => 'Digital Meter ' . fake()->randomElement(['Schneider', 'GE', 'Eaton', 'Rockwell']) . ' ' . fake()->bothify('??-####'),
-                'description' => fake()->optional(0.7)->sentence,
+                'meter_number' => 'DIGITAL-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
+                'name' => 'Digital Meter ' . fake()->randomElement(['Landis+Gyr', 'Itron', 'Elster', 'Sagemcom']) . ' ' . fake()->bothify('??-####'),
+                'description' => fake()->optional(0.8)->sentence,
                 'meter_type' => 'digital_meter',
-                'status' => fake()->randomElement(['active', 'inactive', 'maintenance']),
+                'status' => fake()->randomElement(['active', 'maintenance']),
                 'meter_category' => 'electricity',
-                'manufacturer' => fake()->randomElement(['Schneider Electric', 'GE', 'Eaton', 'Rockwell']),
+                'manufacturer' => fake()->randomElement(['Landis+Gyr', 'Itron', 'Elster', 'Sagemcom']),
                 'model' => fake()->bothify('??-####'),
                 'serial_number' => $this->getNextSerialNumber(),
+                'firmware_version' => 'v' . fake()->numberBetween(1, 3) . '.' . fake()->numberBetween(0, 9) . '.' . fake()->numberBetween(0, 9),
+                'hardware_version' => 'HW-' . fake()->numberBetween(1, 3) . '.' . fake()->numberBetween(0, 9),
                 'voltage_rating' => fake()->randomElement([230, 400, 480]),
-                'current_rating' => fake()->randomFloat(1, 16, 400),
+                'current_rating' => fake()->randomFloat(1, 16, 200),
                 'phase_type' => fake()->randomElement(['single_phase', 'three_phase']),
                 'connection_type' => 'direct',
-                'accuracy_class' => fake()->randomFloat(1, 0.2, 1.0),
+                'accuracy_class' => fake()->randomFloat(1, 0.5, 1.0),
                 'measurement_range_min' => 0.00,
-                'measurement_range_max' => fake()->randomFloat(0, 100, 1000),
+                'measurement_range_max' => fake()->randomFloat(0, 100, 600),
                 'measurement_unit' => 'kWh',
                 'pulse_constant' => fake()->randomFloat(0, 100, 1000),
                 'pulse_unit' => 'imp/kWh',
                 'is_smart_meter' => false,
-                'has_remote_reading' => fake()->boolean(60),
+                'has_remote_reading' => fake()->boolean(70),
                 'has_two_way_communication' => false,
+                'communication_protocol' => fake()->optional(0.7)->randomElement(['Modbus RTU', 'M-Bus', 'DLMS/COSEM']),
+                'communication_frequency' => fake()->optional(0.7)->randomElement(['15 minutes', '30 minutes', '1 hour']),
+                'data_logging_interval' => fake()->optional(0.7)->randomElement([300, 900, 1800]),
+                'data_retention_days' => fake()->optional(0.7)->randomElement([90, 180, 365]),
                 'installation_id' => $installations->isEmpty() ? null : $installations->random()->id,
                 'consumption_point_id' => $consumptionPoints->isEmpty() ? null : $consumptionPoints->random()->id,
                 'customer_id' => $users->random()->id,
-                'installation_date' => Carbon::now()->subDays(rand(60, 1095)),
-                'commissioning_date' => Carbon::now()->subDays(rand(55, 1090)),
-                'next_calibration_date' => Carbon::now()->addDays(rand(90, 365)),
+                'installation_date' => Carbon::now()->subDays(rand(30, 365)),
+                'commissioning_date' => Carbon::now()->subDays(rand(25, 360)),
+                'next_calibration_date' => Carbon::now()->addDays(rand(180, 730)),
                 'warranty_expiry_date' => Carbon::now()->addDays(rand(365, 1825)),
                 'installed_by' => $users->random()->id,
                 'managed_by' => $users->random()->id,
@@ -157,7 +163,7 @@ class EnergyMeterSeeder extends Seeder
         $this->command->info('🔢 Creando medidores analógicos...');
 
         // Crear medidores analógicos
-        for ($i = 0; $i < 11; $i++) {
+        for ($i = 0; $i < 5; $i++) {
             $meter = EnergyMeter::create([
                 'meter_number' => 'ANALOG-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
                 'name' => 'Analog Meter ' . fake()->randomElement(['Ferraris', 'Electromechanical', 'Induction']) . ' ' . fake()->bothify('??-####'),
@@ -200,7 +206,8 @@ class EnergyMeterSeeder extends Seeder
     {
         $this->command->info('🎯 Creando medidores de alta precisión...');
 
-        for ($i = 0; $i < 8; $i++) {
+        // Crear medidores de alta precisión
+        for ($i = 0; $i < 3; $i++) {
             $meter = EnergyMeter::create([
                 'meter_number' => 'PREC-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
                 'name' => 'High Accuracy Meter ' . fake()->randomElement(['Siemens', 'ABB', 'Schneider']) . ' ' . fake()->bothify('??-####') . ' ' . ($i + 1),
@@ -210,7 +217,7 @@ class EnergyMeterSeeder extends Seeder
                 'meter_category' => 'electricity',
                 'manufacturer' => fake()->randomElement(['Siemens', 'ABB', 'Schneider Electric']),
                 'model' => fake()->bothify('??-####'),
-                'serial_number' => 'SN-' . fake()->unique()->numberBetween(100000, 999999),
+                'serial_number' => $this->getNextSerialNumber(),
                 'firmware_version' => 'v' . fake()->numberBetween(1, 3) . '.' . fake()->numberBetween(0, 9) . '.' . fake()->numberBetween(0, 9),
                 'voltage_rating' => fake()->randomElement([230, 400, 480]),
                 'current_rating' => fake()->randomFloat(1, 16, 400),
@@ -245,7 +252,8 @@ class EnergyMeterSeeder extends Seeder
     {
         $this->command->info('🏭 Creando medidores industriales...');
 
-        for ($i = 0; $i < 6; $i++) {
+        // Crear medidores industriales
+        for ($i = 0; $i < 2; $i++) {
             $meter = EnergyMeter::create([
                 'meter_number' => 'IND-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
                 'name' => 'Industrial Meter ' . fake()->randomElement(['Siemens', 'ABB', 'Schneider']) . ' ' . fake()->bothify('??-####'),
@@ -255,7 +263,7 @@ class EnergyMeterSeeder extends Seeder
                 'meter_category' => 'electricity',
                 'manufacturer' => fake()->randomElement(['Siemens', 'ABB', 'Schneider Electric']),
                 'model' => fake()->bothify('??-####'),
-                'serial_number' => 'SN-' . fake()->unique()->numberBetween(100000, 999999),
+                'serial_number' => $this->getNextSerialNumber(),
                 'firmware_version' => 'v' . fake()->numberBetween(1, 3) . '.' . fake()->numberBetween(0, 9) . '.' . fake()->numberBetween(0, 9),
                 'voltage_rating' => fake()->randomElement([400, 480, 660]),
                 'current_rating' => fake()->randomFloat(1, 200, 1000),
@@ -293,7 +301,8 @@ class EnergyMeterSeeder extends Seeder
     {
         $this->command->info('🏠 Creando medidores residenciales...');
 
-        for ($i = 0; $i < 12; $i++) {
+        // Crear medidores residenciales
+        for ($i = 0; $i < 5; $i++) {
             $meter = EnergyMeter::create([
                 'meter_number' => 'RES-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
                 'name' => 'Residential Meter ' . fake()->randomElement(['ABB', 'Schneider', 'GE']) . ' ' . fake()->bothify('??-####'),
@@ -303,7 +312,7 @@ class EnergyMeterSeeder extends Seeder
                 'meter_category' => 'electricity',
                 'manufacturer' => fake()->randomElement(['ABB', 'Schneider Electric', 'General Electric']),
                 'model' => fake()->bothify('??-####'),
-                'serial_number' => 'SN-' . fake()->unique()->numberBetween(100000, 999999),
+                'serial_number' => $this->getNextSerialNumber(),
                 'voltage_rating' => fake()->randomElement([220, 230]),
                 'current_rating' => fake()->randomFloat(1, 16, 63),
                 'phase_type' => 'single_phase',
