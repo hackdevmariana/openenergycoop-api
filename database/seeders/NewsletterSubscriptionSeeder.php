@@ -16,6 +16,9 @@ class NewsletterSubscriptionSeeder extends Seeder
     {
         $this->command->info('📧 Creando suscripciones a newsletters para la cooperativa energética...');
 
+        // Limpiar suscripciones existentes para evitar duplicados
+        NewsletterSubscription::query()->delete();
+
         // Obtener organizaciones disponibles
         $organizations = Organization::all();
 
@@ -72,54 +75,48 @@ class NewsletterSubscriptionSeeder extends Seeder
                 'preferences' => [
                     'frequency' => 'weekly',
                     'format' => 'html',
-                    'topics' => ['general', 'news', 'energy', 'community']
+                    'topics' => ['general', 'energy', 'community']
                 ],
-                'tags' => ['newsletter', 'member', 'interested_in_solar'],
+                'tags' => ['newsletter', 'active_subscriber'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(6),
-                'emails_sent' => 24,
-                'emails_opened' => 18,
-                'links_clicked' => 8,
-                'last_email_sent_at' => Carbon::now()->subDays(3),
-                'last_email_opened_at' => Carbon::now()->subDays(2),
+                'emails_sent' => 12,
+                'emails_opened' => 10,
+                'links_clicked' => 5,
+                'confirmed_at' => Carbon::now()->subDays(30),
             ],
             [
                 'name' => 'Carlos Rodríguez Martín',
                 'email' => 'carlos.rodriguez@email.com',
                 'status' => 'confirmed',
-                'subscription_source' => 'form',
+                'subscription_source' => 'social',
                 'preferences' => [
                     'frequency' => 'monthly',
-                    'format' => 'html',
-                    'topics' => ['technology', 'environment', 'updates']
+                    'format' => 'text',
+                    'topics' => ['technology', 'innovation']
                 ],
-                'tags' => ['newsletter', 'customer', 'business'],
+                'tags' => ['newsletter', 'tech_enthusiast'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(4),
-                'emails_sent' => 16,
-                'emails_opened' => 12,
-                'links_clicked' => 5,
-                'last_email_sent_at' => Carbon::now()->subDays(7),
-                'last_email_opened_at' => Carbon::now()->subDays(6),
+                'emails_sent' => 8,
+                'emails_opened' => 7,
+                'links_clicked' => 3,
+                'confirmed_at' => Carbon::now()->subDays(45),
             ],
             [
                 'name' => 'Ana Martínez Fernández',
                 'email' => 'ana.martinez@email.com',
                 'status' => 'confirmed',
-                'subscription_source' => 'landing',
+                'subscription_source' => 'referral',
                 'preferences' => [
-                    'frequency' => 'daily',
-                    'format' => 'text',
-                    'topics' => ['news', 'events', 'promotions']
+                    'frequency' => 'weekly',
+                    'format' => 'html',
+                    'topics' => ['sustainability', 'environment']
                 ],
-                'tags' => ['newsletter', 'subscriber', 'premium'],
+                'tags' => ['newsletter', 'eco_friendly'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(2),
-                'emails_sent' => 60,
-                'emails_opened' => 45,
-                'links_clicked' => 15,
-                'last_email_sent_at' => Carbon::now()->subDay(),
-                'last_email_opened_at' => Carbon::now()->subHours(12),
+                'emails_sent' => 15,
+                'emails_opened' => 14,
+                'links_clicked' => 8,
+                'confirmed_at' => Carbon::now()->subDays(20),
             ],
         ];
 
@@ -128,15 +125,7 @@ class NewsletterSubscriptionSeeder extends Seeder
         }
 
         // Crear suscripciones adicionales usando el factory
-        NewsletterSubscription::factory()
-            ->confirmed()
-            ->count(15)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 10, $organizations);
     }
 
     /**
@@ -185,16 +174,7 @@ class NewsletterSubscriptionSeeder extends Seeder
             $this->createSubscription($subscription, $organizations);
         }
 
-        // Crear suscripciones adicionales usando el factory
-        NewsletterSubscription::factory()
-            ->pending()
-            ->count(8)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('pending', 8, $organizations);
     }
 
     /**
@@ -206,40 +186,38 @@ class NewsletterSubscriptionSeeder extends Seeder
 
         $unsubscribedSubscriptions = [
             [
-                'name' => 'Pedro Sánchez Moreno',
+                'name' => 'Pedro Sánchez Díaz',
                 'email' => 'pedro.sanchez@email.com',
                 'status' => 'unsubscribed',
                 'subscription_source' => 'website',
                 'preferences' => [
                     'frequency' => 'weekly',
                     'format' => 'html',
-                    'topics' => ['general', 'news']
+                    'topics' => ['general']
                 ],
-                'tags' => ['newsletter', 'unsubscribe_reason:too_frequent'],
+                'tags' => ['newsletter', 'unsubscribed'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(8),
-                'unsubscribed_at' => Carbon::now()->subMonths(1),
-                'emails_sent' => 32,
-                'emails_opened' => 20,
-                'links_clicked' => 8,
+                'emails_sent' => 5,
+                'emails_opened' => 3,
+                'links_clicked' => 1,
+                'unsubscribed_at' => Carbon::now()->subDays(10),
             ],
             [
-                'name' => 'Carmen López Vega',
+                'name' => 'Carmen López Ruiz',
                 'email' => 'carmen.lopez@email.com',
                 'status' => 'unsubscribed',
-                'subscription_source' => 'form',
+                'subscription_source' => 'email',
                 'preferences' => [
                     'frequency' => 'monthly',
-                    'format' => 'html',
-                    'topics' => ['technology', 'environment']
+                    'format' => 'text',
+                    'topics' => ['technology']
                 ],
-                'tags' => ['newsletter', 'unsubscribe_reason:not_relevant'],
+                'tags' => ['newsletter', 'unsubscribed'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(10),
-                'unsubscribed_at' => Carbon::now()->subWeeks(2),
-                'emails_sent' => 40,
-                'emails_opened' => 15,
-                'links_clicked' => 3,
+                'emails_sent' => 8,
+                'emails_opened' => 6,
+                'links_clicked' => 2,
+                'unsubscribed_at' => Carbon::now()->subDays(5),
             ],
         ];
 
@@ -247,16 +225,7 @@ class NewsletterSubscriptionSeeder extends Seeder
             $this->createSubscription($subscription, $organizations);
         }
 
-        // Crear suscripciones adicionales usando el factory
-        NewsletterSubscription::factory()
-            ->unsubscribed()
-            ->count(6)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('unsubscribed', 6, $organizations);
     }
 
     /**
@@ -268,19 +237,18 @@ class NewsletterSubscriptionSeeder extends Seeder
 
         $bouncedSubscriptions = [
             [
-                'name' => 'Roberto Fernández Castro',
+                'name' => 'Roberto Fernández García',
                 'email' => 'roberto.fernandez@email.com',
                 'status' => 'bounced',
                 'subscription_source' => 'website',
                 'preferences' => [
                     'frequency' => 'weekly',
                     'format' => 'html',
-                    'topics' => ['general', 'energy']
+                    'topics' => ['general']
                 ],
                 'tags' => ['newsletter', 'bounced'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(5),
-                'emails_sent' => 20,
+                'emails_sent' => 3,
                 'emails_opened' => 0,
                 'links_clicked' => 0,
             ],
@@ -290,16 +258,7 @@ class NewsletterSubscriptionSeeder extends Seeder
             $this->createSubscription($subscription, $organizations);
         }
 
-        // Crear suscripciones adicionales usando el factory
-        NewsletterSubscription::factory()
-            ->bounced()
-            ->count(4)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('bounced', 4, $organizations);
     }
 
     /**
@@ -311,21 +270,20 @@ class NewsletterSubscriptionSeeder extends Seeder
 
         $complainedSubscriptions = [
             [
-                'name' => 'Isabel Torres Ruiz',
+                'name' => 'Isabel Torres Moreno',
                 'email' => 'isabel.torres@email.com',
                 'status' => 'complained',
-                'subscription_source' => 'import',
+                'subscription_source' => 'website',
                 'preferences' => [
-                    'frequency' => 'monthly',
+                    'frequency' => 'weekly',
                     'format' => 'html',
-                    'topics' => ['promotions', 'events']
+                    'topics' => ['general']
                 ],
-                'tags' => ['newsletter', 'spam_complaint'],
+                'tags' => ['newsletter', 'complained'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(6),
-                'emails_sent' => 24,
-                'emails_opened' => 5,
-                'links_clicked' => 1,
+                'emails_sent' => 2,
+                'emails_opened' => 1,
+                'links_clicked' => 0,
             ],
         ];
 
@@ -333,16 +291,7 @@ class NewsletterSubscriptionSeeder extends Seeder
             $this->createSubscription($subscription, $organizations);
         }
 
-        // Crear suscripciones adicionales usando el factory
-        NewsletterSubscription::factory()
-            ->complained()
-            ->count(3)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('complained', 3, $organizations);
     }
 
     /**
@@ -354,42 +303,38 @@ class NewsletterSubscriptionSeeder extends Seeder
 
         $engagedSubscriptions = [
             [
-                'name' => 'David Moreno Jiménez',
+                'name' => 'David Moreno Sánchez',
                 'email' => 'david.moreno@email.com',
                 'status' => 'confirmed',
                 'subscription_source' => 'website',
                 'preferences' => [
                     'frequency' => 'daily',
                     'format' => 'html',
-                    'topics' => ['general', 'news', 'technology', 'energy', 'community']
+                    'topics' => ['general', 'energy', 'technology', 'community']
                 ],
-                'tags' => ['newsletter', 'engaged', 'high_value', 'vip'],
+                'tags' => ['newsletter', 'highly_engaged'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(12),
-                'emails_sent' => 360,
-                'emails_opened' => 320,
-                'links_clicked' => 150,
-                'last_email_sent_at' => Carbon::now()->subDay(),
-                'last_email_opened_at' => Carbon::now()->subHours(6),
+                'emails_sent' => 25,
+                'emails_opened' => 24,
+                'links_clicked' => 15,
+                'confirmed_at' => Carbon::now()->subDays(60),
             ],
             [
                 'name' => 'Laura Vega Castro',
                 'email' => 'laura.vega@email.com',
                 'status' => 'confirmed',
-                'subscription_source' => 'form',
+                'subscription_source' => 'social',
                 'preferences' => [
                     'frequency' => 'weekly',
                     'format' => 'html',
-                    'topics' => ['news', 'events', 'environment', 'community']
+                    'topics' => ['sustainability', 'innovation', 'community']
                 ],
-                'tags' => ['newsletter', 'engaged', 'high_value'],
+                'tags' => ['newsletter', 'highly_engaged'],
                 'language' => 'es',
-                'confirmed_at' => Carbon::now()->subMonths(8),
-                'emails_sent' => 32,
-                'emails_opened' => 30,
-                'links_clicked' => 18,
-                'last_email_sent_at' => Carbon::now()->subDays(3),
-                'last_email_opened_at' => Carbon::now()->subDays(2),
+                'emails_sent' => 20,
+                'emails_opened' => 19,
+                'links_clicked' => 12,
+                'confirmed_at' => Carbon::now()->subDays(45),
             ],
         ];
 
@@ -397,16 +342,7 @@ class NewsletterSubscriptionSeeder extends Seeder
             $this->createSubscription($subscription, $organizations);
         }
 
-        // Crear suscripciones adicionales usando el factory
-        NewsletterSubscription::factory()
-            ->engaged()
-            ->count(10)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 8, $organizations, ['highly_engaged']);
     }
 
     /**
@@ -416,16 +352,7 @@ class NewsletterSubscriptionSeeder extends Seeder
     {
         $this->command->info('📉 Creando suscriptores de bajo engagement...');
 
-        // Crear suscripciones usando el factory
-        NewsletterSubscription::factory()
-            ->lowEngagement()
-            ->count(12)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 5, $organizations, ['low_engagement']);
     }
 
     /**
@@ -435,16 +362,7 @@ class NewsletterSubscriptionSeeder extends Seeder
     {
         $this->command->info('🆕 Creando suscripciones recientes...');
 
-        // Crear suscripciones usando el factory
-        NewsletterSubscription::factory()
-            ->recent()
-            ->count(20)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 10, $organizations, ['recent']);
     }
 
     /**
@@ -455,52 +373,16 @@ class NewsletterSubscriptionSeeder extends Seeder
         $this->command->info('🌍 Creando suscripciones por idiomas específicos...');
 
         // Suscripciones en inglés
-        NewsletterSubscription::factory()
-            ->withLanguage('en')
-            ->confirmed()
-            ->count(8)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 8, $organizations, [], 'en');
 
         // Suscripciones en catalán
-        NewsletterSubscription::factory()
-            ->withLanguage('ca')
-            ->confirmed()
-            ->count(6)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 6, $organizations, [], 'ca');
 
         // Suscripciones en euskera
-        NewsletterSubscription::factory()
-            ->withLanguage('eu')
-            ->confirmed()
-            ->count(4)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 4, $organizations, [], 'eu');
 
         // Suscripciones en gallego
-        NewsletterSubscription::factory()
-            ->withLanguage('gl')
-            ->confirmed()
-            ->count(4)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 4, $organizations, [], 'gl');
     }
 
     /**
@@ -511,52 +393,34 @@ class NewsletterSubscriptionSeeder extends Seeder
         $this->command->info('📱 Creando suscripciones por fuentes específicas...');
 
         // Suscripciones desde redes sociales
-        NewsletterSubscription::factory()
-            ->fromSource('social')
-            ->confirmed()
-            ->count(10)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 10, $organizations, [], 'es', 'social');
 
         // Suscripciones desde landing pages
-        NewsletterSubscription::factory()
-            ->fromSource('landing')
-            ->confirmed()
-            ->count(8)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 8, $organizations, [], 'es', 'landing');
 
         // Suscripciones desde referidos
-        NewsletterSubscription::factory()
-            ->fromSource('referral')
-            ->confirmed()
-            ->count(6)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+        $this->createFactorySubscriptions('confirmed', 6, $organizations, [], 'es', 'referral');
 
         // Suscripciones desde API
+        $this->createFactorySubscriptions('confirmed', 5, $organizations, [], 'es', 'api');
+    }
+
+    /**
+     * Crear suscripciones usando el factory
+     */
+    private function createFactorySubscriptions($status, $count, $organizations, $tags = [], $language = 'es', $source = 'website'): void
+    {
+        $organizationId = $organizations->isEmpty() ? null : $organizations->random()->id;
+
         NewsletterSubscription::factory()
-            ->fromSource('api')
-            ->confirmed()
-            ->count(5)
-            ->create()
-            ->each(function ($subscription) use ($organizations) {
-                if (!$organizations->isEmpty()) {
-                    $subscription->update(['organization_id' => $organizations->random()->id]);
-                }
-            });
+            ->count($count)
+            ->create([
+                'status' => $status,
+                'organization_id' => $organizationId,
+                'language' => $language,
+                'subscription_source' => $source,
+                'tags' => array_merge(['newsletter'], $tags),
+            ]);
     }
 
     /**
@@ -565,16 +429,6 @@ class NewsletterSubscriptionSeeder extends Seeder
     private function createSubscription(array $data, $organizations): void
     {
         $organizationId = $organizations->isEmpty() ? null : $organizations->random()->id;
-        
-        // Verificar si ya existe una suscripción con este email y organización
-        $existingSubscription = NewsletterSubscription::where('email', $data['email'])
-            ->where('organization_id', $organizationId)
-            ->exists();
-            
-        if ($existingSubscription) {
-            $this->command->line("   ⚠️ Suscripción ya existe: {$data['email']} (organización: {$organizationId})");
-            return;
-        }
         
         $subscription = NewsletterSubscription::create(array_merge($data, [
             'organization_id' => $organizationId,
