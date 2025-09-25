@@ -120,6 +120,22 @@ class EnergyPool extends Model
     const ENERGY_CATEGORY_DEMAND = 'demand';
     const ENERGY_CATEGORY_OTHER = 'other';
 
+    // Algoritmos de distribución
+    const DISTRIBUTION_ALGORITHM_PROPORTIONAL = 'proportional';
+    const DISTRIBUTION_ALGORITHM_EQUAL_SHARE = 'equal_share';
+    const DISTRIBUTION_ALGORITHM_PRIORITY_BASED = 'priority_based';
+    const DISTRIBUTION_ALGORITHM_TIME_BASED = 'time_based';
+    const DISTRIBUTION_ALGORITHM_CAPACITY_BASED = 'capacity_based';
+    const DISTRIBUTION_ALGORITHM_DEMAND_DRIVEN = 'demand_driven';
+    const DISTRIBUTION_ALGORITHM_COST_OPTIMIZED = 'cost_optimized';
+    const DISTRIBUTION_ALGORITHM_RENEWABLES_FIRST = 'renewables_first';
+    const DISTRIBUTION_ALGORITHM_LOAD_FOLLOWING = 'load_following';
+    const DISTRIBUTION_ALGORITHM_MARKET_BASED = 'market_based';
+    const DISTRIBUTION_ALGORITHM_AUCTION_BASED = 'auction_based';
+    const DISTRIBUTION_ALGORITHM_BLOCKCHAIN_BASED = 'blockchain_based';
+    const DISTRIBUTION_ALGORITHM_AI_OPTIMIZED = 'ai_optimized';
+    const DISTRIBUTION_ALGORITHM_CUSTOM = 'custom';
+
     public static function getPoolTypes(): array
     {
         return [
@@ -156,6 +172,26 @@ class EnergyPool extends Model
             self::ENERGY_CATEGORY_STORAGE => 'Almacenamiento',
             self::ENERGY_CATEGORY_DEMAND => 'Demanda',
             self::ENERGY_CATEGORY_OTHER => 'Otro',
+        ];
+    }
+
+    public static function getDistributionAlgorithms(): array
+    {
+        return [
+            self::DISTRIBUTION_ALGORITHM_PROPORTIONAL => 'Proporcional',
+            self::DISTRIBUTION_ALGORITHM_EQUAL_SHARE => 'Reparto Igualitario',
+            self::DISTRIBUTION_ALGORITHM_PRIORITY_BASED => 'Basado en Prioridad',
+            self::DISTRIBUTION_ALGORITHM_TIME_BASED => 'Basado en Tiempo',
+            self::DISTRIBUTION_ALGORITHM_CAPACITY_BASED => 'Basado en Capacidad',
+            self::DISTRIBUTION_ALGORITHM_DEMAND_DRIVEN => 'Basado en Demanda',
+            self::DISTRIBUTION_ALGORITHM_COST_OPTIMIZED => 'Optimización de Costos',
+            self::DISTRIBUTION_ALGORITHM_RENEWABLES_FIRST => 'Renovables Primero',
+            self::DISTRIBUTION_ALGORITHM_LOAD_FOLLOWING => 'Seguimiento de Carga',
+            self::DISTRIBUTION_ALGORITHM_MARKET_BASED => 'Basado en Mercado',
+            self::DISTRIBUTION_ALGORITHM_AUCTION_BASED => 'Basado en Subasta',
+            self::DISTRIBUTION_ALGORITHM_BLOCKCHAIN_BASED => 'Basado en Blockchain',
+            self::DISTRIBUTION_ALGORITHM_AI_OPTIMIZED => 'Optimizado por IA',
+            self::DISTRIBUTION_ALGORITHM_CUSTOM => 'Personalizado',
         ];
     }
 
