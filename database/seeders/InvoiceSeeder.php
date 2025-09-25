@@ -42,7 +42,7 @@ class InvoiceSeeder extends Seeder
                 'paid_amount' => 151.86,
                 'pending_amount' => 0.00,
                 'currency' => 'EUR',
-                'tax_rate' => 21.0,
+                'tax_rate' => 0.21,
                 'tax_number' => 'ES12345678Z',
                 'tax_type' => 'VAT',
                 'customer_name' => $users->first()->name,
@@ -59,7 +59,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 150,
                         'unit_price' => 0.81,
                         'total' => 121.50,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => 25.52
                     ],
                     [
@@ -67,7 +67,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 1,
                         'unit_price' => 4.00,
                         'total' => 4.00,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => 0.84
                     ]
                 ],
@@ -122,7 +122,7 @@ class InvoiceSeeder extends Seeder
                 'paid_amount' => 0.00,
                 'pending_amount' => 108.89,
                 'currency' => 'EUR',
-                'tax_rate' => 21.0,
+                'tax_rate' => 0.21,
                 'tax_number' => 'ES87654321A',
                 'tax_type' => 'VAT',
                 'customer_name' => $users->skip(1)->first()->name,
@@ -139,7 +139,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 1,
                         'unit_price' => 89.99,
                         'total' => 89.99,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => 18.90
                     ]
                 ],
@@ -191,7 +191,7 @@ class InvoiceSeeder extends Seeder
                 'paid_amount' => 0.00,
                 'pending_amount' => 91.05,
                 'currency' => 'EUR',
-                'tax_rate' => 21.0,
+                'tax_rate' => 0.21,
                 'tax_number' => 'ES11223344B',
                 'tax_type' => 'VAT',
                 'customer_name' => $users->skip(2)->first()->name,
@@ -208,7 +208,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 100,
                         'unit_price' => 0.75,
                         'total' => 75.00,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => 15.75
                     ],
                     [
@@ -216,7 +216,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 1,
                         'unit_price' => 0.25,
                         'total' => 0.25,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => 0.05
                     ]
                 ],
@@ -273,7 +273,7 @@ class InvoiceSeeder extends Seeder
                 'paid_amount' => 0.00,
                 'pending_amount' => -30.25,
                 'currency' => 'EUR',
-                'tax_rate' => 21.0,
+                'tax_rate' => 0.21,
                 'tax_number' => 'ES99887766C',
                 'tax_type' => 'VAT',
                 'customer_name' => $users->skip(3)->first()->name,
@@ -290,7 +290,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 1,
                         'unit_price' => -25.00,
                         'total' => -25.00,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => -5.25
                     ]
                 ],
@@ -338,7 +338,7 @@ class InvoiceSeeder extends Seeder
                 'paid_amount' => 0.00,
                 'pending_amount' => 222.00,
                 'currency' => 'EUR',
-                'tax_rate' => 21.0,
+                'tax_rate' => 0.21,
                 'tax_number' => 'ES55667788D',
                 'tax_type' => 'VAT',
                 'customer_name' => $users->skip(4)->first()->name,
@@ -355,7 +355,7 @@ class InvoiceSeeder extends Seeder
                         'quantity' => 1,
                         'unit_price' => 200.00,
                         'total' => 200.00,
-                        'tax_rate' => 21.0,
+                        'tax_rate' => 0.21,
                         'tax_amount' => 42.00
                     ]
                 ],

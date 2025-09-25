@@ -96,6 +96,24 @@ class DatabaseSeeder extends Seeder
             PageComponentSeeder::class, // Agregar el seeder de componentes de página
             ImageSeeder::class, // Agregar el seeder de imágenes
             SeoMetaDataSeeder::class, // Agregar el seeder de metadatos SEO
+            MilestoneSeeder::class, // Agregar el seeder de hitos
+            NotificationSeeder::class, // Agregar el seeder de notificaciones
+            ArticleSeeder::class, // Agregar el seeder de artículos
+            DocumentSeeder::class, // Agregar el seeder de documentos
+            MenuSeeder::class, // Agregar el seeder de menús
+            CommentSeeder::class, // Agregar el seeder de comentarios
+            ImpactMetricsSeeder::class, // Agregar el seeder de métricas de impacto
+            CommunityMetricsSeeder::class, // Agregar el seeder de métricas comunitarias
+            ProductionProjectSeeder::class, // Agregar el seeder de proyectos de producción
+            RegionSeeder::class, // Agregar el seeder de regiones
+            ProvinceSeeder::class, // Agregar el seeder de provincias
+            MunicipalitySeeder::class, // Agregar el seeder de municipios
+            WeatherSnapshotSeeder::class, // Agregar el seeder de snapshots meteorológicos
+            PaymentSeeder::class, // Agregar el seeder de pagos
+            TransactionSeeder::class, // Agregar el seeder de transacciones
+            InvoiceSeeder::class, // Agregar el seeder de facturas
+            WalletTransactionSeeder::class, // Agregar el seeder de transacciones de wallet
+            RefundSeeder::class, // Agregar el seeder de reembolsos
         ]);
     }
 }
