@@ -60,6 +60,7 @@ class DatabaseSeeder extends Seeder
             FormSubmissionSeeder::class, // Agregar el seeder de envíos de formularios
             MessageSeeder::class, // Agregar el seeder de mensajes
             ContactSeeder::class, // Agregar el seeder de contactos
+            SocialLinkSeeder::class, // Agregar el seeder de enlaces sociales
             NewsletterSubscriptionSeeder::class, // Agregar el seeder de suscripciones a newsletters
             CompanySeeder::class, // Agregar el seeder de empresas
             SubscriptionRequestSeeder::class, // Agregar el seeder de solicitudes de suscripción
@@ -67,6 +68,7 @@ class DatabaseSeeder extends Seeder
             ConsumptionPointSeeder::class, // Agregar el seeder de puntos de consumo
             EnergyMeterSeeder::class, // Agregar el seeder de medidores energéticos
             EnergyReadingSeeder::class, // Agregar el seeder de lecturas energéticas
+            EnergyConsumptionSeeder::class, // Agregar el seeder de consumos energéticos
             DashboardViewSeeder::class, // Agregar el seeder de vistas de dashboard
             DashboardWidgetSeeder::class, // Agregar el seeder de widgets de dashboard
             EnergyBondSeeder::class, // Agregar el seeder de bonos energéticos
