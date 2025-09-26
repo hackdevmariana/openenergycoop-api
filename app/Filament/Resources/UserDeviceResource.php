@@ -49,30 +49,28 @@ class UserDeviceResource extends Resource
                         Forms\Components\TextInput::make('device_name')
                             ->label('Nombre del Dispositivo')
                             ->maxLength(255)
-                            ->disabled(),
+                            ->helperText('Nombre personalizable del dispositivo'),
                             
                         Forms\Components\Select::make('device_type')
                             ->label('Tipo de Dispositivo')
                             ->options(UserDevice::DEVICE_TYPES)
-                            ->disabled(),
+                            ->helperText('Tipo de dispositivo (web, mobile, tablet, desktop)'),
                             
                         Forms\Components\Select::make('platform')
                             ->label('Plataforma')
                             ->options(UserDevice::PLATFORMS)
-                            ->disabled(),
+                            ->helperText('Plataforma del dispositivo (iOS, Android, Windows, etc.)'),
                     ])->columns(3),
                     
                 Section::make('Información Técnica')
                     ->schema([
                         Forms\Components\TextInput::make('device_id')
                             ->label('ID del Dispositivo')
-                            ->disabled()
-                            ->copyable(),
+                            ->disabled(),
                             
                         Forms\Components\TextInput::make('push_token')
                             ->label('Token de Push')
-                            ->disabled()
-                            ->copyable(),
+                            ->disabled(),
                             
                         Forms\Components\Textarea::make('user_agent')
                             ->label('User Agent')
