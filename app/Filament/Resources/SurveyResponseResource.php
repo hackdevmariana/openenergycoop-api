@@ -27,6 +27,23 @@ class SurveyResponseResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Respuestas de Encuestas';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 200 => 'success',
+            $count >= 100 => 'warning',
+            $count >= 50 => 'info',
+            default => 'gray',
+        };
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -102,7 +119,7 @@ class SurveyResponseResource extends Resource
                 Tables\Columns\BadgeColumn::make('response_type')
                     ->label('Tipo')
                     ->getStateUsing(fn ($record) => $record->response_type)
-                    ->getColorUsing(fn ($record) => $record->isAnonymous() ? 'warning' : 'info'),
+                    ->color(fn ($record) => $record->isAnonymous() ? 'warning' : 'info'),
                 
                 Tables\Columns\TextColumn::make('response_field_count')
                     ->label('Campos')
