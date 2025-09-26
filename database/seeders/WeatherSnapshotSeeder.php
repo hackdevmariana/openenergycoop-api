@@ -49,10 +49,15 @@ class WeatherSnapshotSeeder extends Seeder
             }
         }
 
-        // Insertar en lotes para mejor rendimiento
-        $chunks = array_chunk($weatherSnapshots, 1000);
-        foreach ($chunks as $chunk) {
-            WeatherSnapshot::insert($chunk);
+        // Insertar usando firstOrCreate para evitar duplicados
+        foreach ($weatherSnapshots as $snapshot) {
+            WeatherSnapshot::firstOrCreate(
+                [
+                    'municipality_id' => $snapshot['municipality_id'],
+                    'timestamp' => $snapshot['timestamp'],
+                ],
+                $snapshot
+            );
         }
 
         $this->command->info('✅ WeatherSnapshotSeeder ejecutado correctamente');
