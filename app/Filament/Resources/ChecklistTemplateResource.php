@@ -810,12 +810,12 @@ class ChecklistTemplateResource extends Resource
                         $newRecord->is_standard = false;
                         $newRecord->save();
                     }),
-                Tables\Actions\Action::make('create_checklist')
-                    ->label('Crear Lista')
-                    ->icon('heroicon-o-plus')
-                    ->color('success')
-                    ->url(fn (ChecklistTemplate $record): string => route('filament.admin.resources.checklists.create', ['template_id' => $record->id]))
-                    ->openUrlInNewTab(),
+                // Tables\Actions\Action::make('create_checklist')
+                //     ->label('Crear Lista')
+                //     ->icon('heroicon-o-plus')
+                //     ->color('success')
+                //     ->url(fn (ChecklistTemplate $record): string => route('filament.admin.resources.checklists.create', ['template_id' => $record->id]))
+                //     ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
