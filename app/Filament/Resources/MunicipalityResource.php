@@ -27,6 +27,23 @@ class MunicipalityResource extends Resource
     
     protected static ?int $navigationSort = 3;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 1000 => 'success',
+            $count >= 500 => 'warning',
+            $count >= 100 => 'info',
+            default => 'gray',
+        };
+    }
+
     public static function form(Form $form): Form
     {
         return $form
