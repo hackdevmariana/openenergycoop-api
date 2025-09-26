@@ -24,7 +24,6 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -57,16 +56,16 @@ class BondDonationResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('bond_id')
-                                    ->label('Bono')
-                                    ->relationship('bond', 'name')
+                                Select::make('energy_bond_id')
+                                    ->label('Bono Energético')
+                                    ->relationship('energyBond', 'bond_number')
                                     ->required()
                                     ->searchable()
                                     ->preload()
-                                    ->helperText('Bono al que se hace la donación'),
-                                Select::make('benefactor_id')
-                                    ->label('Benefactor')
-                                    ->relationship('benefactor', 'name')
+                                    ->helperText('Bono energético al que se hace la donación'),
+                                Select::make('donor_id')
+                                    ->label('Donante')
+                                    ->relationship('donor', 'name')
                                     ->required()
                                     ->searchable()
                                     ->preload()
@@ -107,18 +106,14 @@ class BondDonationResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('organization_id')
-                                    ->label('Organización')
-                                    ->relationship('organization', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Organización beneficiaria'),
-                                Select::make('campaign_id')
-                                    ->label('Campaña')
-                                    ->relationship('campaign', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->helperText('Campaña asociada a la donación'),
+                                TextInput::make('recipient_organization')
+                                    ->label('Organización Beneficiaria')
+                                    ->maxLength(255)
+                                    ->helperText('Organización que recibirá la donación'),
+                                TextInput::make('recipient_beneficiaries')
+                                    ->label('Beneficiarios')
+                                    ->maxLength(255)
+                                    ->helperText('Descripción de los beneficiarios'),
                             ]),
                         Grid::make(2)
                             ->schema([
@@ -128,9 +123,9 @@ class BondDonationResource extends Resource
                                     ->required()
                                     ->searchable()
                                     ->preload(),
-                                Select::make('approved_by')
-                                    ->label('Aprobado por')
-                                    ->relationship('approvedBy', 'name')
+                                Select::make('processed_by')
+                                    ->label('Procesado por')
+                                    ->relationship('processedBy', 'name')
                                     ->searchable()
                                     ->preload(),
                             ]),
@@ -151,7 +146,7 @@ class BondDonationResource extends Resource
                             ->helperText('Descripción detallada de la donación'),
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('donation_reason')
+                                Select::make('donation_reason')
                                     ->label('Motivo de la Donación')
                                     ->options([
                                         'charity' => 'Caridad',
@@ -164,7 +159,7 @@ class BondDonationResource extends Resource
                                         'other' => 'Otro',
                                     ])
                                     ->searchable(),
-                                TextInput::make('impact_category')
+                                Select::make('impact_category')
                                     ->label('Categoría de Impacto')
                                     ->options([
                                         'local' => 'Local',
@@ -174,7 +169,7 @@ class BondDonationResource extends Resource
                                         'global' => 'Global',
                                     ])
                                     ->searchable(),
-                                TextInput::make('urgency_level')
+                                Select::make('urgency_level')
                                     ->label('Nivel de Urgencia')
                                     ->options([
                                         'low' => 'Baja',
@@ -261,7 +256,7 @@ class BondDonationResource extends Resource
                             ]),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('verification_method')
+                                Select::make('verification_method')
                                     ->label('Método de Verificación')
                                     ->options([
                                         'document_review' => 'Revisión de Documentos',
@@ -271,7 +266,7 @@ class BondDonationResource extends Resource
                                         'other' => 'Otro',
                                     ])
                                     ->searchable(),
-                                TextInput::make('reporting_frequency')
+                                Select::make('reporting_frequency')
                                     ->label('Frecuencia de Reportes')
                                     ->options([
                                         'weekly' => 'Semanal',
@@ -362,7 +357,7 @@ class BondDonationResource extends Resource
                                     ->step(1)
                                     ->default(0)
                                     ->helperText('Orden para mostrar en listas'),
-                                TextInput::make('visibility_level')
+                                Select::make('visibility_level')
                                     ->label('Nivel de Visibilidad')
                                     ->options([
                                         'public' => 'Público',
@@ -410,38 +405,41 @@ class BondDonationResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('bond.name')
+                TextColumn::make('energyBond.bond_number')
                     ->label('Bono')
                     ->searchable()
                     ->sortable()
                     ->limit(20),
-                TextColumn::make('benefactor.name')
-                    ->label('Benefactor')
+                TextColumn::make('donor.name')
+                    ->label('Donante')
                     ->searchable()
                     ->sortable()
                     ->limit(20),
-                BadgeColumn::make('donation_type')
+                TextColumn::make('donation_type')
                     ->label('Tipo')
-                    ->colors([
-                        'primary' => 'charity',
-                        'success' => 'emergency',
-                        'warning' => 'community_support',
-                        'danger' => 'environmental',
-                        'info' => 'educational',
-                        'secondary' => 'health',
-                        'gray' => 'other',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'charitable' => 'primary',
+                        'educational' => 'success',
+                        'environmental' => 'warning',
+                        'community' => 'danger',
+                        'research' => 'info',
+                        'other' => 'gray',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => BondDonation::getDonationTypes()[$state] ?? $state),
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('Estado')
-                    ->colors([
-                        'success' => 'approved',
-                        'warning' => 'pending',
-                        'danger' => 'rejected',
-                        'info' => 'processing',
-                        'secondary' => 'completed',
-                        'gray' => 'cancelled',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'approved' => 'success',
+                        'pending' => 'warning',
+                        'rejected' => 'danger',
+                        'completed' => 'info',
+                        'cancelled' => 'gray',
+                        'expired' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => BondDonation::getStatuses()[$state] ?? $state),
                 TextColumn::make('donation_amount')
                     ->label('Cantidad (€)')
