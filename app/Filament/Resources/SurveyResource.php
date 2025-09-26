@@ -27,6 +27,23 @@ class SurveyResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Encuestas';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 50 => 'success',
+            $count >= 20 => 'warning',
+            $count >= 10 => 'info',
+            default => 'gray',
+        };
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -93,7 +110,7 @@ class SurveyResource extends Resource
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Estado')
                     ->getStateUsing(fn ($record) => $record->status)
-                    ->getColorUsing(fn ($record) => match ($record->status) {
+                    ->color(fn ($state) => match ($state) {
                         'active' => 'success',
                         'draft' => 'info',
                         'completed' => 'primary',
