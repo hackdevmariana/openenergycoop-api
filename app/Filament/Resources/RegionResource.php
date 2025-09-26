@@ -28,6 +28,23 @@ class RegionResource extends Resource
     
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 20 => 'success',
+            $count >= 10 => 'warning',
+            $count >= 5 => 'info',
+            default => 'gray',
+        };
+    }
+
     public static function form(Form $form): Form
     {
         return $form
