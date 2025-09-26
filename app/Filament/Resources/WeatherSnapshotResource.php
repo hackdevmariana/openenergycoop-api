@@ -27,6 +27,23 @@ class WeatherSnapshotResource extends Resource
     
     protected static ?int $navigationSort = 4;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 10000 => 'success',
+            $count >= 5000 => 'warning',
+            $count >= 1000 => 'info',
+            default => 'gray',
+        };
+    }
+
     public static function form(Form $form): Form
     {
         return $form
