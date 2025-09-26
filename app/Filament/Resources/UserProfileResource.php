@@ -29,6 +29,23 @@ class UserProfileResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 100 => 'success',
+            $count >= 50 => 'warning',
+            $count >= 10 => 'info',
+            default => 'gray',
+        };
+    }
+
     public static function form(Form $form): Form
     {
         return $form
