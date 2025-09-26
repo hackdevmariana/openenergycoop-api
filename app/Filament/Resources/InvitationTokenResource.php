@@ -29,6 +29,7 @@ class InvitationTokenResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+
     public static function form(Form $form): Form
     {
         return $form
@@ -264,11 +265,18 @@ class InvitationTokenResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count() ?: null;
+        return static::getModel()::count();
     }
 
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return 'warning';
+        $count = static::getModel()::count();
+        
+        return match (true) {
+            $count >= 20 => 'success',
+            $count >= 10 => 'warning',
+            $count >= 5 => 'info',
+            default => 'gray',
+        };
     }
 }
