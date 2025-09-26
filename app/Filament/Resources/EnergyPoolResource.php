@@ -119,16 +119,6 @@ class EnergyPoolResource extends Resource
                             ]),
                         Grid::make(2)
                             ->schema([
-                                Select::make('managed_by')
-                                    ->label('Gestionado por')
-                                    ->relationship('managedBy', 'name')
-                                    ->searchable()
-                                    ->preload(),
-                                Select::make('approved_by')
-                                    ->label('Aprobado por')
-                                    ->relationship('approvedBy', 'name')
-                                    ->searchable()
-                                    ->preload(),
                             ]),
                     ])
                     ->collapsible(),
@@ -137,7 +127,7 @@ class EnergyPoolResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('shared_capacity')
+                                TextInput::make('total_capacity_mw')
                                     ->label('Capacidad Compartida (MW)')
                                     ->numeric()
                                     ->minValue(0)
@@ -145,7 +135,7 @@ class EnergyPoolResource extends Resource
                                     ->required()
                                     ->suffix(' MW')
                                     ->helperText('Capacidad total del pool'),
-                                TextInput::make('current_utilization')
+                                TextInput::make('utilized_capacity_mw')
                                     ->label('Utilización Actual (MW)')
                                     ->numeric()
                                     ->minValue(0)
@@ -154,7 +144,7 @@ class EnergyPoolResource extends Resource
                                     ->required()
                                     ->suffix(' MW')
                                     ->helperText('Capacidad actualmente utilizada'),
-                                TextInput::make('available_capacity')
+                                TextInput::make('available_capacity_mw')
                                     ->label('Capacidad Disponible (MW)')
                                     ->numeric()
                                     ->minValue(0)
@@ -164,8 +154,8 @@ class EnergyPoolResource extends Resource
                             ]),
                         Placeholder::make('utilization_percentage')
                             ->content(function ($get) {
-                                $shared = $get('shared_capacity') ?: 0;
-                                $current = $get('current_utilization') ?: 0;
+                                $shared = $get('total_capacity_mw') ?: 0;
+                                $current = $get('utilized_capacity_mw') ?: 0;
                                 
                                 if ($shared > 0) {
                                     $percentage = ($current / $shared) * 100;
@@ -174,23 +164,9 @@ class EnergyPoolResource extends Resource
                                 
                                 return "**Porcentaje de Utilización: 0%**";
                             })
-                            ->visible(fn ($get) => $get('shared_capacity') > 0),
+                            ->visible(fn ($get) => $get('total_capacity_mw') > 0),
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('peak_capacity')
-                                    ->label('Capacidad Pico (MW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' MW')
-                                    ->helperText('Capacidad máxima en condiciones pico'),
-                                TextInput::make('base_load_capacity')
-                                    ->label('Capacidad de Carga Base (MW)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->step(0.001)
-                                    ->suffix(' MW')
-                                    ->helperText('Capacidad para carga base'),
                             ]),
                     ])
                     ->collapsible(),
@@ -540,7 +516,7 @@ class EnergyPoolResource extends Resource
                         'gray' => 'decommissioned',
                     ])
                     ->formatStateUsing(fn (string $state): string => EnergyPool::getStatuses()[$state] ?? $state),
-                TextColumn::make('shared_capacity')
+                TextColumn::make('total_capacity_mw')
                     ->label('Capacidad (MW)')
                     ->suffix(' MW')
                     ->numeric()
@@ -553,7 +529,7 @@ class EnergyPoolResource extends Resource
                         $state >= 50 => 'info',
                         default => 'gray',
                     }),
-                TextColumn::make('current_utilization')
+                TextColumn::make('utilized_capacity_mw')
                     ->label('Utilización (MW)')
                     ->suffix(' MW')
                     ->numeric()
@@ -577,8 +553,8 @@ class EnergyPoolResource extends Resource
                         default => 'success',
                     })
                     ->getStateUsing(function ($record) {
-                        if ($record->shared_capacity > 0) {
-                            return ($record->current_utilization / $record->shared_capacity) * 100;
+                        if ($record->total_capacity_mw > 0) {
+                            return ($record->utilized_capacity_mw / $record->total_capacity_mw) * 100;
                         }
                         return 0;
                     }),
@@ -683,16 +659,16 @@ class EnergyPoolResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('auto_balancing', true))
                     ->label('Con Auto Balanceo'),
                 Filter::make('high_capacity')
-                    ->query(fn (Builder $query): Builder => $query->where('shared_capacity', '>=', 500))
+                    ->query(fn (Builder $query): Builder => $query->where('total_capacity_mw', '>=', 500))
                     ->label('Alta Capacidad (≥500 MW)'),
                 Filter::make('low_capacity')
-                    ->query(fn (Builder $query): Builder => $query->where('shared_capacity', '<', 100))
+                    ->query(fn (Builder $query): Builder => $query->where('total_capacity_mw', '<', 100))
                     ->label('Baja Capacidad (<100 MW)'),
                 Filter::make('high_utilization')
-                    ->query(fn (Builder $query): Builder => $query->where('current_utilization', '>=', 80))
+                    ->query(fn (Builder $query): Builder => $query->where('utilized_capacity_mw', '>=', 80))
                     ->label('Alta Utilización (≥80%)'),
                 Filter::make('low_utilization')
-                    ->query(fn (Builder $query): Builder => $query->where('current_utilization', '<', 20))
+                    ->query(fn (Builder $query): Builder => $query->where('utilized_capacity_mw', '<', 20))
                     ->label('Baja Utilización (<20%)'),
                 Filter::make('high_renewable')
                     ->query(fn (Builder $query): Builder => $query->where('renewable_percentage', '>=', 80))
@@ -740,11 +716,11 @@ class EnergyPoolResource extends Resource
                         return $query
                             ->when(
                                 $data['min_capacity'],
-                                fn (Builder $query, $capacity): Builder => $query->where('shared_capacity', '>=', $capacity),
+                                fn (Builder $query, $capacity): Builder => $query->where('total_capacity_mw', '>=', $capacity),
                             )
                             ->when(
                                 $data['max_capacity'],
-                                fn (Builder $query, $capacity): Builder => $query->where('shared_capacity', '<=', $capacity),
+                                fn (Builder $query, $capacity): Builder => $query->where('total_capacity_mw', '<=', $capacity),
                             );
                     })
                     ->label('Rango de Capacidad'),
@@ -796,7 +772,7 @@ class EnergyPoolResource extends Resource
                         $newRecord = $record->replicate();
                         $newRecord->name = $newRecord->name . ' (Copia)';
                         $newRecord->is_active = false;
-                        $newRecord->current_utilization = 0;
+                        $newRecord->utilized_capacity_mw = 0;
                         $newRecord->start_date = now();
                         $newRecord->save();
                     }),
