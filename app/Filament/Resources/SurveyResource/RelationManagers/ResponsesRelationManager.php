@@ -55,7 +55,7 @@ class ResponsesRelationManager extends RelationManager
                 Tables\Columns\BadgeColumn::make('response_type')
                     ->label('Tipo')
                     ->getStateUsing(fn ($record) => $record->response_type)
-                    ->getColorUsing(fn ($record) => $record->isAnonymous() ? 'warning' : 'info'),
+                    ->color(fn ($record) => $record->isAnonymous() ? 'warning' : 'info'),
                 
                 Tables\Columns\TextColumn::make('response_field_count')
                     ->label('Campos')
