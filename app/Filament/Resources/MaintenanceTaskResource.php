@@ -56,12 +56,12 @@ class MaintenanceTaskResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('task_number')
-                                    ->label('Número de Tarea')
-                                    ->required()
-                                    ->unique(ignoreRecord: true)
-                                    ->maxLength(255)
-                                    ->helperText('Identificador único de la tarea'),
+                                // TextInput::make('task_number')
+                                //     ->label('Número de Tarea')
+                                //     ->required()
+                                //     ->unique(ignoreRecord: true)
+                                //     ->maxLength(255)
+                                //     ->helperText('Identificador único de la tarea'),
                                 TextInput::make('title')
                                     ->label('Título')
                                     ->required()
@@ -125,15 +125,15 @@ class MaintenanceTaskResource extends Resource
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('assigned_user_id')
+                                Select::make('assigned_to')
                                     ->label('Usuario Asignado')
-                                    ->relationship('assignedUser', 'name')
+                                    ->relationship('assignedTo', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->helperText('Usuario responsable de ejecutar la tarea'),
-                                Select::make('responsible_user_id')
+                                Select::make('assigned_by')
                                     ->label('Usuario Responsable')
-                                    ->relationship('responsibleUser', 'name')
+                                    ->relationship('assignedBy', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->helperText('Usuario responsable de supervisar la tarea'),
@@ -195,27 +195,27 @@ class MaintenanceTaskResource extends Resource
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('estimated_duration_hours')
+                                TextInput::make('estimated_hours')
                                     ->label('Duración Estimada (horas)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.5)
                                     ->helperText('Duración estimada en horas'),
-                                TextInput::make('actual_duration_hours')
+                                TextInput::make('actual_hours')
                                     ->label('Duración Real (horas)')
                                     ->numeric()
                                     ->minValue(0)
                                     ->step(0.5),
-                                TextInput::make('duration_variance_hours')
-                                    ->label('Variación de Duración (horas)')
-                                    ->numeric()
-                                    ->step(0.5)
-                                    ->disabled()
-                                    ->helperText('Diferencia entre estimado y real'),
+                                // TextInput::make('duration_variance_hours')
+                                //     ->label('Variación de Duración (horas)')
+                                //     ->numeric()
+                                //     ->step(0.5)
+                                //     ->disabled()
+                                //     ->helperText('Diferencia entre estimado y real'),
                             ]),
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('estimated_cost')
+                                TextInput::make('cost_estimate')
                                     ->label('Costo Estimado')
                                     ->numeric()
                                     ->prefix('$')
@@ -413,7 +413,7 @@ class MaintenanceTaskResource extends Resource
                             ]),
                         Select::make('managed_by')
                             ->label('Gestionado por')
-                            ->relationship('managedBy', 'name')
+                            // ->relationship('managedBy', 'name') // Relación no existe
                             ->searchable()
                             ->preload(),
                     ])
@@ -425,12 +425,12 @@ class MaintenanceTaskResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('task_number')
-                    ->label('Número')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable()
-                    ->tooltip('Haz clic para copiar'),
+                // TextColumn::make('task_number')
+                //     ->label('Número')
+                //     ->searchable()
+                //     ->sortable()
+                //     ->copyable()
+                //     ->tooltip('Haz clic para copiar'),
                 TextColumn::make('title')
                     ->label('Título')
                     ->searchable()
@@ -483,7 +483,7 @@ class MaintenanceTaskResource extends Resource
                         str_contains($state, '2026') => 'danger',
                         default => 'gray',
                     }),
-                TextColumn::make('estimated_duration_hours')
+                TextColumn::make('estimated_hours')
                     ->label('Duración Est. (h)')
                     ->numeric()
                     ->sortable()
@@ -491,7 +491,7 @@ class MaintenanceTaskResource extends Resource
                         Tables\Columns\Summarizers\Sum::make()
                             ->label('Total'),
                     ]),
-                TextColumn::make('actual_duration_hours')
+                TextColumn::make('actual_hours')
                     ->label('Duración Real (h)')
                     ->numeric()
                     ->sortable()
@@ -499,7 +499,7 @@ class MaintenanceTaskResource extends Resource
                         Tables\Columns\Summarizers\Sum::make()
                             ->label('Total'),
                     ]),
-                TextColumn::make('estimated_cost')
+                TextColumn::make('cost_estimate')
                     ->label('Costo Est.')
                     ->money('USD')
                     ->sortable()
@@ -627,7 +627,7 @@ class MaintenanceTaskResource extends Resource
                     ->color('secondary')
                     ->action(function (MaintenanceTask $record) {
                         $newRecord = $record->replicate();
-                        $newRecord->task_number = $newRecord->task_number . '_copy';
+                        // $newRecord->task_number = $newRecord->task_number . '_copy';
                         $newRecord->title = $newRecord->title . ' (Copia)';
                         $newRecord->status = 'pending';
                         $newRecord->actual_start_date = null;
