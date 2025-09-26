@@ -105,6 +105,8 @@ class DatabaseSeeder extends Seeder
             ImpactMetricsSeeder::class, // Agregar el seeder de métricas de impacto
             CommunityMetricsSeeder::class, // Agregar el seeder de métricas comunitarias
             ProductionProjectSeeder::class, // Agregar el seeder de proyectos de producción
+            EnergySourceSeeder::class, // Agregar el seeder de fuentes de energía
+            EnergyPoolSeeder::class, // Agregar el seeder de pools energéticos
             RegionSeeder::class, // Agregar el seeder de regiones
             ProvinceSeeder::class, // Agregar el seeder de provincias
             MunicipalitySeeder::class, // Agregar el seeder de municipios
@@ -114,6 +116,16 @@ class DatabaseSeeder extends Seeder
             InvoiceSeeder::class, // Agregar el seeder de facturas
             WalletTransactionSeeder::class, // Agregar el seeder de transacciones de wallet
             RefundSeeder::class, // Agregar el seeder de reembolsos
+            TaxCalculationSeeder::class, // Agregar el seeder de cálculos de impuestos
+            BondDonationSeeder::class, // Agregar el seeder de donaciones de bonos
+            VendorSeeder::class, // Agregar el seeder de proveedores
+            MaintenanceTaskSeeder::class, // Agregar el seeder de tareas de mantenimiento
+            TaskTemplateSeeder::class, // Agregar el seeder de plantillas de tareas
+            ChecklistTemplateSeeder::class, // Agregar el seeder de plantillas de checklist
+            UserProfileSeeder::class, // Agregar el seeder de perfiles de usuario
+            InvitationTokenSeeder::class, // Agregar el seeder de tokens de invitación
+            UserSettingsSeeder::class, // Agregar el seeder de configuraciones de usuario
+            UserDeviceSeeder::class, // Agregar el seeder de dispositivos de usuario
         ]);
     }
 }
