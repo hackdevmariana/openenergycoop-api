@@ -168,10 +168,12 @@ class MunicipalitySeeder extends Seeder
             $province = $provinces->where('name', $municipality['province'])->first();
             if ($province) {
                 Municipality::firstOrCreate(
-                    ['slug' => \Illuminate\Support\Str::slug($municipality['name'] . '-' . $municipality['province'])],
                     [
                         'name' => $municipality['name'],
                         'province_id' => $province->id,
+                    ],
+                    [
+                        'slug' => \Illuminate\Support\Str::slug($municipality['name'] . '-' . $municipality['province']),
                         'text' => $municipality['text'],
                     ]
                 );
