@@ -19,7 +19,7 @@ class UserProfileResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    protected static ?string $navigationGroup = 'Gestión de Usuarios';
+    protected static ?string $navigationGroup = 'Usuarios y Organizaciones';
 
     protected static ?string $navigationLabel = 'Perfiles de Usuario';
 
