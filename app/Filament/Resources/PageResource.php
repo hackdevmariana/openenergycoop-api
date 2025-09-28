@@ -33,7 +33,7 @@ class PageResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Páginas';
     
-    protected static ?string $navigationGroup = 'Contenidos';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?int $navigationSort = 1;
 
