@@ -43,6 +43,11 @@ class Municipality extends Model
         return $this->hasMany(WeatherSnapshot::class);
     }
 
+    public function energyZoneSummaries(): HasMany
+    {
+        return $this->hasMany(EnergyZoneSummary::class);
+    }
+
     // Mutadores
     public function setNameAttribute($value): void
     {
