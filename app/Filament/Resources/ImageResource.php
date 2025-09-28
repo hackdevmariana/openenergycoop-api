@@ -22,7 +22,7 @@ class ImageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
     
-    protected static ?string $navigationGroup = 'Contenido Web';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?string $navigationLabel = 'Imágenes';
     
