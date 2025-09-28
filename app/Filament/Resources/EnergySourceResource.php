@@ -39,7 +39,7 @@ class EnergySourceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?string $navigationGroup = 'Producción de Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 2;
 
