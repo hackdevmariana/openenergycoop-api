@@ -20,7 +20,7 @@ class UserDeviceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-device-phone-mobile';
     
-    protected static ?string $navigationGroup = 'Gestión de Usuarios';
+    protected static ?string $navigationGroup = 'Usuarios y Organizaciones';
     
     protected static ?string $navigationLabel = 'Dispositivos de Usuario';
     
