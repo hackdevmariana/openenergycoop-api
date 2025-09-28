@@ -17,6 +17,7 @@ class BondDonation extends Model
         'energy_bond_id',
         'donation_type',
         'status',
+        'priority',
         'donation_amount',
         'bond_units',
         'unit_price_at_donation',
@@ -122,6 +123,12 @@ class BondDonation extends Model
     const RECURRENCE_FREQUENCY_SEMI_ANNUALLY = 'semi_annually';
     const RECURRENCE_FREQUENCY_ANNUALLY = 'annually';
 
+    const PRIORITY_LOW = 'low';
+    const PRIORITY_MEDIUM = 'medium';
+    const PRIORITY_HIGH = 'high';
+    const PRIORITY_URGENT = 'urgent';
+    const PRIORITY_CRITICAL = 'critical';
+
     public static function getDonationTypes(): array
     {
         return [
@@ -164,6 +171,17 @@ class BondDonation extends Model
             self::RECURRENCE_FREQUENCY_QUARTERLY => 'Trimestral',
             self::RECURRENCE_FREQUENCY_SEMI_ANNUALLY => 'Semestral',
             self::RECURRENCE_FREQUENCY_ANNUALLY => 'Anual',
+        ];
+    }
+
+    public static function getPriorities(): array
+    {
+        return [
+            self::PRIORITY_LOW => 'Baja',
+            self::PRIORITY_MEDIUM => 'Media',
+            self::PRIORITY_HIGH => 'Alta',
+            self::PRIORITY_URGENT => 'Urgente',
+            self::PRIORITY_CRITICAL => 'Crítica',
         ];
     }
 
