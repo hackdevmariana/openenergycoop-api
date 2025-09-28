@@ -35,7 +35,7 @@ class EnergyInterestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static ?string $navigationGroup = 'Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?string $modelLabel = 'Interés Energético';
 
