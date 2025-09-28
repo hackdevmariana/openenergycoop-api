@@ -38,7 +38,7 @@ class MilestoneResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-flag';
 
-    protected static ?string $navigationGroup = 'Gestión de Proyectos';
+    protected static ?string $navigationGroup = 'Eventos y Proyectos';
 
     protected static ?int $navigationSort = 1;
 
