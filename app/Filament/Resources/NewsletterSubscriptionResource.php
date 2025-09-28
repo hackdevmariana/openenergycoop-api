@@ -28,7 +28,7 @@ class NewsletterSubscriptionResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Suscripciones';
     
-    protected static ?string $navigationGroup = 'Comunicación';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?int $navigationSort = 2;
 
