@@ -27,7 +27,7 @@ class MenuResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Elementos de Menú';
     
-    protected static ?string $navigationGroup = 'Contenidos';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?int $navigationSort = 6;
 
