@@ -24,7 +24,7 @@ class OrganizationFeatureResource extends Resource
     protected static ?string $model = OrganizationFeature::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog';
-    protected static ?string $navigationGroup = 'Administración del Sistema';
+    protected static ?string $navigationGroup = 'Usuarios y Organizaciones';
     protected static ?string $navigationLabel = 'Organization Features';
     protected static ?string $pluralModelLabel = 'Organization Features';
     protected static ?string $modelLabel = 'Organization Feature';
