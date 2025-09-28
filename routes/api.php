@@ -92,6 +92,7 @@ use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\EventAttendanceController;
 use App\Http\Controllers\Api\V1\SurveyController;
 use App\Http\Controllers\Api\V1\SurveyResponseController;
+use App\Http\Controllers\Api\EnergyInterestController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -453,6 +454,22 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     // ========================================
     // NUEVOS ENERGY STORE API ENDPOINTS - ECOSISTEMA ENERGÉTICO AVANZADO
     // ========================================
+
+    // Rutas para Energy Zone Summaries (Resúmenes de Zonas Energéticas)
+    Route::get('energy-zone-summaries/system-summary', [App\Http\Controllers\Api\EnergyZoneSummaryController::class, 'systemSummary']);
+    Route::post('energy-zone-summaries/{energyZoneSummary}/update-status', [App\Http\Controllers\Api\EnergyZoneSummaryController::class, 'updateStatus']);
+    Route::post('energy-zone-summaries/{energyZoneSummary}/reserve-energy', [App\Http\Controllers\Api\EnergyZoneSummaryController::class, 'reserveEnergy']);
+    Route::post('energy-zone-summaries/{energyZoneSummary}/release-energy', [App\Http\Controllers\Api\EnergyZoneSummaryController::class, 'releaseEnergy']);
+    Route::apiResource('energy-zone-summaries', App\Http\Controllers\Api\EnergyZoneSummaryController::class);
+
+    // Rutas para Energy Interests (Intereses Energéticos)
+    Route::get('energy-interests/system-summary', [EnergyInterestController::class, 'systemSummary']);
+    Route::post('energy-interests/{energyInterest}/approve', [EnergyInterestController::class, 'approve']);
+    Route::post('energy-interests/{energyInterest}/reject', [EnergyInterestController::class, 'reject']);
+    Route::post('energy-interests/{energyInterest}/activate', [EnergyInterestController::class, 'activate']);
+    Route::get('energy-interests/by-zone/{zoneName}', [EnergyInterestController::class, 'byZone']);
+    Route::get('energy-interests/by-type/{type}', [EnergyInterestController::class, 'byType']);
+    Route::apiResource('energy-interests', EnergyInterestController::class);
 
     // Rutas para Energy Contracts (Contratos Energéticos)
     Route::get('energy-contracts/my-contracts', [EnergyContractController::class, 'myContracts']);
