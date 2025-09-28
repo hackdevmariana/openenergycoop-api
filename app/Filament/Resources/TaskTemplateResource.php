@@ -37,7 +37,7 @@ class TaskTemplateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Mantenimiento';
+    protected static ?string $navigationGroup = 'Sistema y Mantenimiento';
 
     protected static ?int $navigationSort = 3;
 
