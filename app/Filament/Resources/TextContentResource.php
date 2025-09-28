@@ -29,7 +29,7 @@ class TextContentResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Contenidos de Texto';
     
-    protected static ?string $navigationGroup = 'Componentes';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?int $navigationSort = 2;
 
