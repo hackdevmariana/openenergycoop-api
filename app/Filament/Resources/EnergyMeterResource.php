@@ -39,7 +39,7 @@ class EnergyMeterResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cpu-chip';
 
-    protected static ?string $navigationGroup = 'Consumo de Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 2;
 
