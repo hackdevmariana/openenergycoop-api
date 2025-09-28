@@ -93,6 +93,7 @@ use App\Http\Controllers\Api\V1\EventAttendanceController;
 use App\Http\Controllers\Api\V1\SurveyController;
 use App\Http\Controllers\Api\V1\SurveyResponseController;
 use App\Http\Controllers\Api\EnergyInterestController;
+use App\Http\Controllers\Api\EnergyRightPreSaleController;
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('app-settings', AppSettingController::class)->only(['index', 'show']);
@@ -470,6 +471,16 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('energy-interests/by-zone/{zoneName}', [EnergyInterestController::class, 'byZone']);
     Route::get('energy-interests/by-type/{type}', [EnergyInterestController::class, 'byType']);
     Route::apiResource('energy-interests', EnergyInterestController::class);
+
+    // Rutas para Energy Right Pre-Sales (Preventas de Derechos Energéticos)
+    Route::get('energy-right-pre-sales/system-summary', [EnergyRightPreSaleController::class, 'systemSummary']);
+    Route::post('energy-right-pre-sales/{energyRightPreSale}/confirm', [EnergyRightPreSaleController::class, 'confirm']);
+    Route::post('energy-right-pre-sales/{energyRightPreSale}/cancel', [EnergyRightPreSaleController::class, 'cancel']);
+    Route::get('energy-right-pre-sales/by-zone/{zoneName}', [EnergyRightPreSaleController::class, 'byZone']);
+    Route::get('energy-right-pre-sales/by-status/{status}', [EnergyRightPreSaleController::class, 'byStatus']);
+    Route::get('energy-right-pre-sales/expiring/{days?}', [EnergyRightPreSaleController::class, 'expiring']);
+    Route::get('energy-right-pre-sales/active', [EnergyRightPreSaleController::class, 'active']);
+    Route::apiResource('energy-right-pre-sales', EnergyRightPreSaleController::class);
 
     // Rutas para Energy Contracts (Contratos Energéticos)
     Route::get('energy-contracts/my-contracts', [EnergyContractController::class, 'myContracts']);
