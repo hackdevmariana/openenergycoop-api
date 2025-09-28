@@ -22,7 +22,7 @@ class PaymentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
 
-    protected static ?string $navigationGroup = 'Finanzas';
+    protected static ?string $navigationGroup = 'Finanzas y Contabilidad';
 
     protected static ?string $modelLabel = 'Pago';
 
