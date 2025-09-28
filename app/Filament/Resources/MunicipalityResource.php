@@ -19,7 +19,7 @@ class MunicipalityResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     
-    protected static ?string $navigationGroup = 'Infraestructura';
+    protected static ?string $navigationGroup = 'Infraestructura y Geografía';
     
     protected static ?string $modelLabel = 'Municipio';
     
