@@ -36,7 +36,7 @@ class EnergyRightPreSaleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
-    protected static ?string $navigationGroup = 'Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?string $modelLabel = 'Preventa de Derechos';
 
