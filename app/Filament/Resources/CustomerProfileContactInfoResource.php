@@ -15,7 +15,7 @@ class CustomerProfileContactInfoResource extends Resource
     protected static ?string $model = CustomerProfileContactInfo::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
-    protected static ?string $navigationGroup = 'Clientes';
+    protected static ?string $navigationGroup = 'Clientes y Proveedores';
     protected static ?string $navigationLabel = 'Información de Contacto';
     protected static ?string $pluralModelLabel = 'Informaciones de Contacto';
     protected static ?string $modelLabel = 'Información de Contacto';
