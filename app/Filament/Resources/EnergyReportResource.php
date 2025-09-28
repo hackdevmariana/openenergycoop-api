@@ -19,7 +19,7 @@ class EnergyReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
 
-    protected static ?string $navigationGroup = 'Analytics y Reportes';
+    protected static ?string $navigationGroup = 'Analytics y Métricas';
 
     protected static ?string $navigationLabel = 'Reportes de Energía';
 
