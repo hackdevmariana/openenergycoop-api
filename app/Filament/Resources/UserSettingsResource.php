@@ -20,7 +20,7 @@ class UserSettingsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
     
-    protected static ?string $navigationGroup = 'Gestión de Usuarios';
+    protected static ?string $navigationGroup = 'Usuarios y Organizaciones';
     
     protected static ?string $navigationLabel = 'Configuraciones de Usuario';
     
