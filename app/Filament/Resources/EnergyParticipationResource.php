@@ -22,7 +22,7 @@ class EnergyParticipationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?string $navigationGroup = 'Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?string $modelLabel = 'Participación Energética';
 
