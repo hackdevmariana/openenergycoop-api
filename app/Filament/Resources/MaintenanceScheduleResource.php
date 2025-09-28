@@ -38,7 +38,7 @@ class MaintenanceScheduleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
-    protected static ?string $navigationGroup = 'Administración del Sistema';
+    protected static ?string $navigationGroup = 'Sistema y Mantenimiento';
 
     protected static ?int $navigationSort = 3;
 
