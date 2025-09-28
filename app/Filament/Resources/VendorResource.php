@@ -38,7 +38,7 @@ class VendorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
 
-    protected static ?string $navigationGroup = 'Gestión de Proveedores';
+    protected static ?string $navigationGroup = 'Clientes y Proveedores';
 
     protected static ?int $navigationSort = 1;
 
