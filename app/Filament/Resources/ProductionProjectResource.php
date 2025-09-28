@@ -37,7 +37,7 @@ class ProductionProjectResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cog';
 
-    protected static ?string $navigationGroup = 'Producción de Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 1;
 
