@@ -444,4 +444,9 @@ class User extends Authenticatable
             'average_responses_per_survey' => $surveysResponded > 0 ? round($totalResponses / $surveysResponded, 2) : 0
         ];
     }
+
+    public function energyInterests(): HasMany
+    {
+        return $this->hasMany(EnergyInterest::class);
+    }
 }
