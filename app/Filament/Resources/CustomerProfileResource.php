@@ -16,7 +16,7 @@ class CustomerProfileResource extends Resource
     protected static ?string $model = CustomerProfile::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Clientes';
+    protected static ?string $navigationGroup = 'Clientes y Proveedores';
     protected static ?string $navigationLabel = 'Perfiles de Cliente';
     protected static ?string $pluralModelLabel = 'Perfiles de Cliente';
     protected static ?string $modelLabel = 'Perfil de Cliente';
