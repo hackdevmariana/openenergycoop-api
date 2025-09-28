@@ -21,7 +21,7 @@ class TransactionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrows-right-left';
 
-    protected static ?string $navigationGroup = 'Finanzas';
+    protected static ?string $navigationGroup = 'Finanzas y Contabilidad';
 
     protected static ?string $modelLabel = 'Transacción';
 
