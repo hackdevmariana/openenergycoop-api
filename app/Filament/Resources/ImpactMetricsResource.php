@@ -46,7 +46,7 @@ class ImpactMetricsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
 
-    protected static ?string $navigationGroup = 'Métricas y Reportes';
+    protected static ?string $navigationGroup = 'Analytics y Métricas';
 
     protected static ?string $navigationLabel = 'Métricas de Impacto';
 
