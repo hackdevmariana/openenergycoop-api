@@ -45,7 +45,7 @@ class CommunityMetricsResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Métricas y Reportes';
+    protected static ?string $navigationGroup = 'Analytics y Métricas';
 
     protected static ?string $navigationLabel = 'Métricas Comunitarias';
 
