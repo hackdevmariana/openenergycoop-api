@@ -39,7 +39,7 @@ class EnergyForecastResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
 
-    protected static ?string $navigationGroup = 'Comercio de Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 2;
 
