@@ -28,7 +28,7 @@ class MessageResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Mensajes';
     
-    protected static ?string $navigationGroup = 'Comunicación';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?int $navigationSort = 1;
 
