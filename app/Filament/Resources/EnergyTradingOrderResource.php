@@ -37,7 +37,7 @@ class EnergyTradingOrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
 
-    protected static ?string $navigationGroup = 'Comercio de Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
 
     protected static ?int $navigationSort = 1;
 
