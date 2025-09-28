@@ -26,7 +26,7 @@ class PageComponentResource extends Resource
     
     protected static ?string $pluralModelLabel = 'Componentes';
     
-    protected static ?string $navigationGroup = 'Componentes';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?int $navigationSort = 4;
 
