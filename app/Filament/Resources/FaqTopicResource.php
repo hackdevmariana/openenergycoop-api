@@ -20,7 +20,7 @@ class FaqTopicResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-folder';
     
-    protected static ?string $navigationGroup = 'Soporte y Ayuda';
+    protected static ?string $navigationGroup = 'Soporte y Encuestas';
     
     protected static ?string $navigationLabel = 'Temas de FAQ';
     
