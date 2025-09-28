@@ -33,7 +33,7 @@ class EnergyZoneSummaryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
     
-    protected static ?string $navigationGroup = 'Energía';
+    protected static ?string $navigationGroup = 'Energía y Comercio';
     
     protected static ?string $modelLabel = 'Zona Energética';
     
