@@ -19,7 +19,7 @@ class WeatherSnapshotResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-cloud';
     
-    protected static ?string $navigationGroup = 'Infraestructura';
+    protected static ?string $navigationGroup = 'Infraestructura y Geografía';
     
     protected static ?string $modelLabel = 'Dato Meteorológico';
     
