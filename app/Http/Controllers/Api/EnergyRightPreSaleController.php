@@ -438,8 +438,298 @@ class EnergyRightPreSaleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
-        //
+        try {
+            $preSale = EnergyRightPreSale::find($id);
+
+            if (!$preSale) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Preventa de derechos energéticos no encontrada'
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            $userInfo = $preSale->user ? "Usuario: {$preSale->user->name}" : "Usuario ID: {$preSale->user_id}";
+            $locationInfo = $preSale->installation ? "Instalación: {$preSale->installation->name}" : "Zona: {$preSale->full_zone_name}";
+
+            $preSale->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Preventa de derechos energéticos eliminada exitosamente - {$userInfo} - {$locationInfo}"
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al eliminar preventa de derechos energéticos: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la preventa de derechos energéticos',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get system summary statistics
+     */
+    public function systemSummary(): JsonResponse
+    {
+        try {
+            $summary = EnergyRightPreSale::getSystemSummary();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Resumen del sistema obtenido exitosamente',
+                'data' => $summary
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener resumen del sistema: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el resumen del sistema',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm a pre-sale
+     */
+    public function confirm(string $id): JsonResponse
+    {
+        try {
+            $preSale = EnergyRightPreSale::find($id);
+
+            if (!$preSale) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Preventa de derechos energéticos no encontrada'
+                ], 404);
+            }
+
+            if (!$preSale->canBeConfirmed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La preventa no puede ser confirmada en su estado actual',
+                    'data' => [
+                        'current_status' => $preSale->status,
+                        'is_expired' => $preSale->is_expired,
+                    ]
+                ], 422);
+            }
+
+            $oldStatus = $preSale->status;
+            $preSale->confirm();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Preventa de derechos energéticos confirmada exitosamente',
+                'data' => [
+                    'id' => $preSale->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $preSale->status,
+                    'status_label' => $preSale->status_label,
+                    'status_color' => $preSale->status_color,
+                    'signed_at' => $preSale->signed_at,
+                    'updated_at' => $preSale->updated_at,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al confirmar preventa de derechos energéticos: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al confirmar la preventa de derechos energéticos',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel a pre-sale
+     */
+    public function cancel(string $id): JsonResponse
+    {
+        try {
+            $preSale = EnergyRightPreSale::find($id);
+
+            if (!$preSale) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Preventa de derechos energéticos no encontrada'
+                ], 404);
+            }
+
+            if (!$preSale->canBeCancelled()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La preventa no puede ser cancelada en su estado actual',
+                    'data' => [
+                        'current_status' => $preSale->status,
+                    ]
+                ], 422);
+            }
+
+            $oldStatus = $preSale->status;
+            $preSale->cancel();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Preventa de derechos energéticos cancelada exitosamente',
+                'data' => [
+                    'id' => $preSale->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $preSale->status,
+                    'status_label' => $preSale->status_label,
+                    'status_color' => $preSale->status_color,
+                    'updated_at' => $preSale->updated_at,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al cancelar preventa de derechos energéticos: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cancelar la preventa de derechos energéticos',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get pre-sales by zone
+     */
+    public function byZone(string $zoneName): JsonResponse
+    {
+        try {
+            $preSales = EnergyRightPreSale::getPreSalesByZone($zoneName);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Preventas de la zona '{$zoneName}' obtenidas exitosamente",
+                'data' => $preSales,
+                'meta' => [
+                    'zone_name' => $zoneName,
+                    'total_presales' => $preSales->count(),
+                    'by_status' => [
+                        'pending' => $preSales->where('status', 'pending')->count(),
+                        'confirmed' => $preSales->where('status', 'confirmed')->count(),
+                        'cancelled' => $preSales->where('status', 'cancelled')->count(),
+                    ],
+                    'total_kwh_reserved' => $preSales->where('status', 'confirmed')->sum('kwh_per_month_reserved'),
+                    'total_value_reserved' => $preSales->where('status', 'confirmed')->sum('total_value'),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener preventas por zona: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las preventas por zona',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get pre-sales by status
+     */
+    public function byStatus(string $status): JsonResponse
+    {
+        try {
+            $preSales = EnergyRightPreSale::getPreSalesByStatus($status);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Preventas con estado '{$status}' obtenidas exitosamente",
+                'data' => $preSales,
+                'meta' => [
+                    'status' => $status,
+                    'status_label' => EnergyRightPreSale::getStatuses()[$status] ?? 'Desconocido',
+                    'total_presales' => $preSales->count(),
+                    'total_kwh_reserved' => $preSales->sum('kwh_per_month_reserved'),
+                    'total_value_reserved' => $preSales->sum('total_value'),
+                    'average_price_per_kwh' => $preSales->avg('price_per_kwh'),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener preventas por estado: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las preventas por estado',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get expiring pre-sales
+     */
+    public function expiring(int $days = 30): JsonResponse
+    {
+        try {
+            $preSales = EnergyRightPreSale::getExpiringPreSales($days);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Preventas que expiran en {$days} días obtenidas exitosamente",
+                'data' => $preSales,
+                'meta' => [
+                    'days' => $days,
+                    'total_expiring' => $preSales->count(),
+                    'by_status' => [
+                        'pending' => $preSales->where('status', 'pending')->count(),
+                        'confirmed' => $preSales->where('status', 'confirmed')->count(),
+                        'cancelled' => $preSales->where('status', 'cancelled')->count(),
+                    ],
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener preventas que expiran: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las preventas que expiran',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get active pre-sales
+     */
+    public function active(): JsonResponse
+    {
+        try {
+            $preSales = EnergyRightPreSale::getActivePreSales();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Preventas activas obtenidas exitosamente',
+                'data' => $preSales,
+                'meta' => [
+                    'total_active' => $preSales->count(),
+                    'total_kwh_reserved' => $preSales->sum('kwh_per_month_reserved'),
+                    'total_value_reserved' => $preSales->sum('total_value'),
+                    'average_price_per_kwh' => $preSales->avg('price_per_kwh'),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener preventas activas: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las preventas activas',
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor'
+            ], 500);
+        }
     }
 }
