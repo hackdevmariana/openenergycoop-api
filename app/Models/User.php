@@ -454,4 +454,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(EnergyRightPreSale::class);
     }
+
+    public function energyParticipations(): HasMany
+    {
+        return $this->hasMany(EnergyParticipation::class);
+    }
 }
