@@ -690,4 +690,9 @@ class EnergyInstallation extends Model
             default => 'bg-gray-100 text-gray-800',
         };
     }
+
+    public function energyRightPreSales(): HasMany
+    {
+        return $this->hasMany(EnergyRightPreSale::class);
+    }
 }
