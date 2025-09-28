@@ -18,7 +18,7 @@ class SubscriptionRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Clientes y Empresas';
+    protected static ?string $navigationGroup = 'Clientes y Proveedores';
 
     protected static ?int $navigationSort = 2;
 
