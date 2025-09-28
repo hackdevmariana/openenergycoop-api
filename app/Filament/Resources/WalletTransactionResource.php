@@ -18,7 +18,7 @@ class WalletTransactionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wallet';
 
-    protected static ?string $navigationGroup = 'Finanzas';
+    protected static ?string $navigationGroup = 'Finanzas y Contabilidad';
 
     protected static ?string $modelLabel = 'Transacción de Wallet';
 
