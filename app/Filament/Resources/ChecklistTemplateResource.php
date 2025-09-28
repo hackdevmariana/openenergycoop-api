@@ -39,7 +39,7 @@ class ChecklistTemplateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Mantenimiento';
+    protected static ?string $navigationGroup = 'Sistema y Mantenimiento';
 
     protected static ?int $navigationSort = 4;
 
