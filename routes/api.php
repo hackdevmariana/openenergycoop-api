@@ -482,6 +482,18 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('energy-right-pre-sales/active', [EnergyRightPreSaleController::class, 'active']);
     Route::apiResource('energy-right-pre-sales', EnergyRightPreSaleController::class);
 
+    // Rutas para Energy Participation (Participaciones Energéticas)
+    Route::get('energy-participations/system-summary', [App\Http\Controllers\Api\EnergyParticipationController::class, 'systemSummary']);
+    Route::post('energy-participations/{energyParticipation}/suspend', [App\Http\Controllers\Api\EnergyParticipationController::class, 'suspend']);
+    Route::post('energy-participations/{energyParticipation}/cancel', [App\Http\Controllers\Api\EnergyParticipationController::class, 'cancel']);
+    Route::post('energy-participations/{energyParticipation}/complete', [App\Http\Controllers\Api\EnergyParticipationController::class, 'complete']);
+    Route::post('energy-participations/{energyParticipation}/activate', [App\Http\Controllers\Api\EnergyParticipationController::class, 'activate']);
+    Route::get('energy-participations/by-plan/{planCode}', [App\Http\Controllers\Api\EnergyParticipationController::class, 'byPlan']);
+    Route::get('energy-participations/by-status/{status}', [App\Http\Controllers\Api\EnergyParticipationController::class, 'byStatus']);
+    Route::get('energy-participations/expiring/{days?}', [App\Http\Controllers\Api\EnergyParticipationController::class, 'expiring']);
+    Route::get('energy-participations/active', [App\Http\Controllers\Api\EnergyParticipationController::class, 'active']);
+    Route::apiResource('energy-participations', App\Http\Controllers\Api\EnergyParticipationController::class);
+
     // Rutas para Energy Contracts (Contratos Energéticos)
     Route::get('energy-contracts/my-contracts', [EnergyContractController::class, 'myContracts']);
     Route::get('energy-contracts/analytics', [EnergyContractController::class, 'analytics']);
