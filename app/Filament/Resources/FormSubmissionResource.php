@@ -21,7 +21,7 @@ class FormSubmissionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     
-    protected static ?string $navigationGroup = 'Comunicación';
+    protected static ?string $navigationGroup = 'Comunicaciones y Contenido';
     
     protected static ?string $navigationLabel = 'Envíos de Formularios';
     
