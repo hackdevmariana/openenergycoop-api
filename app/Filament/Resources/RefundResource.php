@@ -18,7 +18,7 @@ class RefundResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-uturn-left';
 
-    protected static ?string $navigationGroup = 'Finanzas';
+    protected static ?string $navigationGroup = 'Finanzas y Contabilidad';
 
     protected static ?string $modelLabel = 'Reembolso';
 
