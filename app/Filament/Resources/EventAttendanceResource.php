@@ -22,7 +22,7 @@ class EventAttendanceResource extends Resource
     protected static ?string $navigationLabel = 'Asistencias a Eventos';
     protected static ?string $modelLabel = 'Asistencia a Evento';
     protected static ?string $pluralModelLabel = 'Asistencias a Eventos';
-    protected static ?string $navigationGroup = 'Gestión de Eventos';
+    protected static ?string $navigationGroup = 'Eventos y Proyectos';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
