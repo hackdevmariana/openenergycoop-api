@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\CommunityMetrics;
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Rule;
 
 class CommunityMetricsController extends Controller
 {
@@ -22,11 +25,11 @@ class CommunityMetricsController extends Controller
             $query = CommunityMetrics::with(['organization']);
 
             // Aplicar filtros
-            if ($request->has('organization_id') && $request->organization_id) {
+            if ($request->has('organization_id') && $request->organization_id !== '') {
                 $query->byOrganization($request->organization_id);
             }
 
-            if ($request->has('status')) {
+            if ($request->has('status') && $request->status !== '') {
                 if ($request->status === 'active') {
                     $query->active();
                 } elseif ($request->status === 'inactive') {
@@ -35,21 +38,15 @@ class CommunityMetricsController extends Controller
             }
 
             if ($request->has('users_min') || $request->has('users_max')) {
-                $minUsers = $request->users_min ?? 0;
-                $maxUsers = $request->users_max ?? null;
-                $query->byUserCount($minUsers, $maxUsers);
+                $query->byUserCount($request->users_min ?? 0, $request->users_max ?? null);
             }
 
             if ($request->has('co2_min') || $request->has('co2_max')) {
-                $minCo2 = $request->co2_min ?? 0;
-                $maxCo2 = $request->co2_max ?? null;
-                $query->byCo2Range($minCo2, $maxCo2);
+                $query->byCo2Range($request->co2_min ?? 0, $request->co2_max ?? null);
             }
 
             if ($request->has('kwh_min') || $request->has('kwh_max')) {
-                $minKwh = $request->kwh_min ?? 0;
-                $maxKwh = $request->kwh_max ?? null;
-                $query->byKwhRange($minKwh, $maxKwh);
+                $query->byKwhRange($request->kwh_min ?? 0, $request->kwh_max ?? null);
             }
 
             // Aplicar ordenamiento
@@ -79,14 +76,14 @@ class CommunityMetricsController extends Controller
             $perPage = $request->get('per_page', 15);
             $metrics = $query->paginate($perPage);
 
-            // Datos para filtros
-            $organizations = Organization::orderBy('name')->get();
+            // Obtener datos para filtros
+            $organizations = Organization::select('id', 'name')->get();
 
             return view('community-metrics.index', compact('metrics', 'organizations'));
 
         } catch (\Exception $e) {
             Log::error('Error al obtener métricas comunitarias: ' . $e->getMessage());
-            return view('community-metrics.index')->with('error', 'Error al cargar las métricas comunitarias');
+            return redirect()->back()->with('error', 'Error al cargar las métricas comunitarias');
         }
     }
 
@@ -95,7 +92,7 @@ class CommunityMetricsController extends Controller
      */
     public function create(): View
     {
-        $organizations = Organization::orderBy('name')->get();
+        $organizations = Organization::select('id', 'name')->get();
         
         return view('community-metrics.create', compact('organizations'));
     }
@@ -105,35 +102,44 @@ class CommunityMetricsController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'organization_id' => 'required|exists:organizations,id',
+            'total_users' => 'required|integer|min:0',
+            'total_co2_avoided' => 'required|numeric|min:0',
+            'total_kwh_produced' => 'required|numeric|min:0',
+            'period_start' => 'required|date',
+            'period_end' => 'required|date|after:period_start',
+            'is_active' => 'boolean',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'organization_id' => 'required|exists:organizations,id|unique:community_metrics,organization_id',
-                'total_users' => 'required|integer|min:0',
-                'total_kwh_produced' => 'required|numeric|min:0',
-                'total_co2_avoided' => 'required|numeric|min:0',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
-            $metrics = CommunityMetrics::create($request->all());
+            $communityMetric = CommunityMetrics::create($request->all());
 
             DB::commit();
 
-            return redirect()->route('community-metrics.index')
-                ->with('success', 'Métricas comunitarias creadas exitosamente');
+            Log::info('Métrica comunitaria creada', [
+                'user_id' => auth()->id(),
+                'community_metric_id' => $communityMetric->id
+            ]);
+
+            return redirect()->route('community-metrics.show', $communityMetric)
+                ->with('success', 'Métrica comunitaria creada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al crear métricas comunitarias: ' . $e->getMessage());
-            
+            Log::error('Error al crear métrica comunitaria: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Error al crear métricas comunitarias')
+                ->with('error', 'Error al crear la métrica comunitaria')
                 ->withInput();
         }
     }
@@ -144,7 +150,6 @@ class CommunityMetricsController extends Controller
     public function show(CommunityMetrics $communityMetric): View
     {
         $communityMetric->load(['organization']);
-        
         return view('community-metrics.show', compact('communityMetric'));
     }
 
@@ -153,7 +158,7 @@ class CommunityMetricsController extends Controller
      */
     public function edit(CommunityMetrics $communityMetric): View
     {
-        $organizations = Organization::orderBy('name')->get();
+        $organizations = Organization::select('id', 'name')->get();
         
         return view('community-metrics.edit', compact('communityMetric', 'organizations'));
     }
@@ -163,35 +168,44 @@ class CommunityMetricsController extends Controller
      */
     public function update(Request $request, CommunityMetrics $communityMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'organization_id' => 'required|exists:organizations,id',
+            'total_users' => 'required|integer|min:0',
+            'total_co2_avoided' => 'required|numeric|min:0',
+            'total_kwh_produced' => 'required|numeric|min:0',
+            'period_start' => 'required|date',
+            'period_end' => 'required|date|after:period_start',
+            'is_active' => 'boolean',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'organization_id' => 'sometimes|required|exists:organizations,id|unique:community_metrics,organization_id,' . $communityMetric->id,
-                'total_users' => 'sometimes|required|integer|min:0',
-                'total_kwh_produced' => 'sometimes|required|numeric|min:0',
-                'total_co2_avoided' => 'sometimes|required|numeric|min:0',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
             $communityMetric->update($request->all());
 
             DB::commit();
 
+            Log::info('Métrica comunitaria actualizada', [
+                'user_id' => auth()->id(),
+                'community_metric_id' => $communityMetric->id
+            ]);
+
             return redirect()->route('community-metrics.show', $communityMetric)
-                ->with('success', 'Métricas comunitarias actualizadas exitosamente');
+                ->with('success', 'Métrica comunitaria actualizada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al actualizar métricas comunitarias: ' . $e->getMessage());
-            
+            Log::error('Error al actualizar métrica comunitaria: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Error al actualizar métricas comunitarias')
+                ->with('error', 'Error al actualizar la métrica comunitaria')
                 ->withInput();
         }
     }
@@ -208,252 +222,206 @@ class CommunityMetricsController extends Controller
 
             DB::commit();
 
+            Log::info('Métrica comunitaria eliminada', [
+                'user_id' => auth()->id(),
+                'community_metric_id' => $communityMetric->id
+            ]);
+
             return redirect()->route('community-metrics.index')
-                ->with('success', 'Métricas comunitarias eliminadas exitosamente');
+                ->with('success', 'Métrica comunitaria eliminada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar métricas comunitarias: ' . $e->getMessage());
-            
+            Log::error('Error al eliminar métrica comunitaria: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Error al eliminar métricas comunitarias');
+                ->with('error', 'Error al eliminar la métrica comunitaria');
         }
     }
 
     /**
-     * Mostrar métricas por organización
+     * Obtener métricas por organización
      */
-    public function byOrganization($organizationId): View
+    public function byOrganization(Request $request, $organizationId): View
     {
-        try {
-            $organization = Organization::findOrFail($organizationId);
-            $metrics = CommunityMetrics::byOrganization($organizationId)
-                ->with(['organization'])
-                ->first();
+        $organization = Organization::findOrFail($organizationId);
+        $metrics = CommunityMetrics::where('organization_id', $organizationId)
+            ->orderBy('period_start', 'desc')
+            ->paginate(15);
 
-            if (!$metrics) {
-                return redirect()->route('community-metrics.index')
-                    ->with('error', 'No se encontraron métricas para esta organización');
-            }
-
-            return view('community-metrics.by-organization', compact('organization', 'metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas por organización: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener métricas de la organización');
-        }
+        return view('community-metrics.by-organization', compact('metrics', 'organization'));
     }
 
     /**
-     * Mostrar métricas activas
+     * Obtener métricas activas
      */
     public function active(): View
     {
-        try {
-            $metrics = CommunityMetrics::active()
-                ->with(['organization'])
-                ->orderBy('total_co2_avoided', 'desc')
-                ->paginate(15);
+        $metrics = CommunityMetrics::active()
+            ->with('organization')
+            ->orderBy('period_start', 'desc')
+            ->paginate(15);
 
-            return view('community-metrics.active', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas activas: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener métricas activas');
-        }
+        return view('community-metrics.active', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas inactivas
+     * Obtener métricas inactivas
      */
     public function inactive(): View
     {
-        try {
-            $metrics = CommunityMetrics::inactive()
-                ->with(['organization'])
-                ->orderBy('updated_at', 'desc')
-                ->paginate(15);
+        $metrics = CommunityMetrics::inactive()
+            ->with('organization')
+            ->orderBy('period_start', 'desc')
+            ->paginate(15);
 
-            return view('community-metrics.inactive', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas inactivas: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener métricas inactivas');
-        }
+        return view('community-metrics.inactive', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas recientes
+     * Obtener métricas recientes
      */
-    public function recent(Request $request): View
+    public function recent(): View
     {
-        try {
-            $days = $request->get('days', 30);
-            
-            $metrics = CommunityMetrics::recent($days)
-                ->with(['organization'])
-                ->orderBy('updated_at', 'desc')
-                ->paginate(15);
+        $metrics = CommunityMetrics::recent()
+            ->with('organization')
+            ->paginate(15);
 
-            return view('community-metrics.recent', compact('metrics', 'days'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas recientes: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener métricas recientes');
-        }
+        return view('community-metrics.recent', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas de este mes
+     * Obtener métricas de este mes
      */
     public function thisMonth(): View
     {
-        try {
-            $metrics = CommunityMetrics::thisMonth()
-                ->with(['organization'])
-                ->orderBy('updated_at', 'desc')
-                ->paginate(15);
+        $metrics = CommunityMetrics::thisMonth()
+            ->with('organization')
+            ->orderBy('period_start', 'desc')
+            ->paginate(15);
 
-            return view('community-metrics.this-month', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas de este mes: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener métricas de este mes');
-        }
+        return view('community-metrics.this-month', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas de este año
+     * Obtener métricas de este año
      */
     public function thisYear(): View
     {
-        try {
-            $metrics = CommunityMetrics::thisYear()
-                ->with(['organization'])
-                ->orderBy('updated_at', 'desc')
-                ->paginate(15);
+        $metrics = CommunityMetrics::thisYear()
+            ->with('organization')
+            ->orderBy('period_start', 'desc')
+            ->paginate(15);
 
-            return view('community-metrics.this-year', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas de este año: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener métricas de este año');
-        }
+        return view('community-metrics.this-year', compact('metrics'));
     }
 
     /**
-     * Mostrar estadísticas generales
+     * Obtener estadísticas
      */
     public function statistics(): View
     {
-        try {
-            $stats = [
-                'total_community_impact' => CommunityMetrics::getTotalCommunityImpact(),
-                'total_community_production' => CommunityMetrics::getTotalCommunityProduction(),
-                'total_community_users' => CommunityMetrics::getTotalCommunityUsers(),
-                'top_organizations_by_impact' => CommunityMetrics::getTopOrganizationsByImpact(10),
-                'top_organizations_by_production' => CommunityMetrics::getTopOrganizationsByProduction(10),
-                'top_organizations_by_users' => CommunityMetrics::getTopOrganizationsByUsers(10),
-                'average_metrics' => CommunityMetrics::getAverageMetrics(),
-                'formatted_average_metrics' => CommunityMetrics::getFormattedAverageMetrics(),
-                'active_organizations' => CommunityMetrics::active()->count(),
-                'inactive_organizations' => CommunityMetrics::inactive()->count(),
-            ];
+        $stats = [
+            'total_metrics' => CommunityMetrics::count(),
+            'active_metrics' => CommunityMetrics::active()->count(),
+            'total_users' => CommunityMetrics::sum('total_users'),
+            'total_co2_avoided' => CommunityMetrics::sum('total_co2_avoided'),
+            'total_kwh_produced' => CommunityMetrics::sum('total_kwh_produced'),
+            'average_users_per_metric' => CommunityMetrics::avg('total_users'),
+            'average_co2_per_metric' => CommunityMetrics::avg('total_co2_avoided'),
+            'average_kwh_per_metric' => CommunityMetrics::avg('total_kwh_produced'),
+        ];
 
-            return view('community-metrics.statistics', compact('stats'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener estadísticas: ' . $e->getMessage());
-            return redirect()->route('community-metrics.index')
-                ->with('error', 'Error al obtener estadísticas');
-        }
+        return view('community-metrics.statistics', compact('stats'));
     }
 
     /**
-     * Agregar usuario a la organización
+     * Agregar usuario
      */
-    public function addUser(CommunityMetrics $communityMetric): RedirectResponse
+    public function addUser(Request $request, CommunityMetrics $communityMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
         try {
             DB::beginTransaction();
 
-            $communityMetric->addUser();
+            $communityMetric->increment('total_users');
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'Usuario agregado exitosamente');
+            return redirect()->back()->with('success', 'Usuario agregado exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al agregar usuario: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al agregar usuario');
+
+            return redirect()->back()->with('error', 'Error al agregar el usuario');
         }
     }
 
     /**
-     * Remover usuario de la organización
+     * Remover usuario
      */
-    public function removeUser(CommunityMetrics $communityMetric): RedirectResponse
+    public function removeUser(Request $request, CommunityMetrics $communityMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
         try {
             DB::beginTransaction();
 
-            $communityMetric->removeUser();
+            $communityMetric->decrement('total_users');
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'Usuario removido exitosamente');
+            return redirect()->back()->with('success', 'Usuario removido exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al remover usuario: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al remover usuario');
+
+            return redirect()->back()->with('error', 'Error al remover el usuario');
         }
     }
 
     /**
-     * Agregar producción de kWh
+     * Agregar producción KWh
      */
     public function addKwhProduction(Request $request, CommunityMetrics $communityMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'kwh_amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'kwh' => 'required|numeric|min:0',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
-            $communityMetric->addKwhProduction($request->kwh);
+            $communityMetric->increment('total_kwh_produced', $request->kwh_amount);
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'Producción de kWh agregada exitosamente');
+            return redirect()->back()->with('success', 'Producción KWh agregada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al agregar producción de kWh: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al agregar producción de kWh');
+            Log::error('Error al agregar producción KWh: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al agregar la producción KWh');
         }
     }
 
@@ -462,56 +430,54 @@ class CommunityMetricsController extends Controller
      */
     public function addCo2Avoided(Request $request, CommunityMetrics $communityMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'co2_amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'co2' => 'required|numeric|min:0',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
-            $communityMetric->addCo2Avoided($request->co2);
+            $communityMetric->increment('total_co2_avoided', $request->co2_amount);
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'CO2 evitado agregado exitosamente');
+            return redirect()->back()->with('success', 'CO2 evitado agregado exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al agregar CO2 evitado: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al agregar CO2 evitado');
+
+            return redirect()->back()->with('error', 'Error al agregar el CO2 evitado');
         }
     }
 
     /**
-     * Reiniciar métricas
+     * Resetear métricas
      */
     public function resetMetrics(CommunityMetrics $communityMetric): RedirectResponse
     {
         try {
             DB::beginTransaction();
 
-            $communityMetric->resetMetrics();
+            $communityMetric->update([
+                'total_users' => 0,
+                'total_co2_avoided' => 0,
+                'total_kwh_produced' => 0,
+            ]);
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'Métricas reiniciadas exitosamente');
+            return redirect()->back()->with('success', 'Métricas reseteadas exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al reiniciar métricas: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al reiniciar métricas');
+            Log::error('Error al resetear métricas: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al resetear las métricas');
         }
     }
 }
