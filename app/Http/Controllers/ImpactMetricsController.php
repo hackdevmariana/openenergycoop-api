@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\ImpactMetrics;
 use App\Models\User;
 use App\Models\PlantGroup;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Rule;
 
 class ImpactMetricsController extends Controller
 {
@@ -23,15 +25,15 @@ class ImpactMetricsController extends Controller
             $query = ImpactMetrics::with(['user', 'plantGroup']);
 
             // Aplicar filtros
-            if ($request->has('user_id') && $request->user_id) {
+            if ($request->has('user_id') && $request->user_id !== '') {
                 $query->byUser($request->user_id);
             }
 
-            if ($request->has('plant_group_id') && $request->plant_group_id) {
+            if ($request->has('plant_group_id') && $request->plant_group_id !== '') {
                 $query->byPlantGroup($request->plant_group_id);
             }
 
-            if ($request->has('type')) {
+            if ($request->has('type') && $request->type !== '') {
                 if ($request->type === 'individual') {
                     $query->individual();
                 } elseif ($request->type === 'global') {
@@ -39,20 +41,16 @@ class ImpactMetricsController extends Controller
                 }
             }
 
-            if ($request->has('date_from') && $request->date_from) {
+            if ($request->has('date_from') && $request->date_from !== '') {
                 $query->byDateRange($request->date_from, $request->date_to ?? null);
             }
 
             if ($request->has('co2_min') || $request->has('co2_max')) {
-                $minCo2 = $request->co2_min ?? 0;
-                $maxCo2 = $request->co2_max ?? null;
-                $query->byCo2Range($minCo2, $maxCo2);
+                $query->byCo2Range($request->co2_min ?? 0, $request->co2_max ?? null);
             }
 
             if ($request->has('kwh_min') || $request->has('kwh_max')) {
-                $minKwh = $request->kwh_min ?? 0;
-                $maxKwh = $request->kwh_max ?? null;
-                $query->byKwhRange($minKwh, $maxKwh);
+                $query->byKwhRange($request->kwh_min ?? 0, $request->kwh_max ?? null);
             }
 
             // Aplicar ordenamiento
@@ -79,15 +77,15 @@ class ImpactMetricsController extends Controller
             $perPage = $request->get('per_page', 15);
             $metrics = $query->paginate($perPage);
 
-            // Datos para filtros
-            $users = User::orderBy('name')->get();
-            $plantGroups = PlantGroup::orderBy('name')->get();
+            // Obtener datos para filtros
+            $users = User::select('id', 'name', 'email')->get();
+            $plantGroups = PlantGroup::select('id', 'name')->get();
 
             return view('impact-metrics.index', compact('metrics', 'users', 'plantGroups'));
 
         } catch (\Exception $e) {
             Log::error('Error al obtener métricas de impacto: ' . $e->getMessage());
-            return view('impact-metrics.index')->with('error', 'Error al cargar las métricas de impacto');
+            return redirect()->back()->with('error', 'Error al cargar las métricas de impacto');
         }
     }
 
@@ -96,8 +94,8 @@ class ImpactMetricsController extends Controller
      */
     public function create(): View
     {
-        $users = User::orderBy('name')->get();
-        $plantGroups = PlantGroup::orderBy('name')->get();
+        $users = User::select('id', 'name', 'email')->get();
+        $plantGroups = PlantGroup::select('id', 'name')->get();
         
         return view('impact-metrics.create', compact('users', 'plantGroups'));
     }
@@ -107,36 +105,42 @@ class ImpactMetricsController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'plant_group_id' => 'nullable|exists:plant_groups,id',
+            'co2_avoided_kg' => 'required|numeric|min:0',
+            'kwh_produced' => 'required|numeric|min:0',
+            'generated_at' => 'required|date',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'user_id' => 'nullable|exists:users,id',
-                'total_kwh_produced' => 'required|numeric|min:0',
-                'total_co2_avoided_kg' => 'required|numeric|min:0',
-                'plant_group_id' => 'nullable|exists:plant_groups,id',
-                'generated_at' => 'nullable|date',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
-            $metrics = ImpactMetrics::create($request->all());
+            $impactMetric = ImpactMetrics::create($request->all());
 
             DB::commit();
 
-            return redirect()->route('impact-metrics.index')
-                ->with('success', 'Métricas de impacto creadas exitosamente');
+            Log::info('Métrica de impacto creada', [
+                'user_id' => auth()->id(),
+                'impact_metric_id' => $impactMetric->id
+            ]);
+
+            return redirect()->route('impact-metrics.show', $impactMetric)
+                ->with('success', 'Métrica de impacto creada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al crear métricas de impacto: ' . $e->getMessage());
-            
+            Log::error('Error al crear métrica de impacto: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Error al crear métricas de impacto')
+                ->with('error', 'Error al crear la métrica de impacto')
                 ->withInput();
         }
     }
@@ -147,7 +151,6 @@ class ImpactMetricsController extends Controller
     public function show(ImpactMetrics $impactMetric): View
     {
         $impactMetric->load(['user', 'plantGroup']);
-        
         return view('impact-metrics.show', compact('impactMetric'));
     }
 
@@ -156,8 +159,8 @@ class ImpactMetricsController extends Controller
      */
     public function edit(ImpactMetrics $impactMetric): View
     {
-        $users = User::orderBy('name')->get();
-        $plantGroups = PlantGroup::orderBy('name')->get();
+        $users = User::select('id', 'name', 'email')->get();
+        $plantGroups = PlantGroup::select('id', 'name')->get();
         
         return view('impact-metrics.edit', compact('impactMetric', 'users', 'plantGroups'));
     }
@@ -167,36 +170,42 @@ class ImpactMetricsController extends Controller
      */
     public function update(Request $request, ImpactMetrics $impactMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'plant_group_id' => 'nullable|exists:plant_groups,id',
+            'co2_avoided_kg' => 'required|numeric|min:0',
+            'kwh_produced' => 'required|numeric|min:0',
+            'generated_at' => 'required|date',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'user_id' => 'nullable|exists:users,id',
-                'total_kwh_produced' => 'sometimes|required|numeric|min:0',
-                'total_co2_avoided_kg' => 'sometimes|required|numeric|min:0',
-                'plant_group_id' => 'nullable|exists:plant_groups,id',
-                'generated_at' => 'nullable|date',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
             $impactMetric->update($request->all());
 
             DB::commit();
 
+            Log::info('Métrica de impacto actualizada', [
+                'user_id' => auth()->id(),
+                'impact_metric_id' => $impactMetric->id
+            ]);
+
             return redirect()->route('impact-metrics.show', $impactMetric)
-                ->with('success', 'Métricas de impacto actualizadas exitosamente');
+                ->with('success', 'Métrica de impacto actualizada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al actualizar métricas de impacto: ' . $e->getMessage());
-            
+            Log::error('Error al actualizar métrica de impacto: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Error al actualizar métricas de impacto')
+                ->with('error', 'Error al actualizar la métrica de impacto')
                 ->withInput();
         }
     }
@@ -213,244 +222,187 @@ class ImpactMetricsController extends Controller
 
             DB::commit();
 
+            Log::info('Métrica de impacto eliminada', [
+                'user_id' => auth()->id(),
+                'impact_metric_id' => $impactMetric->id
+            ]);
+
             return redirect()->route('impact-metrics.index')
-                ->with('success', 'Métricas de impacto eliminadas exitosamente');
+                ->with('success', 'Métrica de impacto eliminada exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar métricas de impacto: ' . $e->getMessage());
-            
+            Log::error('Error al eliminar métrica de impacto: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Error al eliminar métricas de impacto');
+                ->with('error', 'Error al eliminar la métrica de impacto');
         }
     }
 
     /**
-     * Mostrar métricas por usuario
+     * Obtener métricas por usuario
      */
-    public function byUser($userId): View
+    public function byUser(Request $request, $userId): View
     {
-        try {
-            $user = User::findOrFail($userId);
-            $metrics = ImpactMetrics::byUser($userId)
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $user = User::findOrFail($userId);
+        $metrics = ImpactMetrics::where('user_id', $userId)
+            ->with('plantGroup')
+            ->orderBy('generated_at', 'desc')
+            ->paginate(15);
 
-            return view('impact-metrics.by-user', compact('user', 'metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas por usuario: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas del usuario');
-        }
+        return view('impact-metrics.by-user', compact('metrics', 'user'));
     }
 
     /**
-     * Mostrar métricas por grupo de plantas
+     * Obtener métricas por grupo de plantas
      */
-    public function byPlantGroup($plantGroupId): View
+    public function byPlantGroup(Request $request, $plantGroupId): View
     {
-        try {
-            $plantGroup = PlantGroup::findOrFail($plantGroupId);
-            $metrics = ImpactMetrics::byPlantGroup($plantGroupId)
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $plantGroup = PlantGroup::findOrFail($plantGroupId);
+        $metrics = ImpactMetrics::where('plant_group_id', $plantGroupId)
+            ->with('user')
+            ->orderBy('generated_at', 'desc')
+            ->paginate(15);
 
-            return view('impact-metrics.by-plant-group', compact('plantGroup', 'metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas por grupo de plantas: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas del grupo de plantas');
-        }
+        return view('impact-metrics.by-plant-group', compact('metrics', 'plantGroup'));
     }
 
     /**
-     * Mostrar métricas globales
+     * Obtener métricas globales
      */
     public function global(): View
     {
-        try {
-            $metrics = ImpactMetrics::global()
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $metrics = ImpactMetrics::global()
+            ->with(['user', 'plantGroup'])
+            ->orderBy('generated_at', 'desc')
+            ->paginate(15);
 
-            return view('impact-metrics.global', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas globales: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas globales');
-        }
+        return view('impact-metrics.global', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas individuales
+     * Obtener métricas individuales
      */
     public function individual(): View
     {
-        try {
-            $metrics = ImpactMetrics::individual()
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $metrics = ImpactMetrics::individual()
+            ->with(['user', 'plantGroup'])
+            ->orderBy('generated_at', 'desc')
+            ->paginate(15);
 
-            return view('impact-metrics.individual', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas individuales: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas individuales');
-        }
+        return view('impact-metrics.individual', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas recientes
+     * Obtener métricas recientes
      */
-    public function recent(Request $request): View
+    public function recent(): View
     {
-        try {
-            $days = $request->get('days', 30);
-            
-            $metrics = ImpactMetrics::recent($days)
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $metrics = ImpactMetrics::recent()
+            ->with(['user', 'plantGroup'])
+            ->paginate(15);
 
-            return view('impact-metrics.recent', compact('metrics', 'days'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas recientes: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas recientes');
-        }
+        return view('impact-metrics.recent', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas de este mes
+     * Obtener métricas de este mes
      */
     public function thisMonth(): View
     {
-        try {
-            $metrics = ImpactMetrics::thisMonth()
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $metrics = ImpactMetrics::thisMonth()
+            ->with(['user', 'plantGroup'])
+            ->orderBy('generated_at', 'desc')
+            ->paginate(15);
 
-            return view('impact-metrics.this-month', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas de este mes: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas de este mes');
-        }
+        return view('impact-metrics.this-month', compact('metrics'));
     }
 
     /**
-     * Mostrar métricas de este año
+     * Obtener métricas de este año
      */
     public function thisYear(): View
     {
-        try {
-            $metrics = ImpactMetrics::thisYear()
-                ->with(['user', 'plantGroup'])
-                ->orderBy('generated_at', 'desc')
-                ->paginate(15);
+        $metrics = ImpactMetrics::thisYear()
+            ->with(['user', 'plantGroup'])
+            ->orderBy('generated_at', 'desc')
+            ->paginate(15);
 
-            return view('impact-metrics.this-year', compact('metrics'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener métricas de este año: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener métricas de este año');
-        }
+        return view('impact-metrics.this-year', compact('metrics'));
     }
 
     /**
-     * Mostrar estadísticas generales
+     * Obtener estadísticas
      */
     public function statistics(): View
     {
-        try {
-            $stats = [
-                'total_impact' => ImpactMetrics::getTotalGlobalImpact(),
-                'total_production' => ImpactMetrics::getTotalGlobalProduction(),
-                'top_users_by_impact' => ImpactMetrics::getTopUsersByImpact(10),
-                'top_users_by_production' => ImpactMetrics::getTopUsersByProduction(10),
-                'community_impact' => ImpactMetrics::getCommunityImpact(),
-                'recent_metrics' => ImpactMetrics::recent(7)->count(),
-                'this_month_metrics' => ImpactMetrics::thisMonth()->count(),
-                'this_year_metrics' => ImpactMetrics::thisYear()->count(),
-            ];
+        $stats = [
+            'total_metrics' => ImpactMetrics::count(),
+            'total_co2_avoided' => ImpactMetrics::sum('co2_avoided_kg'),
+            'total_kwh_produced' => ImpactMetrics::sum('kwh_produced'),
+            'average_co2_per_metric' => ImpactMetrics::avg('co2_avoided_kg'),
+            'average_kwh_per_metric' => ImpactMetrics::avg('kwh_produced'),
+        ];
 
-            return view('impact-metrics.statistics', compact('stats'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener estadísticas: ' . $e->getMessage());
-            return redirect()->route('impact-metrics.index')
-                ->with('error', 'Error al obtener estadísticas');
-        }
+        return view('impact-metrics.statistics', compact('stats'));
     }
 
     /**
-     * Actualizar métricas existentes
+     * Actualizar métricas
      */
     public function updateMetrics(Request $request, ImpactMetrics $impactMetric): RedirectResponse
     {
+        $validator = Validator::make($request->all(), [
+            'co2_avoided_kg' => 'required|numeric|min:0',
+            'kwh_produced' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
         try {
-            $validator = Validator::make($request->all(), [
-                'kwh_produced' => 'required|numeric|min:0',
-                'co2_factor' => 'nullable|numeric|min:0',
-            ]);
-
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
             DB::beginTransaction();
 
-            $impactMetric->addKwhProduction($request->kwh_produced, $request->co2_factor);
+            $impactMetric->update([
+                'co2_avoided_kg' => $request->co2_avoided_kg,
+                'kwh_produced' => $request->kwh_produced,
+            ]);
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'Métricas actualizadas exitosamente');
+            return redirect()->back()->with('success', 'Métricas actualizadas exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al actualizar métricas: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al actualizar métricas');
+
+            return redirect()->back()->with('error', 'Error al actualizar las métricas');
         }
     }
 
     /**
-     * Reiniciar métricas
+     * Resetear métricas
      */
     public function resetMetrics(ImpactMetrics $impactMetric): RedirectResponse
     {
         try {
             DB::beginTransaction();
 
-            $impactMetric->resetMetrics();
+            $impactMetric->update([
+                'co2_avoided_kg' => 0,
+                'kwh_produced' => 0,
+            ]);
 
             DB::commit();
 
-            return redirect()->back()
-                ->with('success', 'Métricas reiniciadas exitosamente');
+            return redirect()->back()->with('success', 'Métricas reseteadas exitosamente');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al reiniciar métricas: ' . $e->getMessage());
-            
-            return redirect()->back()
-                ->with('error', 'Error al reiniciar métricas');
+            Log::error('Error al resetear métricas: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error al resetear las métricas');
         }
     }
 }
